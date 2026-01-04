@@ -24,8 +24,10 @@ void InitPWM() {
   PWM16Begin(); // Timer1 and Timer3 configuration: frequency and mode depend on pwmstate byte
   PWM16A(0);  // Set initial PWM value for Pin 9
   PWM16EnableA();  // Turn PWM on for Pin 9
+#ifndef USE_PWM_0_50_100_MODE
   PWM16B(0);  // Set initial PWM value for Pin 10
   PWM16EnableB();  // Turn PWM on for Pin 10
+#endif
 #ifdef USE_TWOFFBAXIS
   PWM16C(0);  // Set initial PWM value for Pin 11
   PWM16EnableC();  // Turn PWM on for Pin 11
@@ -174,6 +176,7 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
     }
 #else // milos, no mcp4725 - output FFB as PWM signals
 #ifndef USE_TWOFFBAXIS // milos, if we use 1 FFB axis
+#ifndef USE_PWM_0_50_100_MODE
     if (!bitRead(pwmstate, 1)) { // if pwmstate bit1=0
       if (!bitRead(pwmstate, 6)) { // if PWM+- mode (pwmstate bit1=0, bit6=0)
         if (torque->x > 0) {
@@ -192,6 +195,7 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
           digitalWriteFast(DIR_PIN, LOW); // disable bts output when no pwm signal to make it rotate freely
         }
       } else { // if PWM0.50.100 mode (pwmstate bit1=0 and bit6=1)
+#endif
         if (torque->x > 0) {
           torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE / 2 + MM_MIN_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE);
           PWM16A(torque->x);
@@ -201,6 +205,9 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
         } else {
           PWM16A(MM_MAX_MOTOR_TORQUE / 2);
         }
+        digitalWriteFast(DIR_PIN, LOW); // enable motor
+
+#ifndef USE_PWM_0_50_100_MODE
         PWM16B(0);
       }
     } else if (bitRead(pwmstate, 1)) { // if pwmstate bit1=1
@@ -226,6 +233,7 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
       PWM16B(RCM_zer);
       //digitalWriteFast(PWM_PIN_R, LOW);
     }
+#endif
 #else // milos, if we use 2 FFB axis
     if (!bitRead(pwmstate, 1)) { // if pwmstate bit1=0
       if (!bitRead(pwmstate, 6)) { // if 2CH PWM+- mode (pwmstate bit1=0, bit6=0)
@@ -335,7 +343,9 @@ void PWM16Begin() { // milos - added, reconfigure timer1 automatically depending
   TIFR1 = 0;  // Timer/Counter1 Interrupt Flag Register
   ICR1 = TOP; // milos, set upper counter flag
   OCR1A = 0;  // Default to 0% PWM, D9
+#ifndef USE_PWM_0_50_100_MODE
   OCR1B = 0;  // Default to 0% PWM, D10
+#endif
 #ifdef USE_TWOFFBAXIS
   OCR1C = 0;  // Default to 0% PWM, D11
 #endif // end of 2 ffb axis
@@ -386,11 +396,13 @@ void PWM16EnableA() {  // milos
   pinModeFast(PWM_PIN_L, OUTPUT);
 }
 
+#ifndef USE_PWM_0_50_100_MODE
 void PWM16EnableB() {  // milos
   // Enable Fast PWM on Pin 10: Set OC1B at BOTTOM and clear OC1B on OCR1B compare
   TCCR1A |= (1 << COM1B1);
   pinModeFast(PWM_PIN_R, OUTPUT);
 }
+#endif
 
 #ifdef USE_TWOFFBAXIS
 void PWM16EnableC() {  // milos
@@ -410,9 +422,12 @@ inline void PWM16A(uint16_t PWMValue) { // milos
   OCR1A = constrain(PWMValue, 0, TOP);
 }
 
+#ifndef USE_PWM_0_50_100_MODE
 inline void PWM16B(uint16_t PWMValue) { // milos
   OCR1B = constrain(PWMValue, 0, TOP);
 }
+#endif
+
 #ifdef USE_TWOFFBAXIS
 inline void PWM16C(uint16_t PWMValue) { // milos
   OCR1C = constrain(PWMValue, 0, TOP);

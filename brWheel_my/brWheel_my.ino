@@ -362,7 +362,8 @@ void loop() {
         turn.x = myEnc.Read() - ROTATION_MID;
       }
 #else // milos, if no optical enc and no as5600, use pot for X-axis
-      turn.x = map(accel.val, 0, Z_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID); // milos, X-axis on accelerator
+      int32_t axisXRawVal = (int32_t)analogRead(XAXIS_PIN) << 6;
+      turn.x = map(axisXRawVal, 0, X_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID);
 #endif // end of quad enc
 #else // if we use as5600
 #ifdef USE_CENTERBTN
@@ -394,17 +395,6 @@ void loop() {
 #endif // end of tca
 #endif // end of 2 ffb axis
 
-#ifdef USE_ANALOGFFBAXIS
-      if (indxFFBAxis(effstate) == 1) {
-        axis.x = map(brake.val, 0, Y_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID); // milos, xFFB on Y-axis
-      } else if (indxFFBAxis(effstate) == 2) {
-        axis.x = map(accel.val, 0, Z_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID); // milos, xFFB on Z-axis
-      } else if (indxFFBAxis(effstate) == 3) {
-        axis.x = map(clutch.val, 0, RX_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID); // milos, xFFB on RX-axis
-      } else if (indxFFBAxis(effstate) == 4) {
-        axis.x = map(hbrake.val, 0, RY_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID);  // milos, xFFB on RY-axis
-      }
-#endif // end of analog ffb axis
       ffbs = gFFB.CalcTorqueCommands(&axis); // milos, passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
       turn.x *= f32(X_AXIS_PHYS_MAX) / f32(ROTATION_MAX); // milos, conversion to physical HID units
       turn.x = constrain(turn.x, -MID_REPORT_X - 1, MID_REPORT_X); // milos, -32768,0,32767 constrained to signed 16bit range
@@ -570,7 +560,7 @@ void loop() {
         SendInputReport(turn.x + MID_REPORT_Y + 1, turn.y + MID_REPORT_Y + 1, accel.val, clutch.val, hbrake.val, button); // milos, we use two as5600, send 2nd as5600 at y-axis instead of brake pedal
 #endif // end of tca
 #else // milos, if no quad enc and no as5600, Z-axis (accel) is used for X-axis, but we have have to send something instead of Z-axis -> half axis value for example
-        SendInputReport(turn.x + MID_REPORT_X + 1, brake.val, Z_AXIS_PHYS_MAX >> 1, clutch.val, hbrake.val, button); // milos
+        SendInputReport(turn.x + MID_REPORT_X + 1, brake.val, accel.val, clutch.val, hbrake.val, button); // milos
 #endif // end of as5600
 #endif // end of quad enc
 

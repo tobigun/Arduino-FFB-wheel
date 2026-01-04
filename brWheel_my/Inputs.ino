@@ -29,7 +29,9 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <digitalWriteFast.h>
+#if 0
 #include <HX711_ADC.h> // milos, credits to library creator Olav Kallhovd sept2017
+#endif
 
 
 //--------------------------------------- Globals --------------------------------------------------------
@@ -395,6 +397,7 @@ u32 readInputButtons() {
   // D5 |b41 b42 b43 b44|
   for (uint8_t i = 0; i < 4; i++) { // rows (along X), we set each row high, one at a time
     setMatrixRow (i, LOW);
+    delayMicroseconds(5); // required to avoid the detection of false button presses
     for (uint8_t j = 0; j < 4; j++) { // columns (along Y), read each button from that row by scanning over columns
       bitWrite(buttons, i * 4 + j, readSingleButton(j));
     }

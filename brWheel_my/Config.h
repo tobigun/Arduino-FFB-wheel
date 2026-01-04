@@ -11,7 +11,7 @@
 //#define USE_LCD					// milos, LCD via i2C (not implemented yet)
 //#define USE_ADS1015       // milos, uncomment for 12bit pedals, when commented out it's 10bit from arduino inputs (can not be used with AVG_INPUTS)
 //#define USE_DSP56ADC16S			// 16 bits Stereo ADC (milos, not implemented fully yet)
-#define USE_QUADRATURE_ENCODER		// milos, optical quadrature encoder (you may comment it out)
+//#define USE_QUADRATURE_ENCODER		// milos, optical quadrature encoder (you may comment it out)
 //#define USE_TWOFFBAXIS        // milos, uncomment to enable 2nd FFB axis and PWM/DAC output for flight sticks (can't be used with USE_LOAD_CELL and without USE_ANALOGFFBAXIS)
 //#define USE_AS5600          // milos, uncomment to enable magnetic encoder via i2C instead of optical encoder
 //#define USE_TCA9548        // milos, uncomment to enable i2C multiplexer chip for using more than one AS5600 magnetic sensor via i2C (for now only used as y-axis input, must use with AS5600 and TWOFFBAXIS) 
@@ -21,16 +21,18 @@
 //#define USE_DUAL_SHIFT_REGISTER		// Dual 8-bit Parallel-load shift registers G27 board shifter  (milos, not available curently, use SN74ALS166N instead for 24 buttons)
 //#define USE_SN74ALS166N          // milos, uncomment to use 3x8bit parralel-in serial-out shift register chips for 24 buttons, otherwise it's 16 buttons with ard nano-button box (must be used with USE_SHIFT_REGISTER)
 //#define USE_XY_SHIFTER    // milos, uncomment to use XY analog shifter (can not be used with USE_BTNMATRIX, note that for proMicro clutch and handbrake will be unavailable)
-//#define USE_HATSWITCH        // milos, uncomment to use first 4 buttons for hat switch (D-pad)
-//#define USE_BTNMATRIX        // milos, uncomment to use 8 pins as a 4x4 button matrix for total of 16 buttons (can not be used with load cell, shift register or XY shifter)
+#define USE_HATSWITCH        // milos, uncomment to use first 4 buttons for hat switch (D-pad)
+#define USE_BTNMATRIX        // milos, uncomment to use 8 pins as a 4x4 button matrix for total of 16 buttons (can not be used with load cell, shift register or XY shifter)
 //#define AVG_INPUTS        // milos, uncomment to use averaging of arduino analog inputs (can not be used with USE_ADS1015)
 //#define USE_AUTOCALIB        // milos, uncomment to use autocalibration for pedal axis (if left commented manual calibration is enabled)
 //#define USE_CENTERBTN    // milos, uncomment to assign digital input pin D2 (or TX) for hardware wheel recenter to 0deg (caution, can only be used if quad encoder usage is commented out)
 //#define USE_EXTRABTN    // milos, uncomment to configure analog inputs on pins A2 and A3 as a digital button inputs (2 extra buttons, note that clutch and handbrake will be unavailable)
 //#define USE_MCP4725      // milos, 12bit DAC (0-5V), uncomment to enable output of FFB signal as 2ch DAC voltage output
 #define USE_ANALOGFFBAXIS // milos, uncomment to enable other than X-axis to be tied with xFFB axis (you can use analog inputs instead of digital encoders
-//#define USE_PROMICRO    // milos, uncomment if you are using Arduino ProMicro board (leave commented for Leonardo or Micro variants)
+#define USE_PROMICRO    // milos, uncomment if you are using Arduino ProMicro board (leave commented for Leonardo or Micro variants)
 #define USE_EEPROM     // milos, uncomment to enable loading/saving settings from EEPROM (if commented out, default settings will be loaded on each powerup, one needs to reconfigure firmware defautls or use GUI configuration after each powerup) 
+#define USE_ANALOG_XAXIS // use dedicated analog X-Axis
+#define USE_PWM_0_50_100_MODE
 
 #define CALIBRATE_AT_INIT	0 // milos, was 1
 
@@ -53,6 +55,13 @@
 #endif // end of mcp4725
 #endif // end of promicro
 
+#ifdef USE_ANALOGFFBAXIS
+#define XAXIS_PIN			A0
+#define ACCEL_PIN			A1
+#define BRAKE_PIN     A2
+#define CLUTCH_PIN		A3
+#define HBRAKE_PIN    A10
+#else
 #define ACCEL_PIN			A0
 #ifdef USE_LOAD_CELL // milos
 #define CLUTCH_PIN		A1
@@ -61,6 +70,7 @@
 #define BRAKE_PIN     A1
 #define CLUTCH_PIN    A2
 #define HBRAKE_PIN    A3
+#endif
 #endif
 
 // milos, added - for alternate button0 options
@@ -160,7 +170,7 @@
 #endif
 
 #define PWM_PIN_L     9 // milos, left PWM pin
-#define PWM_PIN_R     10 // milos, right PWM pin
+//#define PWM_PIN_R     10 // milos, right PWM pin
 #ifdef USE_TWOFFBAXIS
 #define PWM_PIN_U     11 // milos, up PWM pin
 #define PWM_PIN_D     5 // milos, down PWM pin
