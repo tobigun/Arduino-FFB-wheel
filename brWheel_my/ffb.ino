@@ -89,6 +89,8 @@ void StopAllEffects(void);
 void FreeEffect(uint8_t id);
 void FreeAllEffects(void);
 
+static u32 dataLedActiveTimeMs = 0;
+
 //-------------------------------------------------------------------------------------------------------------
 
 #if defined(__AVR_ATmega32U4__)										// On arduino uno we don't have USB
@@ -277,7 +279,9 @@ void FfbHandle_SetEffect(USB_FFBReport_SetEffect_Output_Data_t *data);
 void FfbOnUsbData(uint8_t *data, uint16_t len)
 {
   // Parse incoming USB data
-  LEDs_SetAllLEDs(LEDS_ALL_LEDS);
+  //LEDs_SetAllLEDs(LEDS_ALL_LEDS);
+  digitalWrite(LED_BLUE_PIN, HIGH);
+  dataLedActiveTimeMs = millis();
 
   uint8_t effectId = data[1]; // effectBlockIndex is always the second byte.
 
@@ -715,6 +719,14 @@ void FfbEnableEffectId(uint8_t inId, uint8_t inEnable)
     LogTextP(PSTR("Stop manual:"));
     LogBinaryLf(&inId, 1);
     StopEffect(inId);
+  }
+}
+
+void UpdateDataLed(void)
+{
+  if (dataLedActiveTimeMs > 0 && millis() - dataLedActiveTimeMs > 1) {
+    digitalWrite(LED_BLUE_PIN, LOW);
+    dataLedActiveTimeMs = 0;
   }
 }
 

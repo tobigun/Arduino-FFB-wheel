@@ -49,7 +49,10 @@
 #ifndef USE_MCP4725 // milos, we can only use it if DAC is not using i2C pins 2,3
 #ifndef USE_ADS1015 // milos, we can only use it if ADS1015 is not using i2C pins 2,3
 #ifndef USE_AS5600 // milos, we can only use it if AS5600 is not using i2C pin 2,3
-#define FFBCLIP_LED_PIN 3 // for ProMicro if no above i2C devices
+//#define LED_GREEN_PIN 1 // Green LED directly connected to 12V supply
+#define LED_BLUE_PIN 0
+#define LED_RED_PIN 3 // for ProMicro if no above i2C devices
+#define FFBCLIP_LED_PIN LED_RED_PIN // for ProMicro if no above i2C devices
 #endif // end of as5600
 #endif // end of ads1015
 #endif // end of mcp4725

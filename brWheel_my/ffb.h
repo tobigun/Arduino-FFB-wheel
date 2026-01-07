@@ -270,6 +270,8 @@ void FfbEnableTriangles(uint8_t inEnable);
 void FfbEnableSines(uint8_t inEnable);
 void FfbEnableEffectId(uint8_t inId, uint8_t inEnable);
 
+void UpdateDataLed(void);
+
 // Bit-masks for effect states
 #define MEffectState_Free			0x00
 #define MEffectState_Allocated		0x01

@@ -163,6 +163,9 @@ void setup() {
   //pinModeFast(SYNC_LED_PIN, OUTPUT);
   //pinModeFast(LED_PIN, OUTPUT);
 
+  pinMode(LED_BLUE_PIN, OUTPUT);
+  digitalWrite(LED_BLUE_PIN, LOW);
+
   //pinMode(SCK,INPUT); //11,INPUT);
   //pinMode(MISO,INPUT); //12,INPUT);
   //pinMode(MOSI,INPUT); //13,INPUT);
@@ -575,6 +578,7 @@ void loop() {
 #endif // end of use config cdc
       }
       //SYNC_LED_LOW(); //milos
+      UpdateDataLed();
     }
   }
 }
