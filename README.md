@@ -1,3 +1,21 @@
+# Customized Arduino-FFB-wheel for Guillemot Force Feedback Racing Wheel
+This is a fork of Miloš Ranković's [Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel) project, customized for the Guillemot Force Feedback Racing Wheel. As non of the pre-compiled binaries of the original project were suitable for this wheel, this project provides a configuration for the hardware and some software customizations.
+
+**Hardware configuration:**
+- Analog X-Axis
+- Hat Switch
+- PWM motor control in 0-50-100 mode (hardcoded, so no need to configure it via the config software)
+- Matrix keypad with 12 buttons
+- Usage of 5 analog axis:
+  - X-Axis
+  - Throttle
+  - Brake
+  - 2x analog levers on the wheel
+- Force Feedback (of course)
+
+
+
+
 # Arduino-FFB-wheel
 A stand-alone DirectInput USB device is recognized in Windows as a joystick with force feedback functionality, based on BRWheel by Fernando Igor in 2017.
 
