@@ -205,7 +205,7 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
         } else {
           PWM16A(MM_MAX_MOTOR_TORQUE / 2);
         }
-        digitalWriteFast(DIR_PIN, LOW); // enable motor
+        digitalWriteFast(DIR_PIN, HIGH); // enable motor
 
 #ifndef USE_PWM_0_50_100_MODE
         PWM16B(0);
