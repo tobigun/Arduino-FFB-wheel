@@ -211,8 +211,14 @@ const u8 _hidReportDescriptor[] =
   0x19, 0x01,					            // USAGE_MINIMUM (button 1)
   0x29, NB_BUTTONS,               // USAGE_MAXIMUM (button NB_BUTTONS)
   0x75, 0x01,                     // REPORT_SIZE (1)
-  0x95, NB_BUTTONS,			          // REPORT_COUNT (NB_BUTTONS)
+  0x95, NB_BUTTONS,               // REPORT_COUNT (number of buttons)
   0x81, 0x02,                     // Input (Data,Var,Abs)
+    
+  // --- Padding bits ---
+  0x05, 0x01,                     // USAGE_PAGE (Generic Desktop)
+  0x75, 0x01,                     // REPORT_SIZE (1)
+  0x95, 8 - (NB_BUTTONS % 8),     // REPORT_COUNT (padding bits)
+  0x81, 0x03,                     // Input (Const,Var,Abs)
 
   // FOR CONFIG PROFILE
   0x85, 0xf1,                    //   REPORT_ID (f1)
@@ -1132,6 +1138,26 @@ void Joystick_::send_16_16_12_12_12_28(uint16_t x, uint16_t y, uint16_t z, uint1
   j[11] = buttons >> 20;
 
   HID_SendReport(4, j, 12);
+}
+
+// 16+16+12+12+12 bits axis + 10 buttons
+void Joystick_::send_16_16_12_12_12_10(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t ry, uint32_t buttons)
+{
+  // total of 12 bytes, 2B for x, 2B for y, 3B for z and rx, 4B for ry and buttons
+  u8 j[12];
+  j[0] = x;
+  j[1] = x >> 8;
+  j[2] = y;
+  j[3] = y >> 8;
+  j[4] = z;
+  j[5] = (z >> 8) & 0xf | ((rx & 0xf) << 4);
+  j[6] = rx >> 4;
+  j[7] = ry;
+  j[8] = (ry >> 8) & 0xf | ((buttons & 0xf) << 4);
+  j[9] = (buttons >> 4) & 0x3f | ((buttons >> 6) & 0xc0);
+  j[10] = buttons >> 14;
+
+  HID_SendReport(4, j, 11);
 }
 
 // milos ver5, 16+16+12+12+12+12 bits version + 32 buttons
