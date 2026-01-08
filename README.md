@@ -1,5 +1,24 @@
 # Customized Arduino-FFB-wheel for Guillemot Force Feedback Racing Wheel
-This is a fork of Miloš Ranković's [Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel) project, customized for the Guillemot Force Feedback Racing Wheel. As non of the pre-compiled binaries of the original project were suitable for this wheel, this project provides a configuration for the hardware and some software customizations.
+## About this project
+### Motivation
+It gets more and more difficult to find working Windows 11 drivers for this wheel.
+
+Even the old [Vista drivers](https://support.thrustmaster.com/en/product/ffdrw-en/) which worked fine for me some years ago only work with the iRacing FFB test program (WheelCheck.exe) anymore, but not with any of my games - they simply crash. I already replaced "System32/immpid.dll" with the one from "SysWOW64" and although this fixes the crashes I do not get any Force Feedback effects in games at all (the green effect LED on the Main PCB also does not blink).
+
+There is also another old [driver on archive.org](https://archive.org/details/Guillemot-Thrustmaster-ForceFeedback-wheel-64bit-driver) which is supposed to work according to some forums. But even after disabling the Windows driver signature check the driver was marked as non-functional in the device manager and was not functional.
+
+As a consequence I decided to reverse engineer the hardware and replace the Main PCB of the wheel with an Arduino Pro Micro board. This way it supports Force Feedback via USB HID and does not need any drivers at all.
+The nice thing about this wheel is that the Motor Control PCB can be reused and only the Logic Board has to be replaced.
+
+For the firmware I tried multiple projects, e.g.:
+- [ranenbg/Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel)
+- [vsulako/AFFBWheel](https://github.com/vsulako/AFFBWheel) (see my [unfinished fork here](https://github.com/tobigun/AFFBWheel))
+- [YukMingLaw/ArduinoJoystickWithFFBLibrary](https://github.com/YukMingLaw/ArduinoJoystickWithFFBLibrary)
+
+Arduino-FFB-wheel was the most complete, so this project was used as the foundation.
+
+### Firmware
+This repo is a fork of Miloš Ranković's [Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel), customized for the Guillemot Force Feedback Racing Wheel. As none of the pre-compiled binaries of the original project were suitable for this wheel, this project provides a configuration for the hardware and some minor software adjustments.
 
 **Hardware configuration:**
 - Analog X-Axis
@@ -7,12 +26,18 @@ This is a fork of Miloš Ranković's [Arduino-FFB-wheel](https://github.com/rane
 - PWM motor control in 0-50-100 mode (hardcoded, so no need to configure it via the config software)
 - Matrix keypad with 12 buttons
 - Usage of 5 analog axis:
-  - X-Axis
+  - X-Axis (wheel angle)
   - Throttle
   - Brake
   - 2x analog levers on the wheel
 - Force Feedback (of course)
 
+### Original Main PCB
+<img src="./docs/main-pcb.jpg" height="600px"/>
+<img src="./docs/main-pcb-with-connectors.jpg" height="400px"/>
+<img src="./docs/all-pcbs.jpg" height="400px"/>
+
+### Arduino Main PCB
 
 
 
