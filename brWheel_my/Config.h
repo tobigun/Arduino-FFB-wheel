@@ -60,8 +60,8 @@
 
 #ifdef USE_ANALOGFFBAXIS
 #define XAXIS_PIN			A0
-#define ACCEL_PIN			A1
-#define BRAKE_PIN     A2
+#define BRAKE_PIN     A1
+#define ACCEL_PIN			A2
 #define CLUTCH_PIN		A3
 #define HBRAKE_PIN    A10
 #else
