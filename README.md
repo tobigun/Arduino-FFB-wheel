@@ -113,13 +113,13 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 
 <tr><td rowspan="4">JP101 (Analog Levers)</td>
-    <td>1</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
-<tr><td>2</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A10</td></tr>
-<tr><td>3</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A3</td></tr>
-<tr><td>4</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
+<tr><td>2</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A3</td></tr>
+<tr><td>3</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A10</td></tr>
+<tr><td>4</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
 </table>
 
-Make yourself a little connector hub PCB to hold the motor switch transistor and  to connect all of the GND and VCC pins together.This way you can keep the existing connectors and you will still be able to reconnect them to the original Main PCB. But you can also cut the original connectors and solder the wires directly to the Arduino board.
+Make a little connector hub PCB to hold the motor switch transistor and  to connect all of the GND and VCC pins together. This way you can keep the existing connectors and you will still be able to reconnect them to the original Main PCB. But you can also cut the original connectors and solder the wires directly to the Arduino board.
 <img src="./docs/connector-hub.jpg" height="400px"/>
 
 # Arduino-FFB-wheel
