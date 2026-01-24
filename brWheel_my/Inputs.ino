@@ -484,7 +484,7 @@ void ReadAnalogInputs() { // milos, changed to void from uint16_t
 
 void AverageAnalogInputs() {
   for (u8 i = 0; i < sizeof(analog_inputs_pins); i++) {
-    analog_inputs[i] = (analog_inputs[i] << axis_shift_n_bits[i]) / nb_mes; //milos, fixed
+    analog_inputs[i] = analog_inputs[i] / nb_mes; //milos, fixed
   }
 }
 #endif
