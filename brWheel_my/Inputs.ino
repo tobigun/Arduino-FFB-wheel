@@ -39,40 +39,16 @@
 u8 analog_inputs_pins[] = // milos, changed to u8, from u16
 {
   ACCEL_PIN,
-#ifdef USE_LOAD_CELL //milos
-#ifndef USE_EXTRABTN
-  CLUTCH_PIN,
-#else // if no extra buttons
-  CLUTCH_PIN
-#endif // end of extra button
-#else // if no lc
-#ifndef USE_EXTRABTN
   BRAKE_PIN,
   CLUTCH_PIN,
-#else
-  BRAKE_PIN
-#endif // end of extra button
-#endif // end of load cell
-  /*#ifdef USE_XY_SHIFTER // milos
-    HBRAKE_PIN,
-    SHIFTER_X_PIN, // milos
-    SHIFTER_Y_PIN // milos
-    #else*/
-#ifndef USE_EXTRABTN
   HBRAKE_PIN
-#endif // end of extra button
-  //#endif // end of xy shifter
 };
 
 u8 axis_shift_n_bits[] =  // milos, changed to u8, from u16
 {
   Z_AXIS_NB_BITS - ADC_NB_BITS,
-#ifdef USE_LOAD_CELL //milos
-  RX_AXIS_NB_BITS - ADC_NB_BITS,
-#else
   Y_AXIS_NB_BITS - (ADC_NB_BITS + 4), // milos, added - we scale it to 4095, that's why +4
   RX_AXIS_NB_BITS - ADC_NB_BITS,
-#endif
   RY_AXIS_NB_BITS - ADC_NB_BITS
 };
 
