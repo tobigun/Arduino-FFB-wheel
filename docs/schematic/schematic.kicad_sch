@@ -5115,10 +5115,6 @@
 		(uuid "60ee0ceb-3dac-457e-a8d8-95960a0697ae")
 	)
 	(no_connect
-		(at 109.22 53.34)
-		(uuid "621152bb-ca82-4fc5-9c3d-a88aeab70c13")
-	)
-	(no_connect
 		(at 109.22 50.8)
 		(uuid "65323234-cd30-44be-aef1-cf620ba80f37")
 	)
@@ -5359,16 +5355,6 @@
 			(type default)
 		)
 		(uuid "1bbffe47-5b17-4012-97db-b6bd54f25d20")
-	)
-	(wire
-		(pts
-			(xy 135.89 53.34) (xy 133.35 53.34)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2146fee1-f29d-4d74-974a-a2fe0f9c5b4d")
 	)
 	(wire
 		(pts
@@ -5942,16 +5928,6 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 48.26) (xy 139.7 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "72907983-18e9-4180-b3b7-e726d5a8a40b")
-	)
-	(wire
-		(pts
 			(xy 55.88 49.53) (xy 55.88 55.88)
 		)
 		(stroke
@@ -6062,7 +6038,7 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 45.72) (xy 139.7 45.72)
+			(xy 133.35 45.72) (xy 137.16 45.72)
 		)
 		(stroke
 			(width 0)
@@ -6232,7 +6208,7 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 71.12) (xy 135.89 71.12)
+			(xy 133.35 71.12) (xy 137.16 71.12)
 		)
 		(stroke
 			(width 0)
@@ -6242,7 +6218,7 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 60.96) (xy 138.43 60.96)
+			(xy 133.35 60.96) (xy 137.16 60.96)
 		)
 		(stroke
 			(width 0)
@@ -6372,6 +6348,16 @@
 	)
 	(wire
 		(pts
+			(xy 133.35 48.26) (xy 137.16 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bf1caeda-7a0b-42aa-b175-80917611f135")
+	)
+	(wire
+		(pts
 			(xy 166.37 93.98) (xy 198.12 93.98)
 		)
 		(stroke
@@ -6462,7 +6448,7 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 58.42) (xy 138.43 58.42)
+			(xy 133.35 58.42) (xy 137.16 58.42)
 		)
 		(stroke
 			(width 0)
@@ -6489,6 +6475,16 @@
 			(type default)
 		)
 		(uuid "da7dd70e-f419-4b42-abcd-4314248b75ad")
+	)
+	(wire
+		(pts
+			(xy 105.41 53.34) (xy 109.22 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db067d73-ffde-44d4-b853-83386ec90646")
 	)
 	(wire
 		(pts
@@ -6742,7 +6738,7 @@
 	)
 	(global_label "Matrix_Col3"
 		(shape input)
-		(at 138.43 60.96 0)
+		(at 137.16 60.96 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6752,7 +6748,7 @@
 		)
 		(uuid "04b5ef99-0bf1-412b-a53a-8b2b0900d58e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 152.4217 60.96 0)
+			(at 151.1517 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7070,7 +7066,7 @@
 			)
 		)
 	)
-	(global_label "A10"
+	(global_label "A8"
 		(shape output)
 		(at 121.92 165.1 0)
 		(fields_autoplaced yes)
@@ -7082,7 +7078,7 @@
 		)
 		(uuid "75aabced-9b27-4250-9d0b-62639a0daae8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 128.4128 165.1 0)
+			(at 127.2033 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7116,7 +7112,7 @@
 	)
 	(global_label "Matrix_Row2"
 		(shape output)
-		(at 139.7 45.72 0)
+		(at 137.16 45.72 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7126,7 +7122,7 @@
 		)
 		(uuid "7d56fef7-79fe-4fff-beda-3c443110f995")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.357 45.72 0)
+			(at 151.817 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7136,7 +7132,7 @@
 			)
 		)
 	)
-	(global_label "A10"
+	(global_label "A8"
 		(shape output)
 		(at 80.01 165.1 0)
 		(fields_autoplaced yes)
@@ -7148,7 +7144,7 @@
 		)
 		(uuid "83a9e552-8c9c-4d34-b52b-a87901364a16")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 86.5028 165.1 0)
+			(at 85.2933 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7160,7 +7156,7 @@
 	)
 	(global_label "Matrix_Col2"
 		(shape input)
-		(at 138.43 58.42 0)
+		(at 137.16 58.42 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7170,7 +7166,7 @@
 		)
 		(uuid "857d2247-0c3e-460c-bbdd-ff565882337f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 152.4217 58.42 0)
+			(at 151.1517 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7182,7 +7178,7 @@
 	)
 	(global_label "A3"
 		(shape input)
-		(at 135.89 71.12 0)
+		(at 137.16 71.12 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7192,7 +7188,7 @@
 		)
 		(uuid "8c5e5237-0e6c-4cfc-a3fc-9f4fd1fb4a59")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 141.1733 71.12 0)
+			(at 142.4433 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7444,9 +7440,9 @@
 			)
 		)
 	)
-	(global_label "A10"
+	(global_label "A8"
 		(shape input)
-		(at 135.89 53.34 0)
+		(at 137.16 48.26 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7456,7 +7452,7 @@
 		)
 		(uuid "fec9e43d-0dc6-4b7f-a7ef-85f14ba12fc6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 142.3828 53.34 0)
+			(at 142.4433 48.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7468,22 +7464,22 @@
 	)
 	(global_label "Matrix_Row3"
 		(shape output)
-		(at 139.7 48.26 0)
+		(at 105.41 53.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "ff0a665d-a1c3-4270-8461-f24434ffef6a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 154.357 48.26 0)
+			(at 90.753 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)

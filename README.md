@@ -66,12 +66,12 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <img src="./docs/main-pcb.jpg" height="600px"/>
 
 <table>
-<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (Arduino)</th></tr>
+<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (Arduino Pro Micro)</th></tr>
 <tr><th>Name</th><th>Pin</th><th>Color</th></tr>
 
 <tr><td rowspan="6">J5 (Motor PCB Connector)</td>
-    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>9</td></tr>
-<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>16 (via BJT)</td></tr>
+    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>D9</td></tr>
+<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>D10 (via BJT)</td></tr>
 <tr><td>3</td><td style="background:orange">orange</td><td>GND</td><td>GND</td></tr>
 <tr><td>4</td><td style="background:red">red</td><td>GND</td><td>GND</td></tr>
 <tr><td>5</td><td style="background:brown">brown</td><td>GND</td><td>GND</td></tr>
@@ -93,30 +93,38 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>3</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
 
 <tr><td rowspan="12">J12 (Button Matrix)</td>
-    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>5</td></tr>
-<tr><td>2</td><td style="background:brown">brown</td><td>Matrix column 2</td><td>14</td></tr>
-<tr><td>3</td><td style="background:red">red</td><td>Matrix column 3</td><td>15</td></tr>
-<tr><td>4</td><td style="background:orange">orange</td><td>Matrix column 4</td><td>2</td></tr>
-<tr><td>5</td><td style="background:yellow">yellow</td><td>Matrix row 1</td><td>6</td></tr>
-<tr><td>6</td><td style="background:green">green</td><td>Matrix row 2</td><td>7</td></tr>
-<tr><td>7</td><td style="background:blue;color:white">blue</td><td>Matrix row 3</td><td>8</td></tr>
-<tr><td>8</td><td style="background:#add8e6">light blue</td><td>Matrix row 4</td><td>4</td></tr>
-<tr><td>9</td><td style="background:#d3d3d3">light grey</td><td>Gear Shifter - Up (Matrix column 1)</td><td>5</td></tr>
-<tr><td>10</td><td style="background:grey">grey</td><td>Gear Shifter - Down (Matrix column 2)</td><td>14</td></tr>
+    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>D5</td></tr>
+<tr><td>2</td><td style="background:brown">brown</td><td>Matrix column 2</td><td>D14</td></tr>
+<tr><td>3</td><td style="background:red">red</td><td>Matrix column 3</td><td>D15</td></tr>
+<tr><td>4</td><td style="background:orange">orange</td><td>Matrix column 4</td><td>D2</td></tr>
+<tr><td>5</td><td style="background:yellow">yellow</td><td>Matrix row 1</td><td>D6</td></tr>
+<tr><td>6</td><td style="background:green">green</td><td>Matrix row 2</td><td>D7</td></tr>
+<tr><td>7</td><td style="background:blue;color:white">blue</td><td>Matrix row 3</td><td>D1 (TX0)</td></tr>
+<tr><td>8</td><td style="background:#add8e6">light blue</td><td>Matrix row 4</td><td>D4</td></tr>
+<tr><td>9</td><td style="background:#d3d3d3">light grey</td><td>Gear Shifter - Up (Matrix column 1)</td><td>D5</td></tr>
+<tr><td>10</td><td style="background:grey">grey</td><td>Gear Shifter - Down (Matrix column 2)</td><td>D14</td></tr>
 <tr><td>11</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
-<tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>7</td></tr>
+<tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>D7</td></tr>
 
 <tr><td rowspan="4">J13 (Front LED)</td>
-    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>3 (via Resistor)</td></tr>
+    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>D3 (via 820 Ohms Resistor)</td></tr>
 <tr><td>2</td><td style="background:black;color:white">black</td><td>LED Cathode (-)</td><td>GND</td></tr>
 <tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 <tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 
-<tr><td rowspan="4">JP101 (Analog Levers)</td>
+<tr><td rowspan="4">JP101 (Analog Levers)<br>[Optional]</td>
     <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
 <tr><td>2</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A3</td></tr>
 <tr><td>3</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A10</td></tr>
 <tr><td>4</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
+
+<tr><td rowspan="2">Blue Front LED<br>[Optional]</td>
+    <td>-</td><td style="background:blue"></td><td>LED Anode (+)</td><td>D0 (RX1) via 4.7 kOhms resistor</td></tr>
+<tr><td>-</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+
+<tr><td rowspan="2">Green Front LED<br>[Optional]</td>
+    <td>-</td><td style="background:green"></td><td>LED Anode (+)</td><td>+20V (via 150 kOhms resistor)</td></tr>
+<tr><td>-</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
 </table>
 
 Make a little connector hub PCB to hold the motor switch transistor and  to connect all of the GND and VCC pins together. This way you can keep the existing connectors and you will still be able to reconnect them to the original Main PCB. But you can also cut the original connectors and solder the wires directly to the Arduino board.
@@ -148,8 +156,11 @@ Firmware features:
 Detailed documentation and more information about the firmware can be found in txt files inside **[docs](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/brWheel_my/docs)** folder.
 # Firmware pinouts and wiring diagrams
 ![plot](./brWheel_my/wirings/Firmware-v250%20pinout.png)
+**Note:** some pin mappings in the image are outdated. Check the wiring table above for the correct ones.
+
 ## Button matrix pinouts
 ![plot](./brWheel_my/wirings/button_matrix_wiring_diagram.png)
+**Note:** the digital inputs for the matrix are not correct in the image. Check the wiring table above for the correct ones.
 
 ## Firmware upload procedure
 You can use **[XLoader](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/XLoader)**:
@@ -161,9 +172,6 @@ You can use **[XLoader](https://github.com/tobigun/Arduino-FFB-wheel/tree/master
 
 ## How to compile the source
 In order to compile the firmware yourself you may use Windows, 8, 10 or 11, you need to install Arduino IDE v1.8.19 and Arduino Boards v1.6.21. You must place all **[libraries](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/arduino-1.8.5/libraries)** in your .../documents/Arduino/Libraries folder. In Windows folder options set to show hidden files and folders then navigate to C:\Users\yourusername\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.6.21\cores. Rename the folder "arduino" as a backup as we will need some files from it later, I just add "arduino_org" to the filename. Create a new folder called "arduino" and place the entire content from  **[modified core](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/arduino-1.8.5/hardware/arduino/cores/arduino)** into newly created "arduino" folder. Navigate back to "arduino_org" folder and copy files "IPAddress.cpp", "IPAddress.h", "new.cpp" and "new.h", then paste and replace the ones inside the "arduino" folder. That should fix all errors and you should be able to compile the code. Bare in mind that if you make any changes to HID or USB core files you will need to repeat the procedure and paste all modified files into the newly created "arduino" folder each time.
-
-## Troubleshooting X-axis stuck at -540deg
-If you used some of the earlier firmware versions before fw-v22X, windows remembered the axis raw HID calibration which was +-32k. This issue occurs when you upload the latest firmware with new X-axis calibration 0-65k, which is incompatible with the previous HID calibration that Windows remembered for this FFB joystick device. However, there is a very easy fix for it, all we need to do is reset the device calibration in Windows. This can be done by using the program **[DXtweak2](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/FFB_misc_programs)**. Open the program and select Arduino Leonardo as a device if you have more than one FFB-capable device. Click on the device defaults button, then click the apply button and close the program. That's all.
 
 ## Credits
 - Miloš Ranković: [Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel)
