@@ -32,7 +32,10 @@
 #define USE_PROMICRO    // milos, uncomment if you are using Arduino ProMicro board (leave commented for Leonardo or Micro variants)
 #define USE_EEPROM     // milos, uncomment to enable loading/saving settings from EEPROM (if commented out, default settings will be loaded on each powerup, one needs to reconfigure firmware defautls or use GUI configuration after each powerup) 
 #define USE_ANALOG_XAXIS // use dedicated analog X-Axis
+
 #define USE_PWM_0_50_100_MODE
+//#define USE_PWM_DIR_MODE
+//#define USE_PWM_PLUS_MINUS_MODE
 
 #define CALIBRATE_AT_INIT	0 // milos, was 1
 
@@ -63,7 +66,7 @@
 #define BRAKE_PIN     A1
 #define ACCEL_PIN			A2
 #define CLUTCH_PIN		A3
-#define HBRAKE_PIN    A10
+#define HBRAKE_PIN    A8
 #else
 #define ACCEL_PIN			A0
 #ifdef USE_LOAD_CELL // milos
@@ -104,8 +107,8 @@
 #define B4PORTBIT 7 // bit7
 #define BUTTON5 7 // D7 or bit6 of PINE
 #define B5PORTBIT 6 // bit6
-#define BUTTON6 8 // D8 or bit4 of PINB
-#define B6PORTBIT 4 // bit4
+#define BUTTON6 1 // D1 or bit3 of PIND
+#define B6PORTBIT 3 // bit3
 #endif // end of shift reg
 
 #ifndef USE_PROMICRO // milos, added - for Leonardo or Micro
@@ -173,15 +176,14 @@
 #endif
 
 #define PWM_PIN_L     9 // milos, left PWM pin
-//#define PWM_PIN_R     10 // milos, right PWM pin
+#if defined(USE_PWM_0_50_100_MODE) || defined(USE_PWM_DIR_MODE)
+#define DIR_PIN       10
+#else
+#define PWM_PIN_R     10 // milos, right PWM pin
+#endif
 #ifdef USE_TWOFFBAXIS
 #define PWM_PIN_U     11 // milos, up PWM pin
 #define PWM_PIN_D     5 // milos, down PWM pin
-#endif
-#ifndef USE_PROMICRO // milos, added - for Leonardo or Micro
-#define DIR_PIN       11 // milos, PWM direction pin: 0V-left (negative force), 5V-right (positive force)
-#else // for Pro Micro
-#define DIR_PIN       16 // pin16 
 #endif
 
 #define ACCEL_INPUT 0

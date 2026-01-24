@@ -4,7 +4,9 @@
 #include <digitalWriteFast.h>
 
 void InitPWM() {
+#ifdef DIR_PIN
   pinModeFast(DIR_PIN, OUTPUT);
+#endif
   TOP = calcTOP(pwmstate); // milos, this will set appropriate TOP value for all PWM modes, depending on pwmstate loaded from EEPROM
   MM_MAX_MOTOR_TORQUE = TOP;
   minTorquePP = ((f32)MM_MIN_MOTOR_TORQUE) / ((f32)MM_MAX_MOTOR_TORQUE); // milos
@@ -24,7 +26,7 @@ void InitPWM() {
   PWM16Begin(); // Timer1 and Timer3 configuration: frequency and mode depend on pwmstate byte
   PWM16A(0);  // Set initial PWM value for Pin 9
   PWM16EnableA();  // Turn PWM on for Pin 9
-#ifndef USE_PWM_0_50_100_MODE
+#ifdef PWM_PIN_R
   PWM16B(0);  // Set initial PWM value for Pin 10
   PWM16EnableB();  // Turn PWM on for Pin 10
 #endif
@@ -176,26 +178,33 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
     }
 #else // milos, no mcp4725 - output FFB as PWM signals
 #ifndef USE_TWOFFBAXIS // milos, if we use 1 FFB axis
-#ifndef USE_PWM_0_50_100_MODE
-    if (!bitRead(pwmstate, 1)) { // if pwmstate bit1=0
-      if (!bitRead(pwmstate, 6)) { // if PWM+- mode (pwmstate bit1=0, bit6=0)
-        if (torque->x > 0) {
-          torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, R_bal * MM_MAX_MOTOR_TORQUE);
-          PWM16A(0);
-          PWM16B(torque->x);
-          digitalWriteFast(DIR_PIN, HIGH); //use dir pin as BTS7960 pwm motor enable signal
-        } else if (torque->x < 0) {
-          torque->x = map(-torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, L_bal * MM_MAX_MOTOR_TORQUE);
-          PWM16A(torque->x);
-          PWM16B(0);
-          digitalWriteFast(DIR_PIN, HIGH);
-        } else {
-          PWM16A(0);
-          PWM16B(0);
-          digitalWriteFast(DIR_PIN, LOW); // disable bts output when no pwm signal to make it rotate freely
-        }
-      } else { // if PWM0.50.100 mode (pwmstate bit1=0 and bit6=1)
-#endif
+#if defined(USE_PWM_PLUS_MINUS_MODE) // PWM+- mode
+      if (torque->x > 0) {
+        torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, R_bal * MM_MAX_MOTOR_TORQUE);
+        //PWM16A(0);
+        //PWM16B(torque->x);
+        PWM16A(torque->x);
+        PWM16B(0);
+        #ifdef DIR_PIN
+        digitalWriteFast(DIR_PIN, HIGH); //use dir pin as BTS7960 pwm motor enable signal
+        #endif
+      } else if (torque->x < 0) {
+        torque->x = map(-torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, L_bal * MM_MAX_MOTOR_TORQUE);
+        //PWM16A(torque->x);
+        //PWM16B(0);
+        PWM16A(0);
+        PWM16B(torque->x);
+        #ifdef DIR_PIN
+        digitalWriteFast(DIR_PIN, HIGH);
+        #endif
+      } else {
+        PWM16A(0);
+        PWM16B(0);
+        #ifdef DIR_PIN
+        digitalWriteFast(DIR_PIN, LOW); // disable bts output when no pwm signal to make it rotate freely
+        #endif
+      }
+#elif defined(USE_PWM_0_50_100_MODE) // PWM0.50.100 mode
         if (torque->x > 0) {
           torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE / 2 + MM_MIN_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE);
           PWM16A(torque->x);
@@ -206,33 +215,30 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
           PWM16A(MM_MAX_MOTOR_TORQUE / 2);
         }
         digitalWriteFast(DIR_PIN, HIGH); // enable motor
-
-#ifndef USE_PWM_0_50_100_MODE
-        PWM16B(0);
+        //PWM16B(0);
+#elif defined(USE_PWM_DIR_MODE) // PWM+dir mode
+      if (torque->x >= 0) {
+        digitalWriteFast(DIR_PIN, HIGH);
+      } else {
+        digitalWriteFast(DIR_PIN, LOW);
       }
-    } else if (bitRead(pwmstate, 1)) { // if pwmstate bit1=1
-      if (!bitRead(pwmstate, 6)) { // if PWM+dir mode (pwmstate bit1=1, bit6=0)
-        if (torque->x >= 0) {
-          digitalWriteFast(DIR_PIN, HIGH);
-        } else {
-          digitalWriteFast(DIR_PIN, LOW);
-        }
-        torque->x = map(abs(torque->x), 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE);
+      torque->x = map(abs(torque->x), 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE);
+      PWM16A(torque->x);
+#elif defined(USE_PWM_RCM_MODE) // RCM mode
+      if (torque->x > 0) {
+        torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 + minTorquePP), RCM_max);
         PWM16A(torque->x);
-      } else { // if RCM mode (pwmstate bit1=1, bit6=1)
-        if (torque->x > 0) {
-          torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 + minTorquePP), RCM_max);
-          PWM16A(torque->x);
-        } else if (torque->x < 0) {
-          torque->x = map(-torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 - minTorquePP), RCM_min);
-          PWM16A(torque->x);
-        } else {
-          PWM16A(RCM_zer);
-        }
+      } else if (torque->x < 0) {
+        torque->x = map(-torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 - minTorquePP), RCM_min);
+        PWM16A(torque->x);
+      } else {
+        PWM16A(RCM_zer);
       }
-      PWM16B(RCM_zer);
-      //digitalWriteFast(PWM_PIN_R, LOW);
     }
+    PWM16B(RCM_zer);
+    digitalWriteFast(PWM_PIN_R, LOW);
+#else
+  #error "No PWM Mode selected"
 #endif
 #else // milos, if we use 2 FFB axis
     if (!bitRead(pwmstate, 1)) { // if pwmstate bit1=0
@@ -343,7 +349,7 @@ void PWM16Begin() { // milos - added, reconfigure timer1 automatically depending
   TIFR1 = 0;  // Timer/Counter1 Interrupt Flag Register
   ICR1 = TOP; // milos, set upper counter flag
   OCR1A = 0;  // Default to 0% PWM, D9
-#ifndef USE_PWM_0_50_100_MODE
+#ifdef PWM_PIN_R
   OCR1B = 0;  // Default to 0% PWM, D10
 #endif
 #ifdef USE_TWOFFBAXIS
@@ -396,7 +402,7 @@ void PWM16EnableA() {  // milos
   pinModeFast(PWM_PIN_L, OUTPUT);
 }
 
-#ifndef USE_PWM_0_50_100_MODE
+#ifdef PWM_PIN_R
 void PWM16EnableB() {  // milos
   // Enable Fast PWM on Pin 10: Set OC1B at BOTTOM and clear OC1B on OCR1B compare
   TCCR1A |= (1 << COM1B1);
@@ -422,7 +428,7 @@ inline void PWM16A(uint16_t PWMValue) { // milos
   OCR1A = constrain(PWMValue, 0, TOP);
 }
 
-#ifndef USE_PWM_0_50_100_MODE
+#ifdef PWM_PIN_R
 inline void PWM16B(uint16_t PWMValue) { // milos
   OCR1B = constrain(PWMValue, 0, TOP);
 }
