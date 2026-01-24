@@ -505,6 +505,7 @@ typedef struct s32a { // milos, added - holds individual bit axis properties
   int32_t val; // milos, when using load cell we can have more than 16bit range for brake axis
   int16_t min; // milos, these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
   int16_t max; // milos, when we use load cell min/max are unused for brake axis
+  int16_t avg;
 };
 
 const uint8_t avgSamples = 4; // milos, added - number of samples for averaging of arduino analog inputs
