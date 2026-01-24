@@ -3,6 +3,7 @@ docs/schematic/schematic-backups
 *.kicad_sch-backups
 *.kicad_sch-bak
 \#auto_saved_files#
+_autosave-*.kicad_sch
 fp-info-cache
 *.raw
 *.log
