@@ -176,15 +176,18 @@ void setup() {
 
 //-- Averaging
 
-#define AVG_OLD_WEIGHT 7
+#define AVG_OLD_WEIGHT 15
+#define AVG_TOTAL_WEIGHT (AVG_OLD_WEIGHT + 1)
 
 // As analog measurements on the AVR are pretty slow we only get 2 samples at best per axis with AVG_INPUTS. So do not use this.
 // Instead use a weighted average to reduce the jitter.
 template<typename T> // s16a / s32a
-void averageAxis(uint8_t pin, T& axisData) {
-  int16_t value = analogRead(pin);
-  axisData.val = ((int32_t)axisData.avg * AVG_OLD_WEIGHT + value) / (AVG_OLD_WEIGHT + 1);
-  axisData.avg = axisData.val;
+int32_t averageAxis(int32_t value, T& average) {
+  average = ((int32_t)average * AVG_OLD_WEIGHT + value) / AVG_TOTAL_WEIGHT;
+  if (value % AVG_TOTAL_WEIGHT > AVG_TOTAL_WEIGHT / 2) {
+    average++; // rounding
+  }
+  return average;
 }
 
 #define AXIS_X_NUM_SAMPLES 4
@@ -209,7 +212,7 @@ void loop() {
 #ifdef AVG_INPUTS //milos
       asc = 0; // milos, reset counter for averaging
 #endif // end of avg_inputs
-      last_refresh = micros(); //now_micros;  // milos, timer for FFB and USB reports
+      last_refresh = now_micros;  // milos, timer for FFB and USB reports
       //SYNC_LED_HIGH(); // milos
 
 #ifdef USE_QUADRATURE_ENCODER
@@ -218,18 +221,24 @@ void loop() {
       } else {
         turn.x = myEnc.Read() - ROTATION_MID;
       }
+      axis.x = turn.x; // milos, xFFB on X-axis (optical or magnetic encoder)
 #else // milos, if no optical enc and no as5600, use pot for X-axis
+      // do not use running average for ffb input. Use more expensive oversampling instead
       int32_t axisXSum = 0;
       for (int i = 0; i < AXIS_X_NUM_SAMPLES; ++i) {
         axisXSum += analogRead(XAXIS_PIN);
       }
-      int32_t axisXRawVal = (axisXSum / AXIS_X_NUM_SAMPLES) << 6;
-      turn.x = map(axisXRawVal, 0, X_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID);
+      int32_t axisXRawVal = (axisXSum << 6) / AXIS_X_NUM_SAMPLES; // max. 22 bits used
+      
+      // no running average for ffb input
+      axis.x = map(axisXRawVal, 0, X_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
+
+      // apply running average to turn.x for smoother usb report
+      turn.x = averageAxis(axisXRawVal, turn.avg);
+      turn.x = map(turn.x, 0, X_AXIS_PHYS_MAX, -ROTATION_MID - 1, ROTATION_MID);
 #endif // end of quad enc
-
-      axis.x = turn.x; // milos, xFFB on X-axis (optical or magnetic encoder)
-
       ffbs = gFFB.CalcTorqueCommands(&axis); // milos, passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
+      
       turn.x *= f32(X_AXIS_PHYS_MAX) / f32(ROTATION_MAX); // milos, conversion to physical HID units
       turn.x = constrain(turn.x, -MID_REPORT_X - 1, MID_REPORT_X); // milos, -32768,0,32767 constrained to signed 16bit range
 
@@ -248,10 +257,10 @@ void loop() {
         hbrake.val = analog_inputs[HBRAKE_INPUT];
         brake.val = analog_inputs[BRAKE_INPUT];
 #else // if no avg
-        averageAxis(ACCEL_PIN, accel); // Z axis
-        averageAxis(CLUTCH_PIN, clutch); // RX axis
-        averageAxis(HBRAKE_PIN, hbrake); // RY axis
-        averageAxis(BRAKE_PIN, brake); // Y axis
+        accel.val = averageAxis(analogRead(ACCEL_PIN), accel.avg); // Z axis
+        brake.val = averageAxis(analogRead(BRAKE_PIN), brake.avg); // Y axis
+        clutch.val = averageAxis(analogRead(CLUTCH_PIN), clutch.avg); // RX axis
+        hbrake.val = averageAxis(analogRead(HBRAKE_PIN), hbrake.avg); // RY axis
 #endif // end of avg
 
 #ifdef  USE_AUTOCALIB // milos, update limits for pedal autocalibration

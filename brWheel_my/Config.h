@@ -357,9 +357,7 @@ uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value fr
 
 typedef struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
   s32 x;
-#ifdef USE_TWOFFBAXIS // milos, code optimization
-  s32 y;
-#endif // end of 2 ffb axis
+  s32 avg;
 };
 
 f32 FFB_bal; // milos, FFB balance slider
