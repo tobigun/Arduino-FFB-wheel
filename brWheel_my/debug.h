@@ -30,6 +30,8 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
+#include "USBDesc.h"
+
 /*// Method of debugging
   extern const u8 DEBUG_TO_NONE;
   extern const u8 DEBUG_TO_UART;
