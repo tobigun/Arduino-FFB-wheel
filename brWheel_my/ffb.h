@@ -41,6 +41,8 @@
 
 // Maximum number of parallel effects in memory
 #define MAX_EFFECTS 11 //milos, changed from 20
+#define SIZE_EFFECT     sizeof(TEffectState)
+#define MEMORY_SIZE     (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 
 // milos, this will increment in each cycle by 2ms, 500Hz FFB effects calculation
 // bare in mind the Nyquist sampling frequency, for 500Hz we can reproduce up to 250Hz wave (4ms period)

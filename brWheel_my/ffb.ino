@@ -109,7 +109,7 @@ b8 HID_GetReport (Setup& setup)
   {
     USB_FFBReport_PIDPool_Feature_Data_t ans;
     ans.reportId = report_id;
-    ans.ramPoolSize = 0xffff;
+    ans.ramPoolSize = 0xffff; // MEMORY_SIZE;
     ans.maxSimultaneousEffects = MAX_EFFECTS;
     ans.memoryManagement = 3;
     USB_SendControl(TRANSFER_RELEASE, &ans, sizeof(USB_FFBReport_PIDPool_Feature_Data_t));
@@ -222,6 +222,7 @@ void StopEffect(uint8_t id)
   if ((id > MAX_EFFECTS) || (gEffectStates[id].state == 0))
     return;
   gEffectStates[id].state &= ~MEffectState_Playing;
+  //gNewEffectBlockLoad.ramPoolAvailable += SIZE_EFFECT;
   if (!gDisabledEffects.effectId[id]) {
     ffb->StopEffect(id);
     t0_updated = false; //milos, added
@@ -244,6 +245,7 @@ void FreeAllEffects(void)
 {
   nextEID = FIRST_EID;
   memset((void*) gEffectStates, 0, sizeof(gEffectStates));
+  //gNewEffectBlockLoad.ramPoolAvailable = MEMORY_SIZE;
   LogTextLf("FFB.ino FreeAllEffects");
 }
 
@@ -445,6 +447,7 @@ void FfbOnCreateNewEffect (USB_FFBReport_CreateNewEffect_Feature_Data_t* inData,
     LogText(", type");
     LogBinaryLf(&inData->effectType, 1);
   }
+  //outData->ramPoolAvailable -= SIZE_EFFECT;
   outData->ramPoolAvailable = 0xFFFF;	// =0 or 0xFFFF - don't really know what this is used for?
   //	WaitMs(5);
 }
@@ -461,8 +464,8 @@ void FfbOnPIDPool(USB_FFBReport_PIDPool_Feature_Data_t *data)
   FreeAllEffects();
 
   data->reportId = 7;
-  data->ramPoolSize = 0xFFFF;
-  data->maxSimultaneousEffects = 0x0B;	// FFP supports playing up to 11 simultaneous effects
+  data->ramPoolSize = 0xFFFF; // MEMORY_SIZE;
+  data->maxSimultaneousEffects = MAX_EFFECTS;	// FFP supports playing up to 11 simultaneous effects
   data->memoryManagement = 3;
 }
 
