@@ -17,6 +17,9 @@
 ** SOFTWARE.  
 */
 
+// This file is a copy from the Arduino core library with minor modifications.
+// Changes are marked with "CHANGE"
+
 #include "USBAPI.h"
 #include "PluggableUSB.h"
 #include "WHID.h"
@@ -42,6 +45,9 @@ const u16 STRING_LANGUAGE[2] = {
 	0x0409	// English
 };
 
+// CHANGE: Define custom USB product string
+#undef USB_PRODUCT
+#define USB_PRODUCT "Racing Wheel"
 #ifndef USB_PRODUCT
 // If no product is provided, use USB IO Board
 #define USB_PRODUCT     "USB IO Board"
@@ -779,6 +785,7 @@ ISR(USB_GEN_vect)
 		if (RxLEDPulse && !(--RxLEDPulse))
 			RXLED0;
 
+		// CHANGE: handle FFB report from ISR
 		HID().RecvFfbReport();
 	}
 
