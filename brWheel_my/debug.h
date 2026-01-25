@@ -75,8 +75,14 @@ void LogReport(const char *text, const uint16_t *reportSizeArray, u8 *data, uint
 // Debugging utils for USB-serial debugging
 void FlushDebugBuffer(void);
 
+#ifdef CDC_ENABLED
 #define DEBUG_SERIAL		Serial
 #define CONFIG_SERIAL		Serial
+#else
+#include "SerialDummy.h"
+#define DEBUG_SERIAL		SerialDummy_
+#define CONFIG_SERIAL		SerialDummy_
+#endif
 
 //#define DEBUG_FFB // milos, uncomment this to enable FFB debugging via UART
 //#define DEBUG_CALIBRATION
