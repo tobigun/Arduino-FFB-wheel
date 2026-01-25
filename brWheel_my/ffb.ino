@@ -26,12 +26,11 @@
 */
 
 #include "ffb.h"
-//#include <arduino.h> // milos, commented out
 #include "USBCore.h"
+#include "WHID.h"
 #include <stdint.h>
 #include "debug.h"
-//#include "ffb_pro.h" // milos, commented out
-//#include "ConfigHID.h" // milos, commented out
+#include "hidDescriptor.h"
 
 //------------------------------------- Defines ----------------------------------------------------------
 u8 valueglobal = 55;
@@ -64,7 +63,7 @@ const FFB_Driver ffb_drivers[1] =
 
 static const FFB_Driver* ffb;
 
-void setFFB(s32 command);
+void setFFB(int32_t command);
 
 // Effect management
 volatile uint8_t nextEID = FIRST_EID;	// FFP effect indexes starts from 1
@@ -95,15 +94,30 @@ static u32 dataLedActiveTimeMs = 0;
 
 #if defined(__AVR_ATmega32U4__)										// On arduino uno we don't have USB
 
-b8 HID_GetReport (Setup& setup)
+void HID_::RecvFfbReport() {
+  if (AvailableReport() > 0) {
+    uint8_t out_ffbdata[64];
+    uint16_t len = USB_Recv(HID_ENDPOINT_OUT, &out_ffbdata, 64);
+    if (len >= 0) {
+      FfbOnUsbData(out_ffbdata, len);
+    }
+  }
+}
+
+bool HID_::HID_GetReport(USBSetup& setup)
 {
-  u8 report_id = setup.wValueL;
-  u8 report_type = setup.wValueH;
+  uint8_t report_id = setup.wValueL;
+  uint8_t report_type = setup.wValueH;
+  if (report_type != HID_REPORT_TYPE_FEATURE) {
+    return false;
+  }
+
   if ((report_id == 6))// && (gNewEffectBlockLoad.reportId==6))
   {
+    _delay_us(500);
     USB_SendControl(TRANSFER_RELEASE, &gNewEffectBlockLoad, sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
     gNewEffectBlockLoad.reportId = 0;
-    return (true);
+    return true;
   }
   if (report_id == 7)
   {
@@ -113,15 +127,29 @@ b8 HID_GetReport (Setup& setup)
     ans.maxSimultaneousEffects = MAX_EFFECTS;
     ans.memoryManagement = 3;
     USB_SendControl(TRANSFER_RELEASE, &ans, sizeof(USB_FFBReport_PIDPool_Feature_Data_t));
-    return (true);
+    return true;
   }
-  return (false);
+  return false;
 }
 
-b8 HID_SetReport (Setup& setup)
+bool HID_::HID_SetReport(USBSetup& setup)
 {
   u8 report_id = setup.wValueL;
   u8 report_type = setup.wValueH;
+  uint16_t length = setup.wLength;
+  uint8_t data[10];
+
+  if (report_type != HID_REPORT_TYPE_FEATURE) {
+    return false;
+  }
+
+  if (length == 0)
+  {
+    USB_RecvControl(&data, length);
+    // Block until data is read (make length negative)
+    //disableFeatureReport();
+    return true;
+  }
   if (report_id == 5)
   {
     USB_FFBReport_CreateNewEffect_Feature_Data_t ans;
@@ -129,46 +157,7 @@ b8 HID_SetReport (Setup& setup)
     FfbOnCreateNewEffect(&ans, &gNewEffectBlockLoad);
   }
 
-  return (true);
-}
-
-b8 FFB_HID_Setup (Setup& setup)
-{
-  u8 r = setup.bRequest;
-  u8 requestType = setup.bmRequestType;
-  if (REQUEST_DEVICETOHOST_CLASS_INTERFACE == requestType)
-  {
-    if (HID_GET_REPORT == r)
-    {
-      HID_GetReport(setup);
-      return true;
-    }
-    if (HID_GET_PROTOCOL == r)
-    {
-      //Send8(_hid_protocol);	// TODO
-      return true;
-    }
-  }
-
-  if (REQUEST_HOSTTODEVICE_CLASS_INTERFACE == requestType)
-  {
-    switch (r)
-    {
-      case HID_SET_PROTOCOL:
-        //			_hid_protocol = setup.wValueL;
-        return true;
-
-      case HID_SET_IDLE:
-        //			_hid_idle = setup.wValueL;
-        return true;
-
-      case HID_SET_REPORT:
-        HID_SetReport(setup);
-        return true;
-    }
-  }
-  return (true);
-  //	return false;
+  return true;
 }
 
 //-------------------------------------------------------------------------------------------------------------
@@ -176,8 +165,10 @@ b8 FFB_HID_Setup (Setup& setup)
 void FfbSetDriver(uint8_t id)
 {
   ffb = &ffb_drivers[id];
-  USBDevice.HID_Setup_Callback = FFB_HID_Setup;
-  USBDevice.HID_ReceiveReport_Callback = FfbOnUsbData;
+  
+  static HIDSubDescriptor node(_hidReportDescriptor, sizeof(_hidReportDescriptor));
+  HID().AppendDescriptor(&node);
+  HID().begin();
 }
 
 uint8_t GetNextFreeEffect(void)
@@ -537,6 +528,9 @@ void FfbHandle_BlockFree (USB_FFBReport_BlockFree_Output_Data_t *data)
 #define SAFETY_SWITCH			  0x04
 #define ACTUATOR_OVERRIDE		0x08
 #define ACTUATOR_POWER			0x10
+
+#define Bset(data,val) data|=(val)
+#define Bclr(data,val) data&=~(val)
 
 void FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t *data)
 {

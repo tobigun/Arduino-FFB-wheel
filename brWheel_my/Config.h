@@ -1,5 +1,4 @@
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#pragma once
 
 
 //------------------------------------- Firmware options -------------------------------------------------
@@ -128,8 +127,8 @@ uint8_t LC_scaling; // milos, load cell scaling factor (affects brake pressure, 
 
 #define FIRMWARE_VERSION         0xFA // milos, firmware version (FA=250, FB=251, FC=252, FD=253)
 
-#define GetParam(m_offset,m_data)	getParam((m_offset),(u8*)&(m_data),sizeof(m_data))
-#define SetParam(m_offset,m_data)	setParam((m_offset),(u8*)&(m_data),sizeof(m_data))
+#define GetParam(m_offset,m_data)	getParam((m_offset),(uint8_t*)&(m_data),sizeof(m_data))
+#define SetParam(m_offset,m_data)	setParam((m_offset),(uint8_t*)&(m_data),sizeof(m_data))
 
 //------------------------------------- Main Config -----------------------------------------------------
 
@@ -224,7 +223,7 @@ void update(fwOpt *option) { // milos, added - update firmware options from pred
 }
 
 // milos, these are now loaded from EEPROM
-u8 effstate; // = 0b00000001; // milos, added - turn on/off desktop effects through serial interface, bit 7 is MSB
+uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects through serial interface, bit 7 is MSB
 // bit0-autocentering spring, bit1-damper, bit2-inertia, bit3-friction, bit4-ffb monitor (sends ffb signal data to com port), bits 5-7 are FFB axis index
 // bits 5-7 define an index that sets which axis is tied to xFFB axis (by default it's at X-axis)
 // index FFB-axis
@@ -243,7 +242,7 @@ byte indxFFBAxis(byte value) { // milos, argument should be effstate
 }
 #endif
 
-u8 pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
+uint8_t pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
 //---------------------
 // bit0-phase correct (0 is fast pwm), bit1-dir enabled (0 is pwm+-), bits 2-5 are frequency select, bit6-enable pwm0-50-100, bit7 is unused
 // bit0 pwm_type
@@ -274,16 +273,16 @@ u8 pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is 
 // 1    1    none
 //----------------
 
-// milos, changed these from f32 to u8 (loaded from EEPROM)
-u8 configGeneralGain;  // = 1.0f;  // was 1.0f
-u8 configDamperGain; // = 1.0f;		// was 0.5f
-u8 configFrictionGain; // = 1.0f;	// was 0.5f
-u8 configConstantGain; // = 1.0f;	// was 1.0f
-u8 configPeriodicGain; // = 1.0f;	// was 1.0f
-u8 configSpringGain; // = 1.0f;	// was 1.0f
-u8 configInertiaGain; // = 1.0f; // was 1.0f
-u8 configCenterGain; // = 0.7f;	// was 0.7f
-u8 configStopGain; // = 1.0f;	// was 1.0f
+// milos, changed these from float to uint8_t (loaded from EEPROM)
+uint8_t configGeneralGain;  // = 1.0f;  // was 1.0f
+uint8_t configDamperGain; // = 1.0f;		// was 0.5f
+uint8_t configFrictionGain; // = 1.0f;	// was 0.5f
+uint8_t configConstantGain; // = 1.0f;	// was 1.0f
+uint8_t configPeriodicGain; // = 1.0f;	// was 1.0f
+uint8_t configSpringGain; // = 1.0f;	// was 1.0f
+uint8_t configInertiaGain; // = 1.0f; // was 1.0f
+uint8_t configCenterGain; // = 0.7f;	// was 0.7f
+uint8_t configStopGain; // = 1.0f;	// was 1.0f
 
 // milos, here we set the PWM resolution and frequency per channel (old, now loaded from EEPROM)
 // there are 2 PWM channels - one for each direction, so the actual FFB resolution is doubled
@@ -356,21 +355,21 @@ uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value fr
 }
 
 typedef struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
-  s32 x;
-  s32 avg;
+  int32_t x;
+  int32_t avg;
 };
 
-f32 FFB_bal; // milos, FFB balance slider
-f32 L_bal; // milos, left PWM balance multiplier
-f32 R_bal; // milos, right PWM balance multiplier
-f32 minTorquePP; // milos, added - min torque in percents
+float FFB_bal; // milos, FFB balance slider
+float L_bal; // milos, left PWM balance multiplier
+float R_bal; // milos, right PWM balance multiplier
+float minTorquePP; // milos, added - min torque in percents
 
 // milos, added - RCM pwm mode definitions
-f32 RCM_min = 1.0; // minimal RCM pulse width in ms
-f32 RCM_zer = 1.5; // zero RCM pulse width in ms
-f32 RCM_max = 2.0; // maximal RCM pulse width in ms
+float RCM_min = 1.0; // minimal RCM pulse width in ms
+float RCM_zer = 1.5; // zero RCM pulse width in ms
+float RCM_max = 2.0; // maximal RCM pulse width in ms
 
-f32 RCMscaler (byte value) { // milos, added - scales correctly RCM pwm mode
+float RCMscaler (byte value) { // milos, added - scales correctly RCM pwm mode
   if (bitRead(value, 0)) { // if pwmstate bit0=1
     return 1000.0; // for phase correct pwm mode
   } else {  // if pwmstate bit0=0
@@ -513,5 +512,3 @@ const uint16_t maxCal = 4095;
 #else // if no avg inputs
 const uint16_t maxCal = 1023;
 #endif // end of avg inputs
-
-#endif // _CONFIG_H_

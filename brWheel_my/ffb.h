@@ -47,8 +47,8 @@
 // milos, this will increment in each cycle by 2ms, 500Hz FFB effects calculation
 // bare in mind the Nyquist sampling frequency, for 500Hz we can reproduce up to 250Hz wave (4ms period)
 // that should be more than enough for all vibrational effects
-u32 t0 = 0; //milos, added
-u32 effectTime[MAX_EFFECTS]; //milos, added - ffb calculation timer (effect elapsed playing time in ms, max is 65535)
+uint32_t t0 = 0; //milos, added
+uint32_t effectTime[MAX_EFFECTS]; //milos, added - ffb calculation timer (effect elapsed playing time in ms, max is 65535)
 bool t0_updated = false; //milos, added - keeps track if we updated zero time when effects start
 
 // ---- Input
@@ -297,19 +297,19 @@ void UpdateDataLed(void);
 
 typedef struct
 {
-  u8 state;	// see constants MEffectState_*
-  u8 type;	// see constants USB_EFFECT_*
-  u8 parameterBlockOffset; // milos, added
-  u8 attackLevel, fadeLevel, deadBand, enableAxis; //milos, added deadBand and enableAxis
-  s8 rampStart, rampEnd; //milos, added
-  u16 gain, period, direction; // samplingPeriod;	// ms //milos, changed gain from u8 to u16, added samplingPeriod
-  u16 duration, fadeTime, attackTime, startDelay; //milos, added attackTime and startDelay
-  s16 magnitude, positiveCoefficient;  //milos, added positiveCoefficient
-  s16 offset;
-  u8 phase; //milos, changed back to u8 from u16
+  uint8_t state;	// see constants MEffectState_*
+  uint8_t type;	// see constants USB_EFFECT_*
+  uint8_t parameterBlockOffset; // milos, added
+  uint8_t attackLevel, fadeLevel, deadBand, enableAxis; //milos, added deadBand and enableAxis
+  int8_t rampStart, rampEnd; //milos, added
+  uint16_t gain, period, direction; // samplingPeriod;	// ms //milos, changed gain from uint8_t to uint16_t, added samplingPeriod
+  uint16_t duration, fadeTime, attackTime, startDelay; //milos, added attackTime and startDelay
+  int16_t magnitude, positiveCoefficient;  //milos, added positiveCoefficient
+  int16_t offset;
+  uint8_t phase; //milos, changed back to uint8_t from uint16_t
 #ifdef USE_TWOFFBAXIS // milos, added - used for conditional block effects for yFFB axis
-  u8 deadBand2;
-  s16 magnitude2, offset2;
+  uint8_t deadBand2;
+  int16_t magnitude2, offset2;
 #endif // end of 2 ffb axis
 } TEffectState;
 

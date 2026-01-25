@@ -1,8 +1,7 @@
+#pragma once
+
 #include "Config.h"
 #include "debug.h"
-
-#ifndef _CONFIGHID_H_
-#define _CONFIGHID_H_
 
 typedef struct {
   uint8_t ReportId;
@@ -30,5 +29,3 @@ typedef struct {
 } USB_ConfigReport;
 
 void configHID(USB_ConfigReport *data);
-
-#endif // _CONFIGHID_H_

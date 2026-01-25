@@ -80,5 +80,5 @@ void configHID(USB_ConfigReport *data) {
   }
 #endif // end of use config hid
   //uint8_t *response = (uint8_t*)data;
-  HID_SendReport(0xF2, (uint8_t*)data, 64);
+  HID().SendReport(0xF2, (uint8_t*)data, 64);
 }

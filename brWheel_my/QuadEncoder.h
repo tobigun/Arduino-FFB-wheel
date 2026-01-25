@@ -31,15 +31,15 @@
 
 class cQuadEncoder {
   public:
-    void Init (s32 position, b8 pullups = true); // milos, no additional pullup resistors needed if set true
-    s32 Read ();
-    void Write (s32 pos);
+    void Init (int32_t position, int8_t pullups = true); // milos, no additional pullup resistors needed if set true
+    int32_t Read ();
+    void Write (int32_t pos);
     void Update ();
 
   private:
-    // 	volatile b8 mIndexFound;
+    // 	volatile int8_t mIndexFound;
     // 	volatile u8 mLastState;
-    // 	volatile s32 mPosition;
+    // 	volatile int32_t mPosition;
 };
 
 extern cQuadEncoder gQuadEncoder;

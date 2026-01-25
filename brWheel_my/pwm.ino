@@ -9,7 +9,7 @@ void InitPWM() {
 #endif
   TOP = calcTOP(pwmstate); // milos, this will set appropriate TOP value for all PWM modes, depending on pwmstate loaded from EEPROM
   MM_MAX_MOTOR_TORQUE = TOP;
-  minTorquePP = ((f32)MM_MIN_MOTOR_TORQUE) / ((f32)MM_MAX_MOTOR_TORQUE); // milos
+  minTorquePP = ((float)MM_MIN_MOTOR_TORQUE) / ((float)MM_MAX_MOTOR_TORQUE); // milos
   RCM_min *= RCMscaler(pwmstate); // milos - takes into account fast pwm or phase correct mode
   RCM_zer *= RCMscaler(pwmstate); // milos
   RCM_max *= RCMscaler(pwmstate); // milos
@@ -65,7 +65,7 @@ void blinkFFBclipLED() { // milos, added - blink FFB clip LED a few times at sta
   }
 }
 
-void activateFFBclipLED(s32 t) {  // milos, added - turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
+void activateFFBclipLED(int32_t t) {  // milos, added - turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
   float level = 0.01 * configGeneralGain;
   if (abs(t) >= 0.9 * MM_MAX_MOTOR_TORQUE * level && abs(t) < level * MM_MAX_MOTOR_TORQUE - 1) {
     analogWrite(FFBCLIP_LED_PIN, map(abs(t), 0.9 * MM_MAX_MOTOR_TORQUE * level, level * MM_MAX_MOTOR_TORQUE, 1, 63)); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
@@ -76,7 +76,7 @@ void activateFFBclipLED(s32 t) {  // milos, added - turn on FFB clip LED if max 
   }
 }
 
-//void SetPWM (s32 torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // milos, torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
+//void SetPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // milos, torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
 void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis FFB data
   if (torque != NULL) { // milos, this check is always required for pointers
 #ifndef USE_PROMICRO
@@ -94,7 +94,7 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
 #endif // end of proMicro
 
 #ifndef USE_LOAD_CELL // milos, only allow FFB balance if not using load cell
-    FFB_bal = (f32)(LC_scaling - 128) / 255.0; // milos, max value is 0.5
+    FFB_bal = (float)(LC_scaling - 128) / 255.0; // milos, max value is 0.5
     if (FFB_bal >= 0) {
       L_bal = 1.0 - FFB_bal;
       R_bal = 1.0;

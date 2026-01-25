@@ -1,3 +1,5 @@
+#pragma once
+
 //================================================================================
 #define HID_RI_DATA_SIZE_MASK                   0x03
 #define HID_RI_TYPE_MASK                        0x0C
@@ -68,6 +70,39 @@
 #define HID_RI_USAGE_MINIMUM(DataBits, ...)     _HID_RI_ENTRY(HID_RI_TYPE_LOCAL , 0x10, DataBits, __VA_ARGS__)
 #define HID_RI_USAGE_MAXIMUM(DataBits, ...)     _HID_RI_ENTRY(HID_RI_TYPE_LOCAL , 0x20, DataBits, __VA_ARGS__)
 
-#define LSB(_x) ((_x) & 0xFF)
-#define MSB(_x) ((_x) >> 8)
+#define HID_TX HID_ENDPOINT_INT
+#define HID_RX HID_ENDPOINT_OUT
 
+#define NB_AXIS			     5
+#define NB_FF_AXIS		   2  //1
+#define NB_BUTTONS		  10  //16
+#define X_AXIS_NB_BITS	16  //16
+#define Y_AXIS_NB_BITS	16	//10
+#define Z_AXIS_NB_BITS	12  //10
+#define RX_AXIS_NB_BITS	12  //10
+#define RY_AXIS_NB_BITS 12  //10
+#define RZ_AXIS_NB_BITS 12  //10
+
+#define X_AXIS_LOG_MAX	((1L<<(X_AXIS_NB_BITS))-1)//((1L<<(X_AXIS_NB_BITS-1))-1)
+#define X_AXIS_LOG_MIN	0//(-X_AXIS_LOG_MAX)
+#define X_AXIS_PHYS_MAX	((1L<<X_AXIS_NB_BITS)-1)
+
+#define Y_AXIS_LOG_MAX	((1L<<(Y_AXIS_NB_BITS))-1)
+#define Y_AXIS_LOG_MIN	0//(-Y_AXIS_LOG_MAX)
+#define Y_AXIS_PHYS_MAX	((1L<<Y_AXIS_NB_BITS)-1)
+
+#define Z_AXIS_LOG_MAX	((1L<<(Z_AXIS_NB_BITS))-1)
+#define Z_AXIS_LOG_MIN	0//(-Z_AXIS_LOG_MAX)
+#define Z_AXIS_PHYS_MAX	((1L<<Z_AXIS_NB_BITS)-1)
+
+#define RX_AXIS_LOG_MAX	((1L<<(RX_AXIS_NB_BITS))-1)
+#define RX_AXIS_LOG_MIN	0//(-RX_AXIS_LOG_MAX)
+#define RX_AXIS_PHYS_MAX	((1L<<RX_AXIS_NB_BITS)-1)
+
+#define RY_AXIS_LOG_MAX  ((1L<<(RY_AXIS_NB_BITS))-1)
+#define RY_AXIS_LOG_MIN 0//(-RY_AXIS_LOG_MAX)
+#define RY_AXIS_PHYS_MAX  ((1L<<RY_AXIS_NB_BITS)-1)
+
+#define RZ_AXIS_LOG_MAX  ((1L<<(RZ_AXIS_NB_BITS))-1)
+#define RZ_AXIS_LOG_MIN 0//(-RX_AXIS_LOG_MAX)
+#define RZ_AXIS_PHYS_MAX  ((1L<<RZ_AXIS_NB_BITS)-1)

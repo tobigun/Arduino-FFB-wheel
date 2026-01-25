@@ -3,7 +3,7 @@
 
 //--------------------------------------------------------------------------------------------------------
 
-u8 toUpper(u8 c) {
+uint8_t toUpper(uint8_t c) {
   if ((c >= 'a') && (c <= 'z'))
     return (c + 'A' - 'a');
   return (c);
@@ -11,11 +11,11 @@ u8 toUpper(u8 c) {
 
 void configCDC() { // milos, virtual serial port firmware configuration interface
   if (CONFIG_SERIAL.available() > 0) {
-    u8 c = toUpper(CONFIG_SERIAL.read());
+    uint8_t c = toUpper(CONFIG_SERIAL.read());
     //DEBUG_SERIAL.println(c);
-    s32 temp, temp1;
-    f32 wheelAngle;
-    u8 ffb_temp;
+    int32_t temp, temp1;
+    float wheelAngle;
+    uint8_t ffb_temp;
     switch (c) {
       case 'U': // milos, send all firmware settings
         CONFIG_SERIAL.print(ROTATION_DEG);
@@ -493,8 +493,8 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
           case 'J':
             ffb_temp = CONFIG_SERIAL.parseInt();
             ffb_temp = constrain(ffb_temp, 0, 255); //milos
-            minTorquePP = (f32)ffb_temp * 0.001; // milos, max is 25.5% or 0.255
-            MM_MIN_MOTOR_TORQUE = (u16)(minTorquePP * (f32)MM_MAX_MOTOR_TORQUE); // milos, we can set it during run time
+            minTorquePP = (float)ffb_temp * 0.001; // milos, max is 25.5% or 0.255
+            MM_MIN_MOTOR_TORQUE = (u16)(minTorquePP * (float)MM_MAX_MOTOR_TORQUE); // milos, we can set it during run time
             CONFIG_SERIAL.println(1);
             break;
             /*case 'K': //milos, commented out, once set at compile time this must not be changed anymore

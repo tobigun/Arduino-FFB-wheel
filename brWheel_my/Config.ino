@@ -5,17 +5,17 @@
 
 //-------------------------------------------------------------------------------------------------------
 
-void getParam (u16 offset, u8 *addr_to, u8 size) {
+void getParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
 #ifdef USE_EEPROM
-  for (u8 i = 0; i < size; i++) {
+  for (uint8_t i = 0; i < size; i++) {
     addr_to[i] = EEPROM.read(offset + i);
   }
 #endif
 }
 
-void setParam (u16 offset, u8 *addr_to, u8 size) {
+void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
 #ifdef USE_EEPROM
-  for (u8 i = 0; i < size; i++) {
+  for (uint8_t i = 0; i < size; i++) {
     //EEPROM.write(offset + i, addr_to[i]);
     EEPROM.update(offset + i, addr_to[i]); //milos, re-write only when neccessary
   }
@@ -23,9 +23,9 @@ void setParam (u16 offset, u8 *addr_to, u8 size) {
 }
 
 void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EEPROM
-  u16 v16;
-  s32 v32;
-  u8 v8;
+  uint16_t v16;
+  int32_t v32;
+  uint8_t v8;
   v16 = FIRMWARE_VERSION;
   SetParam(PARAM_ADDR_FW_VERSION, v16);
   v32 = 0;
@@ -99,7 +99,7 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
 }
 
 void SetEEPROMConfig() { // milos, changed FIRMWARE_VERSION to 16bit from 32bit
-  u16 v16;
+  uint16_t v16;
   GetParam(PARAM_ADDR_FW_VERSION, v16);
   if (v16 != FIRMWARE_VERSION) { // milos, first time run, or version change - set default values for safety
     //ClearEEPROMConfig(); // milos, clear EEPROM before loading defaults

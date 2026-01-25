@@ -25,6 +25,8 @@
 
 #include "Config.h"
 #include "ConfigHID.h"
+#include "HID.h"
+#include "WHID.h"
 #include "debug.h"
 #include "ffb_pro.h"
 //#include "ffb.h" // milos, commented out
@@ -75,6 +77,8 @@ uint16_t dz, bdz; // milos
 #ifdef USE_QUADRATURE_ENCODER
 cQuadEncoder myEnc;
 #endif
+
+void SendInputReport(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t ry, uint32_t buttons);
 
 //--------------------------------------------------------------------------------------------------------
 //-------------------------------------------- SETUP -----------------------------------------------------
@@ -239,7 +243,7 @@ void loop() {
 #endif // end of quad enc
       ffbs = gFFB.CalcTorqueCommands(&axis); // milos, passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
       
-      turn.x *= f32(X_AXIS_PHYS_MAX) / f32(ROTATION_MAX); // milos, conversion to physical HID units
+      turn.x *= float(X_AXIS_PHYS_MAX) / float(ROTATION_MAX); // milos, conversion to physical HID units
       turn.x = constrain(turn.x, -MID_REPORT_X - 1, MID_REPORT_X); // milos, -32768,0,32767 constrained to signed 16bit range
 
       SetPWM(&ffbs); // milos, FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
@@ -321,3 +325,25 @@ void loop() {
     }
   }
 }
+
+
+// 16+16+12+12+12 bits axis + 10 buttons
+void SendInputReport(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t ry, uint32_t buttons)
+{
+  // total of 12 bytes, 2B for x, 2B for y, 3B for z and rx, 4B for ry and buttons
+  uint8_t j[12];
+  j[0] = x;
+  j[1] = x >> 8;
+  j[2] = y;
+  j[3] = y >> 8;
+  j[4] = z;
+  j[5] = (z >> 8) & 0xf | ((rx & 0xf) << 4);
+  j[6] = rx >> 4;
+  j[7] = ry;
+  j[8] = (ry >> 8) & 0xf | ((buttons & 0xf) << 4);
+  j[9] = (buttons >> 4) & 0x3f | ((buttons >> 6) & 0xc0);
+  j[10] = buttons >> 14;
+
+  HID().SendReport(4, j, 11);
+}
+

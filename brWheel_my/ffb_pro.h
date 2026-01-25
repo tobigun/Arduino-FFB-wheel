@@ -5,9 +5,11 @@
 #include <stdint.h>
 #include "ffb.h"
 
-const s32 SPD_THRESHOLD	= 0; //8
-const s32 ACL_THRESHOLD = 0; //milos, added
-const s32 FRC_THRESHOLD = 1; //milos, added - friction treshold
+#define Btest(data,val) ((data&(val))==(val))
+
+const int32_t SPD_THRESHOLD	= 0; //8
+const int32_t ACL_THRESHOLD = 0; //milos, added
+const int32_t FRC_THRESHOLD = 1; //milos, added - friction treshold
 
 #define ADC_NB_BITS		10
 #define VAL_NB_BITS		16
@@ -29,8 +31,8 @@ const s32 FRC_THRESHOLD = 1; //milos, added - friction treshold
 #define CALIBRATION_ERROR			0x4
 #define CALIBRATION_DONE			0xFF
 
-const u8 NB_TAPS =	10; //milos, was 9
-const u8 NB_TAPS_A = 20; //milos, added - for acceleration calc
+const uint8_t NB_TAPS =	10; //milos, was 9
+const uint8_t NB_TAPS_A = 20; //milos, added - for acceleration calc
 
 void FfbproSetAutoCenter(uint8_t enable);
 
@@ -55,12 +57,12 @@ class cSpeedObs {
       Init();
     }
     void Init();
-    f32 Update(s32 new_pos);
-    s32 mLastPos;
-    f32 mLastSpeed; //milo, was s32
-    b8 mLastValueValid;
-    f32 mLastSpeeds[NB_TAPS]; //milos, was s32
-    u8 mCurrentLS;
+    float Update(int32_t new_pos);
+    int32_t mLastPos;
+    float mLastSpeed; //milo, was int32_t
+    int8_t mLastValueValid;
+    float mLastSpeeds[NB_TAPS]; //milos, was int32_t
+    uint8_t mCurrentLS;
 };
 
 class cAccelObs {//milos, addded - acceleration
@@ -69,32 +71,32 @@ class cAccelObs {//milos, addded - acceleration
       Init();
     }
     void Init();
-    f32 Update(f32 new_spd); //milos, was s32 new_spd
-    f32 mLastSpd; //milos, was s32
-    f32 mLastAccel; //milo, was s32
-    b8 mLastValueValid;
-    f32 mLastAccels[NB_TAPS_A]; //milos, was s32
-    u8 mCurrentLA;
+    float Update(float new_spd); //milos, was int32_t new_spd
+    float mLastSpd; //milos, was int32_t
+    float mLastAccel; //milo, was int32_t
+    int8_t mLastValueValid;
+    float mLastAccels[NB_TAPS_A]; //milos, was int32_t
+    uint8_t mCurrentLA;
 };
 
 class cFFB {
   public:
     cFFB();
-    //s32 CalcTorqueCommand (s32 pos); // milos, returns single force (1 axis) value
-    //s32 CalcTorqueCommands (s32 pos, s32 pos2); // milos, returns only xFFB value, yFFB is passed through global variable
+    //int32_t CalcTorqueCommand (int32_t pos); // milos, returns single force (1 axis) value
+    //int32_t CalcTorqueCommands (int32_t pos, int32_t pos2); // milos, returns only xFFB value, yFFB is passed through global variable
     s32v CalcTorqueCommands (s32v *pos); // milos, argument is pointer struct and returns struct holding xFFB and yFFB
     cSpeedObs mSpeed;
     cAccelObs mAccel; //milos, added
-    b8 mAutoCenter;
+    int8_t mAutoCenter;
 };
 
 class BRFFB {
   public:
     BRFFB();
     void calibrate();
-    s32 offset;
-    b8 state;
-    //b8 autoCenter;
+    int32_t offset;
+    int8_t state;
+    //int8_t autoCenter;
 };
 
 #endif // _FFB_PRO_

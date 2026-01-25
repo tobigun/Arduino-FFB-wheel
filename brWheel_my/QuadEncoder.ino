@@ -35,13 +35,13 @@
 
 cQuadEncoder gQuadEncoder;
 
-volatile b8 gIndexFound;
-volatile u8 gLastState;
-volatile s32 gPosition;
+volatile int8_t gIndexFound;
+volatile uint8_t gLastState;
+volatile int32_t gPosition;
 
 //--------------------------------------------------------------------------------------------------------
 
-static void EnableInterrupt(u8 num, u8 type) {
+static void EnableInterrupt(uint8_t num, uint8_t type) {
   switch (num) {
 #if defined(EICRA) && defined(EIMSK)
     case 0:
@@ -102,8 +102,8 @@ static void EnableInterrupt(u8 num, u8 type) {
 
 //--------------------------------------------------------------------------------------------------------
 
-void cQuadEncoder::Init (s32 position, b8 pullups) {
-  u8 it = pullups ? INPUT_PULLUP : INPUT;
+void cQuadEncoder::Init (int32_t position, int8_t pullups) {
+  uint8_t it = pullups ? INPUT_PULLUP : INPUT;
   pinMode(QUAD_ENC_PIN_A, it);
   pinMode(QUAD_ENC_PIN_B, it);
 #ifdef USE_ZINDEX // milos, added
@@ -130,20 +130,20 @@ void cQuadEncoder::Init (s32 position, b8 pullups) {
   //PCICR |= (1 << PCIE0);  //milos, commented out
 }
 
-s32 cQuadEncoder::Read() {
+int32_t cQuadEncoder::Read() {
   noInterrupts();
-  s32 pos = gPosition;
+  int32_t pos = gPosition;
   interrupts();
   return (pos);
 }
 
-void cQuadEncoder::Write (s32 pos) {
+void cQuadEncoder::Write (int32_t pos) {
   noInterrupts();
   gPosition = pos;
   interrupts();
 }
 
-s8 pos_inc[] =
+int8_t pos_inc[] =
 {
   0,		// 0 not possible
   1,		// 1
@@ -164,10 +164,10 @@ s8 pos_inc[] =
 };
 
 void cQuadEncoder::Update() {
-  u8 state = gLastState;
+  uint8_t state = gLastState;
   // 	if (digitalReadFast(QUAD_ENC_PIN_A)) state |= 4;
   // 	if (digitalReadFast(QUAD_ENC_PIN_B)) state |= 8;
-  u8 pd = PIND;	// Optim : change code according to the pins and the mcu used (or use the lines above)
+  uint8_t pd = PIND;	// Optim : change code according to the pins and the mcu used (or use the lines above)
   state |= pd & 0b1100;
   gLastState = (state >> 2);
   gPosition += pos_inc[state];

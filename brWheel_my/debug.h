@@ -30,19 +30,20 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
+#include <stdint.h>
 #include "USBDesc.h"
 
 /*// Method of debugging
-  extern const u8 DEBUG_TO_NONE;
-  extern const u8 DEBUG_TO_UART;
-  extern const u8 DEBUG_TO_USB;
-  extern const u8 DEBUG_DETAIL;
+  extern const uint8_t DEBUG_TO_NONE;
+  extern const uint8_t DEBUG_TO_UART;
+  extern const uint8_t DEBUG_TO_USB;
+  extern const uint8_t DEBUG_DETAIL;
 */
-extern volatile u8 gDebugMode;
+extern volatile uint8_t gDebugMode;
 
 // Returns true if debug settings contain all of the given attributes
 // (see above constants DEBUG_xxx).
-b8 DoDebug(const u8 type);
+int8_t DoDebug(const uint8_t type);
 
 // If below are defined, code for respective debug target is included into build
 #define DEBUG_ENABLE_UART
@@ -54,7 +55,7 @@ b8 DoDebug(const u8 type);
 
 // The basic debug data sending method used by all other methods.
 // Implement this to send debug data to desired destination.
-void LogSendByte(u8 data);
+void LogSendByte(uint8_t data);
 
 // Send out the given null terminated text
 void LogText(const char *text);
@@ -67,12 +68,12 @@ void LogBinary(const void *data, uint16_t len);
 void LogBinaryLf(const void *data, uint16_t len);	// Adds linefeed
 
 // Send out data with a prefix of text and an integer
-void LogData(const char *text, u8 reportId, const void *data, uint16_t len);
-void LogDataLf(const char *text, u8 reportId, const void *data, uint16_t len);	// Adds linefeed
+void LogData(const char *text, uint8_t reportId, const void *data, uint16_t len);
+void LogDataLf(const char *text, uint8_t reportId, const void *data, uint16_t len);	// Adds linefeed
 
 // Log all reports found in the given data (may have one or more)
 // The <text> must point to string in program memory.
-void LogReport(const char *text, const uint16_t *reportSizeArray, u8 *data, uint16_t len);
+void LogReport(const char *text, const uint16_t *reportSizeArray, uint8_t *data, uint16_t len);
 
 // Debugging utils for USB-serial debugging
 void FlushDebugBuffer(void);

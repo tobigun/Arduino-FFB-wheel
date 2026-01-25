@@ -205,7 +205,7 @@ void LogReport(const char *text, const uint16_t *reportSizeArray, u8 *data, uint
 #endif
 }
 
-b8 DoDebug(const u8 type)
+int8_t DoDebug(const u8 type)
 {
   return ((gDebugMode & type) == type);
 }
