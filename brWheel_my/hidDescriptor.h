@@ -243,7 +243,7 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0xA1, 0x02,	// COLLECTION (Logical)
   0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
   0x09, 0x30,	// USAGE (X)
-#ifdef NB_FF_AXIS>1
+#if (NB_FF_AXIS > 1)
   0x09, 0x31,	// USAGE (Y)
 #endif
   0x15, 0x00,	// LOGICAL_MINIMUM (00)
