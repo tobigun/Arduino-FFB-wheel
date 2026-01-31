@@ -154,10 +154,12 @@ Firmware features:
 - original wheel control user interface **[Arduino FFB gui](https://github.com/ranenbg/Arduino-FFB-gui)** for an easy configuration and monitoring of all inputs/outputs 
 
 Detailed documentation and more information about the firmware can be found in txt files inside **[docs](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/brWheel_my/docs)** folder.
+
 # Firmware pinouts and wiring diagrams
 ![plot](./brWheel_my/wirings/Firmware-v250%20pinout.png)
 **Note:** some pin mappings in the image are outdated. Check the wiring table above for the correct ones.
-
+## Optical encoder and LED wiring
+![plot](./brWheel_my/wirings/encoder_ffb_clip_led_wiring_diagram.png)
 ## Button matrix pinouts
 ![plot](./brWheel_my/wirings/button_matrix_wiring_diagram.png)
 **Note:** the digital inputs for the matrix are not correct in the image. Check the wiring table above for the correct ones.
