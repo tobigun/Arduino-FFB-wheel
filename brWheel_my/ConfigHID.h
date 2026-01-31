@@ -2,6 +2,7 @@
 
 #include "Config.h"
 #include "debug.h"
+#include "WHID.h"
 
 typedef struct {
   uint8_t ReportId;

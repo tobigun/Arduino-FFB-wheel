@@ -44,4 +44,6 @@ class cQuadEncoder {
 
 extern cQuadEncoder gQuadEncoder;
 
+extern volatile int8_t gIndexFound;
+
 #endif // _QUAD_ENCODER_H

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Arduino.h>
 
 //------------------------------------- Firmware options -------------------------------------------------
 
@@ -78,7 +79,6 @@
 #define BRAKE_INPUT 1
 #define CLUTCH_INPUT 2
 #define HBRAKE_INPUT 3
-uint8_t LC_scaling; // milos, load cell scaling factor (affects brake pressure, but depends on your load cell's maximum specified load)
 
 //------------------------------------- EEPROM Config -----------------------------------------------------
 
@@ -118,6 +118,8 @@ uint8_t LC_scaling; // milos, load cell scaling factor (affects brake pressure, 
 
 #define FIRMWARE_VERSION         0xFA // milos, firmware version (FA=250, FB=251, FC=252, FD=253)
 
+void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size);
+
 #define GetParam(m_offset,m_data)	getParam((m_offset),(uint8_t*)&(m_data),sizeof(m_data))
 #define SetParam(m_offset,m_data)	setParam((m_offset),(uint8_t*)&(m_data),sizeof(m_data))
 
@@ -129,6 +131,9 @@ uint8_t LC_scaling; // milos, load cell scaling factor (affects brake pressure, 
 #define CONFIG_SERIAL_PERIOD 10000 // milos, original 50000 (us)
 
 //------------------------------------- FFB/Firmware config -----------------------------------------------------
+
+extern uint8_t LC_scaling;
+extern uint8_t effstate;
 
 struct fwOpt { // milos, added - firmware option stuct
   boolean a = false; // autocalibration (of analog axis)
@@ -153,127 +158,24 @@ struct fwOpt { // milos, added - firmware option stuct
   boolean z = false; // z-index
 };
 
-void update(fwOpt *option) { // milos, added - update firmware options from predefines above
-#ifdef USE_AUTOCALIB
-  option->a = true;
-#endif
-#ifdef USE_TWOFFBAXIS
-  option->b = true;
-#endif
-#ifdef USE_CENTERBTN
-  option->c = true;
-#endif
-#ifndef USE_QUADRATURE_ENCODER
-  option->d = true;
-#endif
-#ifdef USE_EXTRABTN
-  option->e = true;
-#endif
-#ifdef USE_XY_SHIFTER
-  option->f = true;
-#endif
-#ifdef USE_MCP4725
-  option->g = true;
-#endif
-#ifdef USE_HATSWITCH
-  option->h = true;
-#endif
-#ifdef AVG_INPUTS
-  option->i = true;
-#endif
-#ifdef USE_LOAD_CELL
-  option->l = true;
-#endif
-#ifdef USE_PROMICRO
-  option->m = true;
-#endif
-#ifndef USE_EEPROM
-  option->p = true;
-#endif
-#ifdef USE_SHIFT_REGISTER
-  option->n = true;
-#endif
-#ifdef USE_SN74ALS166N
-  option->r = true;
-#endif
-#ifdef USE_ADS1015
-  option->s = true;
-#endif
-#ifdef USE_BTNMATRIX
-  option->t = true;
-#endif
-#ifdef USE_AS5600
-  option->w = true;
-#endif
+void update(fwOpt *option);
+
+
 #ifdef USE_ANALOGFFBAXIS
-  option->x = true;
-#endif
-#ifdef USE_ZINDEX
-  option->z = true;
-#endif
-}
-
-// milos, these are now loaded from EEPROM
-uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects through serial interface, bit 7 is MSB
-// bit0-autocentering spring, bit1-damper, bit2-inertia, bit3-friction, bit4-ffb monitor (sends ffb signal data to com port), bits 5-7 are FFB axis index
-// bits 5-7 define an index that sets which axis is tied to xFFB axis (by default it's at X-axis)
-// index FFB-axis
-// 0     X
-// 1     Y
-// 2     Z
-// 3     RX
-// 4     RY
-#ifdef USE_ANALOGFFBAXIS
-byte indxFFBAxis(byte value) { // milos, argument should be effstate
-  byte temp = 0b00000000; // index of FFB Axis index selection (0-5)
-  for (uint8_t i = 0; i < 3; i++) {
-    bitWrite(temp, i, bitRead(value, i + 5)); //milos, decode bits5-7 from value byte into temp
-  }
-  return temp;
-}
+byte indxFFBAxis(byte value);
 #endif
 
-uint8_t pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
-//---------------------
-// bit0-phase correct (0 is fast pwm), bit1-dir enabled (0 is pwm+-), bits 2-5 are frequency select, bit6-enable pwm0-50-100, bit7 is unused
-// bit0 pwm_type
-// 0    fast pwm
-// 1    phase correct
+extern uint8_t pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
 
-// bits2-5 define frequency index, bit2 is MSB, see firmware_info.txt for details
-
-// bit1 bit6 pwm_mode
-// 0    0    pwm+-
-// 0    1    pwm0-50-100
-// 1    0    pwm+dir
-// 1    1    rcm
-//----------------------
-
-// milos, if USE_MCP4725 is defined then pwmstate byte has the following interpretation
-//----------------
-// bits 0-4 unused, bit5-enable dac0-50-100, bit6-enable dac+dir (0 is dac+-), bit7-enable dac (0 is zero dac output)
-
-// bit7 dac_out
-// 0   disabled (set to 0V or 2.5V depending on dac mode)
-// 1   enabled
-
-// bit6 bit5 dac_mode      dac_mode2 (2-ffb axis)
-// 0    0    dac+-         1ch dac+- (xFFB)
-// 0    1    dac0-50-100   2ch dac0-50-100
-// 1    0    dac+dir       2ch dac+dir
-// 1    1    none
-//----------------
-
-// milos, changed these from float to uint8_t (loaded from EEPROM)
-uint8_t configGeneralGain;  // = 1.0f;  // was 1.0f
-uint8_t configDamperGain; // = 1.0f;		// was 0.5f
-uint8_t configFrictionGain; // = 1.0f;	// was 0.5f
-uint8_t configConstantGain; // = 1.0f;	// was 1.0f
-uint8_t configPeriodicGain; // = 1.0f;	// was 1.0f
-uint8_t configSpringGain; // = 1.0f;	// was 1.0f
-uint8_t configInertiaGain; // = 1.0f; // was 1.0f
-uint8_t configCenterGain; // = 0.7f;	// was 0.7f
-uint8_t configStopGain; // = 1.0f;	// was 1.0f
+extern uint8_t configGeneralGain;
+extern uint8_t configDamperGain;
+extern uint8_t configFrictionGain;
+extern uint8_t configConstantGain;
+extern uint8_t configPeriodicGain;
+extern uint8_t configSpringGain;
+extern uint8_t configInertiaGain;
+extern uint8_t configCenterGain;
+extern uint8_t configStopGain;
 
 // milos, here we set the PWM resolution and frequency per channel (old, now loaded from EEPROM)
 // there are 2 PWM channels - one for each direction, so the actual FFB resolution is doubled
@@ -303,98 +205,40 @@ uint8_t configStopGain; // = 1.0f;	// was 1.0f
 // drivers: AASD - great, brushless driver with FOC - good, BTS7960 - ok
 // motors: brushless AC servo - great, brushless DC - good, brushed DC - ok
 
-uint16_t PWMtops [13] =
-{
-  400,  // 0
-  800,  // 1
-  1023, // 2
-  2047, // 3
-  4095, // 4
-  5000, // 5
-  10000, // 6
-  16383, // 7
-  20000, // 8
-  32767, // 9
-  30000, // 10
-  40000, // 11
-  65535  // 12
-};
+extern uint16_t PWMtops [13];
 
-int16_t ROTATION_DEG; // milos
-int32_t CPR; // milos
-int32_t ROTATION_MAX; // milos
-int32_t ROTATION_MID; // milos
-uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
-uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
-uint16_t MAX_DAC; // milos, loaded from EEPROM
-uint16_t TOP; // milos, pwmstate byte loaded from EEPROM, then in InitPWM() function calcTOP(pwmstate) defines TOP value
+extern int16_t ROTATION_DEG; // milos
+extern int32_t CPR; // milos
+extern int32_t ROTATION_MAX; // milos
+extern int32_t ROTATION_MID; // milos
+extern uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
+extern uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
+extern uint16_t MAX_DAC; // milos, loaded from EEPROM
+extern uint16_t TOP; // milos, pwmstate byte loaded from EEPROM, then in InitPWM() function calcTOP(pwmstate) defines TOP value
 
-uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value from pwmstate byte argument
-#ifndef USE_MCP4725
-  byte j = 0b00000000; // index of frequency and PWM resolution
-  for (uint8_t i = 0; i < 4; i++) {
-    bitWrite(j, i, bitRead(b, i + 2)); // milos, decode bits2-5 from pwmstate byte into index
-  }
-  if (bitRead(b, 0)) { // if phase correct PWM mode (pwmstate bit0=1)
-    return (PWMtops[j] >> 1); // milos, divide by 2
-  } else { // if fast PWM mode (pwmstate bit0=0)
-    return (PWMtops[j]);
-  }
-#else // if mcp4725
-  return (MAX_DAC);
-#endif
-}
+uint16_t calcTOP(byte b);
 
 struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
   int32_t x;
   int32_t avg;
 };
 
-float FFB_bal; // milos, FFB balance slider
-float L_bal; // milos, left PWM balance multiplier
-float R_bal; // milos, right PWM balance multiplier
-float minTorquePP; // milos, added - min torque in percents
+extern float FFB_bal; // milos, FFB balance slider
+extern float L_bal; // milos, left PWM balance multiplier
+extern float R_bal; // milos, right PWM balance multiplier
+extern float minTorquePP; // milos, added - min torque in percents
 
 // milos, added - RCM pwm mode definitions
-float RCM_min = 1.0; // minimal RCM pulse width in ms
-float RCM_zer = 1.5; // zero RCM pulse width in ms
-float RCM_max = 2.0; // maximal RCM pulse width in ms
+extern float RCM_min; // minimal RCM pulse width in ms
+extern float RCM_zer; // zero RCM pulse width in ms
+extern float RCM_max; // maximal RCM pulse width in ms
 
-float RCMscaler (byte value) { // milos, added - scales correctly RCM pwm mode
-  if (bitRead(value, 0)) { // if pwmstate bit0=1
-    return 1000.0; // for phase correct pwm mode
-  } else {  // if pwmstate bit0=0
-    return 2000.0; // for fast pwm mode
-  }
-}
+extern boolean zIndexFound;
 
-boolean zIndexFound = false; // milos, added - keeps track if z-index pulse from encoder was found after powerup
+float RCMscaler (byte value);
 
-// milos, added - function for decoding hat switch bits
-uint32_t decodeHat(uint32_t inbits) {
-  byte hat;
-  byte dec = 0b00001111 & inbits; //milos, only take 1st 4 bits from inbits
-  if (dec == 1) { //up
-    hat = 1;
-  } else if (dec == 2) { //right
-    hat = 3;
-  } else if (dec == 4) { //down
-    hat = 5;
-  } else if (dec == 8) { //left
-    hat = 7;
-  } else if (dec == 3) { //up_right
-    hat = 2;
-  } else if (dec == 6) { //down_right
-    hat = 4;
-  } else if (dec == 9) { //up_left
-    hat = 8;
-  } else if (dec == 12) { //down_left
-    hat = 6;
-  } else {
-    hat = 0;
-  }
-  return ((inbits & 0b11111111111111111111111111110000) | (hat & 0b00001111)); // milos, put hat bits into first 4 bits of buttons and keep the rest unchanged
-}
+
+uint32_t decodeHat(uint32_t inbits);
 
 struct xysh { // milos, added - holds shifter configuration
   uint16_t cal[5]; // calibration limits that define where the gears are
@@ -415,72 +259,7 @@ struct xysh { // milos, added - holds shifter configuration
 };
 
 // milos - added, function for decoding XY shifter analog values into last 8 buttons
-uint32_t decodeXYshifter (uint32_t inbits, xysh *s) {
-  uint32_t gears = 0; // shifter gears represented as digital buttons (1 bit for each gear)
-  const uint8_t InpRevButtonBit = 0; // input reverse gear button bit number (normal buttons start from bit4, bit0-bit3 are reserved for hat switch)
-  const uint8_t OutRevButtonBit = 0; // output reverse gear button bit number (this is where we want to put reverse gear button, out of 24 available buttons)
-  if (bitRead(s->cfg, 0)) {   // if reverse gear button is inverted (logitech shifters)
-    if (bitRead(inbits, InpRevButtonBit + 4)) { // read rev gear button bit
-      bitClear(inbits, InpRevButtonBit + 4); // if 1, set rev gear bit to 0
-    } else {
-      bitSet(inbits, InpRevButtonBit + 4); // if 0, set rev gear bit to 1
-    }
-  }
-  if (s->x < s->cal[0] && s->y >= s->cal[4]) { // 1st gear
-    bitSet(gears, 16);
-  } else if (s->x < s->cal[0] && s->y < s->cal[3]) { // 2nd gear
-    bitSet(gears, 17);
-  } else if (s->x >= s->cal[0] && s->x < s->cal[1] && s->y >= s->cal[4]) { // 3rd gear
-    bitSet(gears, 18);
-  } else if (s->x >= s->cal[0] && s->x < s->cal[1] && s->y < s->cal[3]) { // 4th gear
-    bitSet(gears, 19);
-  } else if (s->x >= s->cal[1] && s->x < s->cal[2] && s->y >= s->cal[4]) { // 5th gear
-    bitSet(gears, 20);
-  } else if (s->x >= s->cal[1] && s->x < s->cal[2] && s->y < s->cal[3]) { // 6th gear
-    if (bitRead(s->cfg, 1)) { // if 8 gear shifter
-      bitSet(gears, 21); // set 6th gear
-    } else { // if 6 gear shifter
-      if (bitRead(inbits, InpRevButtonBit + 4)) {
-        bitSet(gears, OutRevButtonBit); // reverse gear
-      } else {
-        bitSet(gears, 21); // still set 6th gear
-      }
-    }
-  } else if (s->x >= s->cal[2] && s->y >= s->cal[4]) { // 7th gear
-    bitSet(gears, 22);
-  } else if (s->x >= s->cal[2] && s->y < s->cal[3]) { // 8th gear
-    if (bitRead(s->cfg, 1)) { // if 8 gear shifter
-      if (bitRead(inbits, InpRevButtonBit + 4)) {
-        bitSet(gears, OutRevButtonBit); // reverse gear
-      } else {
-        bitSet(gears, 23); // set 8th gear
-      }
-    } else { // if 6 gear shifter
-      bitSet(gears, 23); // still set 8th gear
-    }
-  }
-  // milos, on leonardo/micro when both xy shifter and hat switch are used pins D5,D6,D7 are remaped to buttons 0,1,2
-  // milos, so we need to stop reading these pins twice as normal buttons
-  // milos, pins D5,D6,D7 are taken care of by bit mask at bit4,bit5,bit7 in xy shifter decoding function bellow
-  uint32_t bitMask = 0b11110000000011111111111111101111; // milos, default bit mask, bit4=0 for reverse gear button, bits20-27 are 0 for gear buttons to be inserted
-  //#ifdef USE_XY_SHIFTER // milos, with xy shifter
-#ifdef USE_HATSWITCH // milos, with hat switch
-#ifndef USE_PROMICRO // milos, only for leonardo/micro
-#ifndef USE_SHIFT_REGISTER // milos, for shift register we need default bitmask
-  bitMask = 0b11110000000011111111111101001111; // milos, modifyed bit mask not to show duplicate buttons0,1,3
-#endif // end of shift register
-#else // milos, for proMicro
-  bitMask = 0b11110000000011111111111111101111; // milos, default bit mask
-#endif // end of proMicro
-#else // milos, no hat switch with xy shifter
-#ifndef USE_PROMICRO // milos, only for leonardo/micro
-  bitMask = 0b11110000000011111111111110001111; // milos, modifyed bit mask not to show duplicate buttons0,1,2
-#endif // end of proMicro
-#endif // end of hat switch
-  //#endif // end of xy shifter
-
-  return ((inbits & bitMask) | (gears << 4)); // milos, gears are shifted to the left by 4 bits to skip updating hat switch, reverse gear is at bit4 (1st bit of buttons)
-}
+uint32_t decodeXYshifter (uint32_t inbits, xysh *s);
 
 struct s16a { // milos, added - holds individual 16bit axis properties
   int16_t val;
@@ -503,3 +282,7 @@ const uint16_t maxCal = 4095;
 #else // if no avg inputs
 const uint16_t maxCal = 1023;
 #endif // end of avg inputs
+
+void SetEEPROMConfig();
+void LoadEEPROMConfig();
+void SaveEEPROMConfig ();

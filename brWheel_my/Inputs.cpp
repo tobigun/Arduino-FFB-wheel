@@ -22,17 +22,19 @@
   this software.
 */
 
+#include <Arduino.h>
+
 #include "Config.h"
 #include "QuadEncoder.h"
+#include "common.h"
+#include "ffb_pro.h"
 #include "debug.h"
-#include "USBDesc.h"
-#include <Arduino.h>
+#include "HID.h"
 #include <Wire.h>
 #include <digitalWriteFast.h>
 #if 0
 #include <HX711_ADC.h> // milos, credits to library creator Olav Kallhovd sept2017
 #endif
-
 
 //--------------------------------------- Globals --------------------------------------------------------
 
@@ -60,6 +62,14 @@ s8 nb_mes; // milos, changed from s32 to s8
 #endif
 
 //----------------------------------------- Options -------------------------------------------------------
+
+#ifdef USE_BTNMATRIX
+void setMatrixRow (uint8_t j, uint8_t k);
+#endif
+
+#ifndef USE_SHIFT_REGISTER
+bool readSingleButton (uint8_t i);
+#endif
 
 #ifdef USE_DSP56ADC16S
 void ss_falling()

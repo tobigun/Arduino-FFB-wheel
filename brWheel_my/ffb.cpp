@@ -26,7 +26,10 @@
 */
 
 #include "ffb.h"
+#include "ffb_pro.h"
+#include "common.h"
 #include "USBCore.h"
+#include "ConfigHID.h"
 #include "WHID.h"
 #include <stdint.h>
 #include "debug.h"
@@ -35,8 +38,6 @@
 //------------------------------------- Defines ----------------------------------------------------------
 u8 valueglobal = 55;
 #define LEDs_SetAllLEDs(l)
-
-#define FIRST_EID	1
 
 //--------------------------------------- Globals --------------------------------------------------------
 
@@ -65,6 +66,13 @@ static const FFB_Driver* ffb;
 
 void setFFB(int32_t command);
 
+// milos, this will increment in each cycle by 2ms, 500Hz FFB effects calculation
+// bare in mind the Nyquist sampling frequency, for 500Hz we can reproduce up to 250Hz wave (4ms period)
+// that should be more than enough for all vibrational effects
+uint32_t t0 = 0; //milos, added
+uint32_t effectTime[MAX_EFFECTS]; //milos, added - ffb calculation timer (effect elapsed playing time in ms, max is 65535)
+bool t0_updated = false; //milos, added - keeps track if we updated zero time when effects start
+
 // Effect management
 volatile uint8_t nextEID = FIRST_EID;	// FFP effect indexes starts from 1
 volatile USB_FFBReport_PIDStatus_Input_Data_t pidState;	// For holding device status flags
@@ -76,7 +84,7 @@ void SendPidStateForEffect(uint8_t eid, uint8_t effectState)
   pidState.effectBlockIndex = 0;
 }
 
-static volatile TEffectState gEffectStates[MAX_EFFECTS + 1];	// one for each effect (array index 0 is unused to simplify things)
+volatile TEffectState gEffectStates[MAX_EFFECTS + 1];	// one for each effect (array index 0 is unused to simplify things)
 
 volatile TDisabledEffectTypes gDisabledEffects;
 USB_FFBReport_PIDBlockLoad_Feature_Data_t gNewEffectBlockLoad;

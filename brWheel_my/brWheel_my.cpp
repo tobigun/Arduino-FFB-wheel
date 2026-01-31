@@ -23,21 +23,17 @@
   this software.
 */
 
+#include <Arduino.h>
+
 #include "Config.h"
 #include "ConfigHID.h"
 #include "HID.h"
-#include "WHID.h"
+#include "common.h"
 #include "debug.h"
-#include "ffb_pro.h"
-//#include "ffb.h" // milos, commented out
-#include "USBDesc.h"
 #ifdef USE_QUADRATURE_ENCODER
 #include "QuadEncoder.h"
 #endif
 #include <Wire.h>
-#ifdef USE_EEPROM
-#include <EEPROM.h> // milos, uncommented
-#endif
 
 //extern u8 valueglobal; // milos, commented out
 
@@ -71,8 +67,6 @@ u32 now_micros = micros();
 u32 timeDiffConfigSerial = now_micros;
 
 uint16_t dz, bdz; // milos
-
-//----------------------------------------- Options -------------------------------------------------------
 
 #ifdef USE_QUADRATURE_ENCODER
 cQuadEncoder myEnc;

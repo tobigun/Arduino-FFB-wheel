@@ -27,6 +27,8 @@
 */
 
 #include "ffb_pro.h"
+#include "common.h"
+#include "debug.h"
 #include "QuadEncoder.h"
 #include <util/delay.h>
 

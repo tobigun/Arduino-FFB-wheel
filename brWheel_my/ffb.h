@@ -39,17 +39,18 @@
     This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
 */
 
+#define FIRST_EID	1
+
 // Maximum number of parallel effects in memory
 #define MAX_EFFECTS 11 //milos, changed from 20
 #define SIZE_EFFECT     sizeof(TEffectState)
 #define MEMORY_SIZE     (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 
-// milos, this will increment in each cycle by 2ms, 500Hz FFB effects calculation
-// bare in mind the Nyquist sampling frequency, for 500Hz we can reproduce up to 250Hz wave (4ms period)
-// that should be more than enough for all vibrational effects
-uint32_t t0 = 0; //milos, added
-uint32_t effectTime[MAX_EFFECTS]; //milos, added - ffb calculation timer (effect elapsed playing time in ms, max is 65535)
-bool t0_updated = false; //milos, added - keeps track if we updated zero time when effects start
+extern uint32_t t0;
+extern uint32_t effectTime[MAX_EFFECTS];
+extern bool t0_updated;
+
+extern volatile uint8_t nextEID;
 
 // ---- Input
 
@@ -323,7 +324,7 @@ typedef struct
   void (*StopEffect)(uint8_t eid);
   void (*FreeEffect)(uint8_t eid);
 
-  void (*ModifyDuration)(uint8_t effectId, uint16_t duration);
+  void (*ModifyDuration)(uint8_t effectId, uint16_t duration, uint16_t stdelay);
   //void (*SetDeviceGain)(USB_FFBReport_DeviceGain_Output_Data_t* data, volatile TEffectState* effect); //milos, added
 
   void (*CreateNewEffect)(USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, volatile TEffectState* effect);

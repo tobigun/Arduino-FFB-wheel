@@ -51,6 +51,9 @@ void FfbproSetRampForce(USB_FFBReport_SetRampForce_Output_Data_t* data, volatile
 uint8_t FfbproSetEffect(USB_FFBReport_SetEffect_Output_Data_t* data, volatile TEffectState* effect); //milos, changed from int to uint8_t
 void FfbproCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, volatile TEffectState* effect);
 
+void FfbproEnableInterrupts(void);
+const uint8_t* FfbproGetSysExHeader(uint8_t* hdr_len);
+
 class cSpeedObs {
   public:
     cSpeedObs()	{
