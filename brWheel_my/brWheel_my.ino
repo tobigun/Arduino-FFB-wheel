@@ -337,11 +337,11 @@ void SendInputReport(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t r
   j[2] = y;
   j[3] = y >> 8;
   j[4] = z;
-  j[5] = (z >> 8) & 0xf | ((rx & 0xf) << 4);
+  j[5] = ((z >> 8) & 0xf) | ((rx & 0xf) << 4);
   j[6] = rx >> 4;
   j[7] = ry;
-  j[8] = (ry >> 8) & 0xf | ((buttons & 0xf) << 4);
-  j[9] = (buttons >> 4) & 0x3f | ((buttons >> 6) & 0xc0);
+  j[8] = ((ry >> 8) & 0xf) | ((buttons & 0xf) << 4);
+  j[9] = ((buttons >> 4) & 0x3f) | ((buttons >> 6) & 0xc0);
   j[10] = buttons >> 14;
 
   HID().SendReport(4, j, 11);

@@ -29,7 +29,6 @@
 //#define	SYNC_LED_PIN		12 //milos, USB polling clock
 
 //milos, added - ffb clip LED indicator
-#define FFBCLIP_LED_PIN 13 // only for leonardo/micro
 
 #ifdef USE_PROMICRO // milos, if we use proMicro
 //#define LED_GREEN_PIN 1 // Green LED directly connected to 12V supply
@@ -51,30 +50,22 @@
 #define HBRAKE_PIN    A3
 #endif
 
-#define BUTTON0 4 // D4, used for button0
-#define B0PORTBIT 4 // read bit4 of PIND
-#define BUTTON7 5 // D5, used for button7
-#define B7PORTBIT 6 // read bit6 of PINC
-
-#define BUTTON4 6 // D6 or bit7 of PIND
-#define B4PORTBIT 7 // bit7
-#define BUTTON5 7 // D7 or bit6 of PINE
-#define B5PORTBIT 6 // bit6
-#define BUTTON6 1 // D1 or bit3 of PIND
-#define B6PORTBIT 3 // bit3
-
 #define BUTTON0 5 // D5, used for button0
 #define B0PORTBIT 6 // read bit6 of PINC
-#define BUTTON4 4 // D4, used for button4
-#define B4PORTBIT 4 // read bit4 of PIND
-#define BUTTON7 6 // D6, used for button7
-#define B7PORTBIT 7 // read bit7 of PIND
 #define BUTTON1 14 // D14, used for button1 instead
 #define B1PORTBIT 3 // read bit3 of PINB
 #define BUTTON2 15 // D15, used for button2 instead
 #define B2PORTBIT 1 // read bit1 of PINB
 #define BUTTON3 2 // D2, used for button3 instead on proMicro
 #define B3PORTBIT 1 // read bit1 of PIND
+#define BUTTON4 4 // D4, used for button4
+#define B4PORTBIT 4 // read bit4 of PIND
+#define BUTTON5 7 // D7 or bit6 of PINE
+#define B5PORTBIT 6 // bit6
+#define BUTTON6 1 // D1 or bit3 of PIND
+#define B6PORTBIT 3 // bit3
+#define BUTTON7 6 // D6, used for button7
+#define B7PORTBIT 7 // read bit7 of PIND
 
 #define PWM_PIN_L     9 // milos, left PWM pin
 #if defined(USE_PWM_0_50_100_MODE) || defined(USE_PWM_DIR_MODE)
@@ -139,7 +130,7 @@ uint8_t LC_scaling; // milos, load cell scaling factor (affects brake pressure, 
 
 //------------------------------------- FFB/Firmware config -----------------------------------------------------
 
-typedef struct fwOpt { // milos, added - firmware option stuct
+struct fwOpt { // milos, added - firmware option stuct
   boolean a = false; // autocalibration (of analog axis)
   boolean b = false; // 2-ffb axis
   boolean c = false; // center button
@@ -354,7 +345,7 @@ uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value fr
 #endif
 }
 
-typedef struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
+struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
   int32_t x;
   int32_t avg;
 };
@@ -405,7 +396,7 @@ uint32_t decodeHat(uint32_t inbits) {
   return ((inbits & 0b11111111111111111111111111110000) | (hat & 0b00001111)); // milos, put hat bits into first 4 bits of buttons and keep the rest unchanged
 }
 
-typedef struct xysh { // milos, added - holds shifter configuration
+struct xysh { // milos, added - holds shifter configuration
   uint16_t cal[5]; // calibration limits that define where the gears are
   // i  cal gears (if <=)
   // 0  x0  1
@@ -491,14 +482,14 @@ uint32_t decodeXYshifter (uint32_t inbits, xysh *s) {
   return ((inbits & bitMask) | (gears << 4)); // milos, gears are shifted to the left by 4 bits to skip updating hat switch, reverse gear is at bit4 (1st bit of buttons)
 }
 
-typedef struct s16a { // milos, added - holds individual 16bit axis properties
+struct s16a { // milos, added - holds individual 16bit axis properties
   int16_t val;
   int16_t min;
   int16_t max;
   int16_t avg;
 };
 
-typedef struct s32a { // milos, added - holds individual bit axis properties
+struct s32a { // milos, added - holds individual bit axis properties
   int32_t val; // milos, when using load cell we can have more than 16bit range for brake axis
   int16_t min; // milos, these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
   int16_t max; // milos, when we use load cell min/max are unused for brake axis

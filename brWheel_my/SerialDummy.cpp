@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #ifndef CDC_ENABLED
 
 #include "SerialDummy.h"

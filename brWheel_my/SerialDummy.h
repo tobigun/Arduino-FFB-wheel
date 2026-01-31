@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Arduino.h>
+
 #ifndef CDC_ENABLED
 
 class SerialDummy : public Stream

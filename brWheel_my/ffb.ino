@@ -480,7 +480,7 @@ void FfbHandle_EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t *data
   if (data->operation == 1)
   { // Start
     LogText("Start Effect - id:");
-    LogBinaryLf(eid, 1);
+    LogBinaryLf(&eid, 1);
     StartEffect(eid);
     if (!gDisabledEffects.effectId[eid])
       ffb->StartEffect(eid);
@@ -502,7 +502,7 @@ void FfbHandle_EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t *data
   else if (data->operation == 3)
   { // Stop
     LogText("Stop Effect - id:");
-    LogBinaryLf(eid, 1);
+    LogBinaryLf(&eid, 1);
     StopEffect(eid);
   }
 }

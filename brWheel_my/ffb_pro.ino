@@ -95,7 +95,7 @@ float cSpeedObs::Update (int32_t new_pos) {
   float speed = new_pos - mLastPos; //milos, was int32_t speed
   mLastPos = new_pos;
   if (mLastValueValid) {
-    int32_t t = 2;
+    //int32_t t = 2;
     // 		int32_t avg_speed = (mLastSpeed*(16-t) + speed*t) >> 5;
     // 		mLastSpeed = avg_speed;
     // 		int32_t avg_speed = (mLastSpeed + speed) >> 1;
@@ -214,8 +214,7 @@ int16_t SineEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos
 }
 
 int8_t sgn(float value) { //milos added, sign function
-  if (value >= 0.0) return (1);
-  if (value < 0.0) return (-1);
+  return (value >= 0.0) ? 1 : -1;
 }
 
 int16_t linFunction (float k, float x, int32_t n) { //milos added, linear function y=kx+n
@@ -237,6 +236,7 @@ int16_t TriangleEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, add
     t -= period / 2;
     return (linFunction(-4.0 * ((float)mag) / (((float)period) / 1000.0), ((float)t) / 1000.0, mag));
   }
+  return 0;
 }
 
 int16_t SawtoothUpEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
@@ -246,6 +246,7 @@ int16_t SawtoothUpEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, a
   if (t >= 0 && t < period) {
     return (linFunction(2.0 * ((float)mag) / (((float)period) / 1000.0), ((float)t) / 1000.0, -mag));
   }
+  return 0;
 }
 
 int16_t SawtoothDownEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
@@ -255,6 +256,7 @@ int16_t SawtoothDownEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos,
   if (t >= 0 && t < period) {
     return (linFunction(2.0 * ((float)(-mag)) / (((float)period) / 1000.0), ((float)t) / 1000.0, mag));
   }
+  return 0;
 }
 
 int16_t RampEffect (int8_t rStart, int8_t rEnd, u16 rPeriod, u16 t) { //milos, added
@@ -285,9 +287,8 @@ int16_t ApplyEnvelope (int16_t metric, u16 t, u8 atLvl, u8 fdLvl, u16 atTime, u1
     } else if (t > eDuration + eStartDelay - fdTime && t < eDuration + eStartDelay) { // fade
       return (linFunction(kF, t - eDuration - eStartDelay + fdTime, metric));
     }
-  } else {
-    return (0);
   }
+  return (0);
 }
 
 int32_t ScaleMagnitude (int32_t eMag, u16 eGain, float eDivider) { //milos, added
@@ -552,7 +553,7 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
 /* Turn Steering right only */
 void BRFFB::calibrate() { // milos, we are only calibrating encoder on x-axis (even if 2 ffb axis are used)
   cal_print("cal:");
-  int32_t rightGap;
+  int32_t rightGap = 0;
 #ifdef USE_QUADRATURE_ENCODER
   rightGap = myEnc.Read();
 #else
@@ -661,15 +662,15 @@ const uint8_t* FfbproGetSysExHeader(uint8_t* hdr_len)
 
 // effect operations ---------------------------------------------------------
 
+#if 0
 static void FfbproSendEffectOper(uint8_t effectId, uint8_t operation)
 {
-  /*
-    uint8_t reportId; // =10
-    uint8_t effectBlockIndex; // 1..40
-    uint8_t operation; // 1=Start, 2=StartSolo, 3=Stop
-    uint8_t loopCount; //0..255 (physical 0..255)
-  */
+  uint8_t reportId; // =10
+  uint8_t effectBlockIndex; // 1..40
+  uint8_t operation; // 1=Start, 2=StartSolo, 3=Stop
+  uint8_t loopCount; //0..255 (physical 0..255)
 }
+#endif
 
 void FfbproStartEffect(uint8_t effectId)
 {
@@ -725,9 +726,8 @@ void FfbproModifyDuration(uint8_t effectId, uint16_t duration, uint16_t stdelay)
 
 void FfbproSetEnvelope (USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile TEffectState * effect)
 {
-  uint8_t eid = data->effectBlockIndex;
-
   /*
+    uint8_t eid = data->effectBlockIndex;
     USB effect data:
     uint8_t  reportId; // =2
     uint8_t effectBlockIndex; // 1..40
@@ -744,8 +744,8 @@ void FfbproSetEnvelope (USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile 
 
 void FfbproSetCondition (USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState * effect)
 {
-  uint8_t eid = data->effectBlockIndex;
   /*
+    uint8_t eid = data->effectBlockIndex;
     USB effect data:
   	uint8_t reportId; // =3
     uint8_t effectBlockIndex; // 1..40
@@ -772,9 +772,8 @@ void FfbproSetCondition (USB_FFBReport_SetCondition_Output_Data_t* data, volatil
 
 void FfbproSetPeriodic (USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState * effect)
 {
-  uint8_t eid = data->effectBlockIndex;
-
   /*
+    uint8_t eid = data->effectBlockIndex;
   	typedef struct
   	{ // FFB: Set Periodic Output Report
     uint16_t magnitude; // 0..32767  (physical 0..32767) //milos, was 0(0)..255(10000), uint8_t
@@ -792,8 +791,8 @@ void FfbproSetPeriodic (USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile 
 
 void FfbproSetConstantForce (USB_FFBReport_SetConstantForce_Output_Data_t* data, volatile TEffectState * effect)
 {
-  uint8_t eid = data->effectBlockIndex;
   /*
+    uint8_t eid = data->effectBlockIndex;
     USB data:
     uint8_t  reportId; // =5
     uint8_t effectBlockIndex; // 1..40
@@ -804,7 +803,7 @@ void FfbproSetConstantForce (USB_FFBReport_SetConstantForce_Output_Data_t* data,
 
 void FfbproSetRampForce (USB_FFBReport_SetRampForce_Output_Data_t* data, volatile TEffectState * effect)
 {
-  uint8_t eid = data->effectBlockIndex; // milos, uncommented
+  //uint8_t eid = data->effectBlockIndex; // milos, uncommented
   /*USB effect data:
     uint8_t	reportId;	// =6
     uint8_t	effectBlockIndex;	// 1..40
