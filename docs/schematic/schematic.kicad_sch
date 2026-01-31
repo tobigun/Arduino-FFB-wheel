@@ -4800,7 +4800,7 @@
 		)
 		(uuid "5bfcd936-df75-444e-a2e6-a5ca47503f02")
 	)
-	(text "5-Axis wheel:\nPedals (Y/Z) and levers (RX/RY) represent different axes.\nWhen pedals are connected, levers can be used as clutch/handbrake.\nCables from J101 must be unsoldered from the Power PCB and\nconnected to the Arduino board directly. Connect SW_IN3/4 to GND\n(i.e. connect pins 2, 3, 4 of J101)."
+	(text "5-Axis wheel:\nPedals (Y/Z) and levers (RX/RY) represent different axes.\nWhen pedals are connected, levers can be used as clutch/handbrake.\nCables from J101 must be unsoldered from the Power PCB and\nconnected to the Arduino board directly. Connect SW_IN3/4 to VCC\n(i.e. connect pins 1, 2, and 3 of J101)."
 		(exclude_from_sim no)
 		(at 98.044 152.4 0)
 		(effects
@@ -4933,12 +4933,6 @@
 		(uuid "091f083e-cd70-4b77-beb3-4248324edd02")
 	)
 	(junction
-		(at 140.97 165.1)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "0b8f3d8e-515f-4ead-ae53-b4987f236f00")
-	)
-	(junction
 		(at 189.23 62.23)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5015,6 +5009,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "811825b9-fd8b-4d84-ac20-d90ffb7f9b5a")
+	)
+	(junction
+		(at 140.97 161.29)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "909ac6e5-9437-4d80-a088-b6391bfa2dfd")
 	)
 	(junction
 		(at 66.04 97.79)
@@ -5589,16 +5589,6 @@
 			(type default)
 		)
 		(uuid "42b8a2bc-b756-49b5-8528-d2d35f797003")
-	)
-	(wire
-		(pts
-			(xy 140.97 165.1) (xy 140.97 166.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "42c78fcc-f05a-4480-8a0a-fd4d2418fbf7")
 	)
 	(wire
 		(pts
@@ -6409,6 +6399,16 @@
 			(type default)
 		)
 		(uuid "c9d7c1e7-75ea-49dd-8571-c6108e5762f9")
+	)
+	(wire
+		(pts
+			(xy 140.97 160.02) (xy 140.97 161.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cacc9e34-ad86-4d9c-a549-e6615f248c76")
 	)
 	(wire
 		(pts
@@ -8017,73 +8017,6 @@
 			(project ""
 				(path "/ebdf8a50-ab25-421e-bb3d-8c800c708f6a"
 					(reference "J12")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_SparkFun-PowerSymbol:GND")
-		(at 140.97 166.37 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "12e3a274-423c-4274-941f-3efcbcccaf6f")
-		(property "Reference" "#PWR02"
-			(at 140.97 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 140.97 170.434 0)
-			(do_not_autoplace yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 140.97 166.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 140.97 166.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 140.97 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8474fece-8518-4696-a0f9-dc88bb2a34fd")
-		)
-		(instances
-			(project "schematic"
-				(path "/ebdf8a50-ab25-421e-bb3d-8c800c708f6a"
-					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -9785,6 +9718,72 @@
 			(project "schematic"
 				(path "/ebdf8a50-ab25-421e-bb3d-8c800c708f6a"
 					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_SparkFun-PowerSymbol:VCC")
+		(at 140.97 160.02 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "833cf452-65ad-4fd5-8fe3-0f44011a1c77")
+		(property "Reference" "#PWR021"
+			(at 140.97 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "VCC"
+			(at 143.764 158.242 0)
+			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 140.97 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 140.97 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VCC\""
+			(at 140.97 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "30912479-31d5-41d1-ab19-b9508c96a378")
+		)
+		(instances
+			(project "schematic"
+				(path "/ebdf8a50-ab25-421e-bb3d-8c800c708f6a"
+					(reference "#PWR021")
 					(unit 1)
 				)
 			)

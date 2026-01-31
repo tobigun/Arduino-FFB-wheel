@@ -194,6 +194,36 @@ int32_t averageAxis(int32_t value, T& average) {
 //------------------------------------ Main firmware loop ------------------------------------------------
 //--------------------------------------------------------------------------------------------------------
 
+#define PEDALS_CONNECTED_THRESHOLD (ANALOG_MAX * 3 / 4)
+
+static bool checkPedalsConnected(int axisY, int axisZ) {
+  static uint32_t yzHighTimeMs = 0;
+  static bool pedalsConnected = true;
+  static bool startUp = true;
+
+  // Pedal inputs are pulled high (equal to pedals fully pushed) if no pedals are connected
+  if (pedalsConnected && (axisY == ANALOG_MAX && axisZ == ANALOG_MAX)) {
+    if (startUp) { // on startup consider pedals as disconnected immediately if both axes are high (as this is very unlikely at startup)
+      pedalsConnected = false;
+    } else { // after startup require them to be high for some time to avoid false disconnect detections
+      uint32_t curMs = millis();
+      if (yzHighTimeMs == 0) {
+        yzHighTimeMs = curMs;
+      } else if (curMs - yzHighTimeMs > 5000) { // if pedals are high for more than 5 seconds, consider them disconnected
+        pedalsConnected = false;
+        yzHighTimeMs = 0;
+      }
+    }
+  } else if (!pedalsConnected && (axisY < PEDALS_CONNECTED_THRESHOLD || axisZ < PEDALS_CONNECTED_THRESHOLD)) {
+    pedalsConnected = true;
+  } else {
+    yzHighTimeMs = 0;
+  }
+
+  startUp = false;
+  return pedalsConnected;
+}
+
 void loop() {
 #ifdef AVG_INPUTS //milos, added option see config.h
   if (asc < avgSamples) {
@@ -255,10 +285,21 @@ void loop() {
         hbrake.val = analog_inputs[HBRAKE_INPUT];
         brake.val = analog_inputs[BRAKE_INPUT];
 #else // if no avg
-        accel.val = averageAxis(analogRead(ACCEL_PIN), accel.avg); // Z axis
-        brake.val = averageAxis(analogRead(BRAKE_PIN), brake.avg); // Y axis
-        clutch.val = averageAxis(analogRead(CLUTCH_PIN), clutch.avg); // RX axis
-        hbrake.val = averageAxis(analogRead(HBRAKE_PIN), hbrake.avg); // RY axis
+        int axisZ = analogRead(ACCEL_PIN);
+        int axisY = analogRead(BRAKE_PIN);
+
+        bool pedalsConnected = checkPedalsConnected(axisY, axisZ);
+        if (pedalsConnected) { // pedals attached, use levers as additional axes
+          accel.val = averageAxis(axisZ, accel.avg); // Z axis
+          brake.val = averageAxis(axisY, brake.avg); // Y axis
+          clutch.val = averageAxis(analogRead(CLUTCH_PIN), clutch.avg); // RX axis
+          hbrake.val = averageAxis(analogRead(HBRAKE_PIN), hbrake.avg); // RY axis
+        } else { // no pedals attached, use levers as accel and brake
+          accel.val = averageAxis(analogRead(HBRAKE_PIN), accel.avg); // Z axis
+          brake.val = averageAxis(analogRead(CLUTCH_PIN), brake.avg); // Y axis
+          clutch.val = 0; // RX axis
+          hbrake.val = 0; // RY axis
+        }
 #endif // end of avg
 
 #ifdef  USE_AUTOCALIB // milos, update limits for pedal autocalibration

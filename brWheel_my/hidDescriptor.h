@@ -116,6 +116,7 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x95, 8 - (NB_BUTTONS % 8),     // REPORT_COUNT (padding bits)
   0x81, 0x03,                     // Input (Const,Var,Abs)
 
+ #ifdef USE_CONFIGHID
   // FOR CONFIG PROFILE
   0x85, 0xf1,                    //   REPORT_ID (f1)
   0x09, 0x01,                    //   USAGE (Vendor Usage 1)
@@ -130,6 +131,7 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x95, 0x3F, //0x20,            //   REPORT_COUNT (63)
   0x75, 0x08,                    //   REPORT_SIZE (8)
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)	8
+#endif
   0xc0, // END_COLLECTION
 
 

@@ -275,12 +275,14 @@ struct s32a { // milos, added - holds individual bit axis properties
   int16_t avg;
 };
 
+#define ANALOG_MAX 1023
+
 const uint8_t avgSamples = 4; // milos, added - number of samples for averaging of arduino analog inputs
 // milos, default axis calibration values depend on usage of averaging or external ADC
 #ifdef AVG_INPUTS
 const uint16_t maxCal = 4095;
 #else // if no avg inputs
-const uint16_t maxCal = 1023;
+const uint16_t maxCal = ANALOG_MAX;
 #endif // end of avg inputs
 
 void SetEEPROMConfig();
