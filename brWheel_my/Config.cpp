@@ -38,7 +38,7 @@ uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects
 // 1    0    dac+dir       2ch dac+dir
 // 1    1    none
 //----------------
-uint8_t pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
+uint8_t pwmstate; // milos, PWM settings configuration byte, bit7 is MSB
 
 // milos, changed these from float to uint8_t (loaded from EEPROM)
 uint8_t configGeneralGain;  // = 1.0f;  // was 1.0f
@@ -152,7 +152,7 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
 #endif
   SetParam(PARAM_ADDR_ENC_CPR, v32); // milos, added
 #ifndef USE_MCP4725
-  v8 = 0b00001100; // milos, PWM out enabled, fast pwm, pwm+-, 7.8kHz, TOP 11bit (2047)
+  v8 = 0b01000100; // milos, PWM out enabled, fast pwm, pwm+-, 7.8kHz, TOP 11bit (2047)
 #else
   v8 = 0b10000000; // milos, DAC out enabled, DAC+- mode
 #endif
