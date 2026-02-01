@@ -17,6 +17,20 @@ For the firmware I tried multiple projects, e.g.:
 
 Arduino-FFB-wheel was the most complete, so this project was used as the foundation.
 
+### Game Compatibility Matrix
+|Game|Store|Status|
+|----|----|---|
+|Assetto Corsa|Steam|OK
+|Assetto Corsa Competizione|Steam|OK
+|DiRT Rally 2.0|Steam|OK|
+|Forza Horizon 4|Steam|OK. Requires the [Steering Wheel HID Profile](#hid-profiles), otherwise wheel will not be detected.|
+|Forza Horizon 5|Steam|OK. Requires the [Generic HID Profile](#hid-profiles), otherwise game will crash at start.|
+|NFS Heat|Steam|Only Steering, no FFB effects|
+|NFS Hot Pursuit Remastered|Steam|OK|
+|NFS Most Wanted|Steam|OK. Seems to support vibrations only, as FFB effects are week.|
+|NFS Undercover|Steam|OK|
+
+
 ### Firmware
 This repo is a fork of Miloš Ranković's [Arduino-FFB-wheel](https://github.com/ranenbg/Arduino-FFB-wheel), customized for the Guillemot Force Feedback Racing Wheel. As none of the pre-compiled binaries of the original project were suitable for this wheel, this project provides a configuration for the hardware and some minor software adjustments.
 
@@ -66,34 +80,37 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <img src="./docs/main-pcb.jpg" height="600px"/>
 
 <table>
-<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (Arduino Pro Micro)</th></tr>
+<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (Arduino Pro Micro)</th><th rowspan="2">Comment</th></tr>
 <tr><th>Name</th><th>Pin</th><th>Color</th></tr>
 
 <tr><td rowspan="6">J5 (Motor PCB Connector)</td>
-    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>D9</td></tr>
-<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>D10 (via BJT)</td></tr>
+    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>D9</td><td rowspan="6">Motor Enable switch must be connected to D10 via a BJT transistor to make sure that the motor is disabled when the microcontroller is powered down (i.e. not connected to USB).<br>
+    This is necessary as the Motor PCB would erroneously interpret the missing PWM signal to apply maximum force. It would turn the wheel with full force in one direction and try to move it past the end stop. As this is not possible the motor gets quite hot after some minutes.
+    <br>See schematic for more info.
+    </td></tr>
+<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>(See Comment)</td></tr>
 <tr><td>3</td><td style="background:orange">orange</td><td>GND</td><td>GND</td></tr>
 <tr><td>4</td><td style="background:red">red</td><td>GND</td><td>GND</td></tr>
 <tr><td>5</td><td style="background:brown">brown</td><td>GND</td><td>GND</td></tr>
 <tr><td>6</td><td style="background:black;color:white">black</td><td>+20V (from power supply)</td><td>- (unused)</td></tr>
 
 <tr><td rowspan="3">J6 (X-Axis Potentiometer)</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
 <tr><td>2</td><td style="background:white">white</td><td>Analog X-Axis (0 .. VCC)</td><td>A0</td></tr>
 <tr><td>3</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
 
 <tr><td rowspan="3">J7 (Y-Axis Potentiometer)</td>
-    <td>1</td><td style="background:red">red</td><td>74HC4066 Supply Voltage</td><td>VCC (+5V)</td></tr>
+    <td>1</td><td style="background:red">red</td><td>74HC4066 Supply Voltage</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
 <tr><td>2</td><td style="background:blue;color:white">blue</td><td>Analog Y-Axis (0 .. VCC)</td><td>A1</td></tr>
 <tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 
 <tr><td rowspan="3">J8 (Z-Axis Potentiometer)</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
 <tr><td>2</td><td style="background:brown">brown</td><td>Analog Z-Axis (0 .. VCC)</td><td>A2</td></tr>
 <tr><td>3</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
 
 <tr><td rowspan="12">J12 (Button Matrix)</td>
-    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>D5</td></tr>
+    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>D5</td><td rowspan="12"></td></tr>
 <tr><td>2</td><td style="background:brown">brown</td><td>Matrix column 2</td><td>D14</td></tr>
 <tr><td>3</td><td style="background:red">red</td><td>Matrix column 3</td><td>D15</td></tr>
 <tr><td>4</td><td style="background:orange">orange</td><td>Matrix column 4</td><td>D2</td></tr>
@@ -107,28 +124,74 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>D7</td></tr>
 
 <tr><td rowspan="4">J13 (Front LED)</td>
-    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>D3 (via 820 Ohms Resistor)</td></tr>
+    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>(See Comment)</td><td rowspan="4">Connect LED's Anode via 820 Ohms resistor to D3.<br>See schematic for more info.</td></tr>
 <tr><td>2</td><td style="background:black;color:white">black</td><td>LED Cathode (-)</td><td>GND</td></tr>
 <tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 <tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
 
 <tr><td rowspan="4">JP101 (Analog Levers)<br>[Optional]</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td>
+    <td rowspan="4">Wires can be unsoldered from connector JP101 of the power PCB and directly connected to the microcontroller.
+    This way the pedals and levers can be used in parallel (5 instead of 3 axes). The Pins 2+3 on the JP101 connector on the power board should be pulled high then (i.e. connected to Pin 1).<br>See schematic for more info.</td></tr>
 <tr><td>2</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A3</td></tr>
 <tr><td>3</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A10</td></tr>
 <tr><td>4</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
 
 <tr><td rowspan="2">Blue Front LED<br>[Optional]</td>
-    <td>-</td><td style="background:blue"></td><td>LED Anode (+)</td><td>D0 (RX1) via 4.7 kOhms resistor</td></tr>
-<tr><td>-</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+    <td>A</td><td style="background:blue"></td><td>LED Anode (+)</td><td>(See Comment)</td>
+    <td rowspan="2">Connect LED's Anode via 4.7 kOhms resistor to D0 (RX1).<br>See schematic for more info.</td>
+    </tr>
+<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
 
 <tr><td rowspan="2">Green Front LED<br>[Optional]</td>
-    <td>-</td><td style="background:green"></td><td>LED Anode (+)</td><td>+20V (via 150 kOhms resistor)</td></tr>
-<tr><td>-</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+    <td>A</td><td style="background:green"></td><td>LED Anode (+)</td><td>(See Comment)</td>
+    <td rowspan="2">Connect LED's Anode via 150 kOhms resistor to +20V.<br>See schematic for more info.</td>
+    </tr>
+<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+
+<tr><td rowspan="2">Profile Switch<br>[Optional]</td>
+    <td>1</td><td></td><td>Pin 1</td><td>D16</td>
+    <td rowspan="2">For three pin switches: connect middle pin to D16 and any of the other two pins to GND.<br>
+    </td></tr>
+<tr><td>2</td><td style="background:black;color:white"></td><td>Pin 2</td><td>GND</td></tr>
 </table>
 
 Make a little connector hub PCB to hold the motor switch transistor and  to connect all of the GND and VCC pins together. This way you can keep the existing connectors and you will still be able to reconnect them to the original Main PCB. But you can also cut the original connectors and solder the wires directly to the Arduino board.
 <img src="./docs/connector-hub.jpg" height="400px"/>
+
+#### HID Profiles
+A Profile Switch can be added to select between to HID profiles:
+- Switch open: Generic Joystick with generic X/Y/Z/Rx/Rz Axes (default)
+- Switch closed: Steering wheel with Steering/Brake/Accelerator/Rx/Rz Axes
+
+Switching profiles is necessary as there is no unified way to detect a Driving Wheel on Windows.
+- Some games only detect a driving wheel if a Steering-Wheel Axis is present in the USB HID descriptor (e.g. Forza Horizon 4).
+  - It seems that mostly older DirectInput based games require this profile as DirectInput uses a heuristic to detect wheels based on the axes of the controller ([see Wine DirectInput Port](https://github.com/wine-mirror/wine/blob/master/dlls/dinput/joystick_hid.c)).
+- Some games require a generic X-Axis and do not work (or crash) when a Steering-Wheel Axis is present.
+  - For example, Forza Horizons 5 crashes if a Steering-Wheel Axis is found.
+
+##### Registry Tweak for Generic Profile
+Instead of adding a switch to change the HID profile, for some games (like Forza Horizon 4) the Generic Profile also works if the following Windows registry keys are added via `regedit`:
+```
+Computer\HKEY_CURRENT_USER\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\VID_1B4F&PID_9206
+Computer\HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM\VID_1B4F&PID_9206
+```
+Add or modify the following value/data pair in these keys:
+|Name|Type|Data
+|----|----|----
+|OEMData|REG_BINARY|43 00 88 01 fe 00 00 00
+
+This can be achieved by double clicking on the `FFB_misc_programs/wheel-oemdata-add.reg` file.
+The entries can be removed again with the `wheel-oemdata-remove.reg` file.
+
+The bits of OEMData are described [here](https://sourceforge.net/p/timidity/git/ci/master/tree/windrv/mmddk.h#l230) but do not seem to be that important, as long as it starts with `43`.
+
+See [Steam Community article on Forza Horizon 4 by LeadMagnet](https://steamcommunity.com/sharedfiles/filedetails/?id=2909923087) for more info.
+
+> [!IMPORTANT]
+> Make sure that the registry entries are removed again for Forza Horizons 5, as this game crahes if the entries are present.
+
+------------------
 
 # Arduino-FFB-wheel
 A stand-alone DirectInput USB device is recognized in Windows as a joystick with force feedback functionality, based on BRWheel by Fernando Igor in 2017.
