@@ -58,7 +58,7 @@ int HID_::getDescriptor(USBSetup& setup)
   int total = 0;
   HIDSubDescriptor* node;
   for (node = rootNode; node; node = node->next) {
-    int res = USB_SendControl(TRANSFER_PGM, node->data, node->length);
+    int res = USB_SendControl(node->transferFlags, node->data, node->length);
     if (res == -1)
       return -1;
     total += res;

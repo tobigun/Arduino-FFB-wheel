@@ -152,6 +152,11 @@ void InitInputs() {
 #endif // end of centerbtn
 #endif // end of as5600
 #endif // end of quad enc
+
+  pinMode(PROFILE_SWITCH_PIN, INPUT_PULLUP);
+  if (digitalRead(PROFILE_SWITCH_PIN) == LOW) {
+    useDrivingHidProfile = true;
+  }
 }
 
 //--------------------------------------------------------------------------------------------------------

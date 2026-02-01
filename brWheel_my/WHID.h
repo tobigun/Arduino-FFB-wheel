@@ -89,10 +89,12 @@ typedef struct
 class HIDSubDescriptor {
   public:
     HIDSubDescriptor *next = NULL;
-    HIDSubDescriptor(const void *d, const uint16_t l) : data(d), length(l) { }
+    HIDSubDescriptor(const void *d, const uint16_t l, const uint8_t tf = 0)
+     : data(d), length(l), transferFlags(tf) { }
 
     const void* data;
     const uint16_t length;
+    const uint8_t transferFlags;
 };
 
 class HID_ : public PluggableUSBModule

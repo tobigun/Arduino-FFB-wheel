@@ -52,6 +52,8 @@ extern bool t0_updated;
 
 extern volatile uint8_t nextEID;
 
+extern bool useDrivingHidProfile;
+
 // ---- Input
 
 typedef struct

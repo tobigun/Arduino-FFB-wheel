@@ -20,73 +20,81 @@
 
 #include "HID.h"
 
+#define USAGE_PAGE_GENERIC_DESKTOP 0x01
+#define USAGE_PAGE_SIMULATION_CONTROLS 0x02
+
+#define USAGE_GENERIC_X 0x30
+#define USAGE_GENERIC_Y 0x31
+#define USAGE_GENERIC_Z 0x32
+
+#define USAGE_SIM_STEERING 0xC8
+#define USAGE_SIM_BRAKE 0xC5
+#define USAGE_SIM_ACCELERATOR 0xC4
+
+#define DEFAULT_USAGE_PAGE USAGE_PAGE_GENERIC_DESKTOP
+#define DEFAULT_X_USAGE  USAGE_GENERIC_X
+#define DEFAULT_Y_USAGE  USAGE_GENERIC_Y
+#define DEFAULT_Z_USAGE  USAGE_GENERIC_Z
+
+#define MAIN_AXES_USAGE_PAGE_OFFSET 11
+#define AXES_X_USAGE_OFFSET (MAIN_AXES_USAGE_PAGE_OFFSET + 2)
+#define AXES_Y_USAGE_OFFSET (AXES_X_USAGE_OFFSET + 25)
+#define AXES_Z_USAGE_OFFSET (AXES_Y_USAGE_OFFSET + 23)
+
 const uint8_t _hidReportDescriptor[] PROGMEM =
 {
   0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
   0x09, 0x04,	// USAGE (Joystick)
   0xA1, 0x01,	// COLLECTION (Application)
   0x85, 0x04,	// REPORT_ID (04)
-  0x09, 0x01, // USAGE (Pointer)
-  //0x05, 0x01,							/*   USAGE_PAGE (Generic Desktop) */
   0xA1, 0x00, // COLLECTION (Physical)
 
-  0x09, 0x30,          // USAGE (x)
-  //0x16, X_AXIS_LOG_MIN & 0xFF, (X_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM // milos, old
-  //0x27, X_AXIS_LOG_MAX & 0xFF, (X_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM // milos, old
-  0x17, X_AXIS_LOG_MIN & 0xFF, (X_AXIS_LOG_MIN >> 8) & 0xFF, (X_AXIS_LOG_MIN >> 16) & 0xFF, (X_AXIS_LOG_MIN >> 24) & 0xFF, // LOGICAL_MINIMUM // milos, new 32bit
-  0x27, X_AXIS_LOG_MAX & 0xFF, (X_AXIS_LOG_MAX >> 8) & 0xFF, (X_AXIS_LOG_MAX >> 16) & 0xFF, (X_AXIS_LOG_MAX >> 24) & 0xFF, // LOGICAL_MAXIMUM // milos, new 32bit
+  0x05, DEFAULT_USAGE_PAGE, // USAGE_PAGE (Generic Desktop: 0x01 / Simulation Controls: 0x02) [AXES_USAGE_PAGE_OFFSET]
+  0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [AXES_X_USAGE_OFFSET]
+  0x17, X_AXIS_LOG_MIN & 0xFF, (X_AXIS_LOG_MIN >> 8) & 0xFF, (X_AXIS_LOG_MIN >> 16) & 0xFF, (X_AXIS_LOG_MIN >> 24) & 0xFF, // LOGICAL_MINIMUM (0)
+  0x27, X_AXIS_LOG_MAX & 0xFF, (X_AXIS_LOG_MAX >> 8) & 0xFF, (X_AXIS_LOG_MAX >> 16) & 0xFF, (X_AXIS_LOG_MAX >> 24) & 0xFF, // LOGICAL_MAXIMUM (2^16-1)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-  0x47, X_AXIS_PHYS_MAX & 0xFF, (X_AXIS_PHYS_MAX >> 8) & 0xFF, (X_AXIS_PHYS_MAX >> 16) & 0xFF, (X_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff) // milos, new 32bits
-  0x75, X_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
+  0x47, X_AXIS_PHYS_MAX & 0xFF, (X_AXIS_PHYS_MAX >> 8) & 0xFF, (X_AXIS_PHYS_MAX >> 16) & 0xFF, (X_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
+  0x75, X_AXIS_NB_BITS,  // REPORT_SIZE (AXIS_NB_BITS)
   0x95, 0x01,            // REPORT_COUNT (1)
   0x81, 0x02,         // INPUT (Data,Var,Abs)
 
-  0x09, 0x31,         // USAGE (y)
-  0x16, Y_AXIS_LOG_MIN & 0xFF, (Y_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM
-  0x27, Y_AXIS_LOG_MAX & 0xFF, (Y_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM
+  0x09, DEFAULT_Y_USAGE, // USAGE (Y / Brake) [AXES_Y_USAGE_OFFSET]
+  0x16, Y_AXIS_LOG_MIN & 0xFF, (Y_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
+  0x27, Y_AXIS_LOG_MAX & 0xFF, (Y_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^16-1)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-  0x47, Y_AXIS_PHYS_MAX & 0xFF, (Y_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0,//(X_AXIS_PHYS_MAX >> 16) & 0xFF,(X_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
+  0x47, Y_AXIS_PHYS_MAX & 0xFF, (Y_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0, // PHYSICAL_MAXIMUM (2^16-1)
   0x75, Y_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
   0x95, 0x01,           // REPORT_COUNT (1)
   0x81, 0x02,         // INPUT (Data,Var,Abs)
 
-  0x09, 0x32,         // USAGE (z)
-  0x16, Z_AXIS_LOG_MIN & 0xFF, (Z_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM
-  0x27, Z_AXIS_LOG_MAX & 0xFF, (Z_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM
+  0x09, DEFAULT_Z_USAGE, // USAGE (Z / Accelerator) [AXES_Z_USAGE_OFFSET]
+  0x16, Z_AXIS_LOG_MIN & 0xFF, (Z_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
+  0x27, Z_AXIS_LOG_MAX & 0xFF, (Z_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-  0x47, Z_AXIS_PHYS_MAX & 0xFF, (Z_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0,//(Z_AXIS_PHYS_MAX >> 16) & 0xFF,(Z_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
+  0x47, Z_AXIS_PHYS_MAX & 0xFF, (Z_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0, // PHYSICAL_MAXIMUM (2^12-1)
   0x75, Z_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
   0x95, 0x01,           // REPORT_COUNT (1)
   0x81, 0x02,         // INPUT (Data,Var,Abs)
 
+  0x05, 0x01,	        // USAGE_PAGE (Generic Desktop)
   0x09, 0x33,         // USAGE (rx)
-  0x16, RX_AXIS_LOG_MIN & 0xFF, (RX_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM
-  0x27, RX_AXIS_LOG_MAX & 0xFF, (RX_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM
+  0x16, RX_AXIS_LOG_MIN & 0xFF, (RX_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
+  0x27, RX_AXIS_LOG_MAX & 0xFF, (RX_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-  0x47, RX_AXIS_PHYS_MAX & 0xFF, (RX_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0,//(RX_AXIS_PHYS_MAX >> 16) & 0xFF,(RX_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
+  0x47, RX_AXIS_PHYS_MAX & 0xFF, (RX_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0, // PHYSICAL_MAXIMUM (2^12-1)
   0x75, RX_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
   0x95, 0x01,           // REPORT_COUNT (1)
   0x81, 0x02,         // INPUT (Data,Var,Abs)
 
   0x09, 0x34,         // USAGE (ry)
-  0x16, RY_AXIS_LOG_MIN & 0xFF, (RY_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM
-  0x27, RY_AXIS_LOG_MAX & 0xFF, (RY_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM
+  0x16, RY_AXIS_LOG_MIN & 0xFF, (RY_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
+  0x27, RY_AXIS_LOG_MAX & 0xFF, (RY_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-  0x47, RY_AXIS_PHYS_MAX & 0xFF, (RY_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0,//(RY_AXIS_PHYS_MAX >> 16) & 0xFF,(RY_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
+  0x47, RY_AXIS_PHYS_MAX & 0xFF, (RY_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0, // PHYSICAL_MAXIMUM (2^12-1)
   0x75, RY_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
   0x95, 0x01,           // REPORT_COUNT (1)
   0x81, 0x02,         // INPUT (Data,Var,Abs)
-
-  /*0x09, 0x35,         // USAGE (rz)
-    0x16, RZ_AXIS_LOG_MIN & 0xFF, (RZ_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM
-    0x27, RZ_AXIS_LOG_MAX & 0xFF, (RZ_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM
-    0x35, 0x00,         // PHYSICAL_MINIMUM (00)
-    0x47, RZ_AXIS_PHYS_MAX & 0xFF, (RZ_AXIS_PHYS_MAX >> 8) & 0xFF, 0, 0,//(RZ_AXIS_PHYS_MAX >> 16) & 0xFF,(RZ_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
-    0x75, RZ_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
-    0x95, 0x01,           // REPORT_COUNT (1)
-    0x81, 0x02,         // INPUT (Data,Var,Abs)*/
-
-  //0xc0, // END_COLLECTION
 
   0x09, 0x39,                     // USAGE (HAT SWITCH)
   0x15, 0x01,                     // LOGICAL_MINIMUM (1)
@@ -116,7 +124,7 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x95, 8 - (NB_BUTTONS % 8),     // REPORT_COUNT (padding bits)
   0x81, 0x03,                     // Input (Const,Var,Abs)
 
- #ifdef USE_CONFIGHID
+#ifdef USE_CONFIGHID
   // FOR CONFIG PROFILE
   0x85, 0xf1,                    //   REPORT_ID (f1)
   0x09, 0x01,                    //   USAGE (Vendor Usage 1)
@@ -133,8 +141,10 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)	8
 #endif
   0xc0, // END_COLLECTION
+};
 
-
+const uint8_t _pidReportDescriptor[] PROGMEM =
+{
   //FFB part (PID) starts from here
   0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
   0x09, 0x92,	// USAGE (PID State Report)

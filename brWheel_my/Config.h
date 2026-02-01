@@ -68,6 +68,8 @@
 #define BUTTON7 6 // D6, used for button7
 #define B7PORTBIT 7 // read bit7 of PIND
 
+#define PROFILE_SWITCH_PIN 16
+
 #define PWM_PIN_L     9 // milos, left PWM pin
 #if defined(USE_PWM_0_50_100_MODE) || defined(USE_PWM_DIR_MODE)
 #define DIR_PIN       10

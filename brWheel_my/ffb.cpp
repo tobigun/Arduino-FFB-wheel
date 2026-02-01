@@ -37,7 +37,10 @@
 
 //------------------------------------- Defines ----------------------------------------------------------
 u8 valueglobal = 55;
+
 #define LEDs_SetAllLEDs(l)
+
+bool useDrivingHidProfile = false;
 
 //--------------------------------------- Globals --------------------------------------------------------
 
@@ -170,12 +173,29 @@ bool HID_::HID_SetReport(USBSetup& setup)
 
 //-------------------------------------------------------------------------------------------------------------
 
+static uint8_t dynamicHidReportDescriptor[sizeof(_hidReportDescriptor)];
+
+void BuildHIDDescriptor()
+{
+  memcpy_P((void*) dynamicHidReportDescriptor, _hidReportDescriptor, sizeof(_hidReportDescriptor));
+  if (useDrivingHidProfile) {
+    dynamicHidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
+    dynamicHidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
+    dynamicHidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
+    dynamicHidReportDescriptor[AXES_Z_USAGE_OFFSET] = USAGE_SIM_ACCELERATOR;
+  }
+}
+
 void FfbSetDriver(uint8_t id)
 {
   ffb = &ffb_drivers[id];
   
-  static HIDSubDescriptor node(_hidReportDescriptor, sizeof(_hidReportDescriptor));
-  HID().AppendDescriptor(&node);
+  BuildHIDDescriptor();
+
+  static HIDSubDescriptor hidNode(dynamicHidReportDescriptor, sizeof(dynamicHidReportDescriptor));
+  static HIDSubDescriptor pidNode(_pidReportDescriptor, sizeof(_pidReportDescriptor), TRANSFER_PGM);
+  HID().AppendDescriptor(&hidNode);
+  HID().AppendDescriptor(&pidNode);
   HID().begin();
 }
 
