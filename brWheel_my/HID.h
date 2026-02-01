@@ -73,9 +73,9 @@
 #define HID_TX HID_ENDPOINT_INT
 #define HID_RX HID_ENDPOINT_OUT
 
-#define NB_AXIS			     5
-#define NB_FF_AXIS		   2  //1
-#define NB_BUTTONS		  10  //16
+#define NB_AXIS			5
+#define NB_FF_AXIS		1
+#define NB_BUTTONS		10  //16
 #define X_AXIS_NB_BITS	16  //16
 #define Y_AXIS_NB_BITS	16	//10
 #define Z_AXIS_NB_BITS	12  //10

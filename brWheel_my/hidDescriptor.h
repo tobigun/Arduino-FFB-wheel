@@ -31,17 +31,27 @@
 #define USAGE_SIM_BRAKE 0xC5
 #define USAGE_SIM_ACCELERATOR 0xC4
 
+#define USE_GENERIC_AXIS_DEFAULT_PROFILE
+#ifdef USE_GENERIC_AXIS_DEFAULT_PROFILE
 #define DEFAULT_USAGE_PAGE USAGE_PAGE_GENERIC_DESKTOP
 #define DEFAULT_X_USAGE  USAGE_GENERIC_X
 #define DEFAULT_Y_USAGE  USAGE_GENERIC_Y
 #define DEFAULT_Z_USAGE  USAGE_GENERIC_Z
+#else
+#define DEFAULT_USAGE_PAGE USAGE_PAGE_SIMULATION_CONTROLS
+#define DEFAULT_X_USAGE  USAGE_SIM_STEERING
+#define DEFAULT_Y_USAGE  USAGE_SIM_BRAKE
+#define DEFAULT_Z_USAGE  USAGE_SIM_ACCELERATOR
+#endif
 
 #define MAIN_AXES_USAGE_PAGE_OFFSET 11
 #define AXES_X_USAGE_OFFSET (MAIN_AXES_USAGE_PAGE_OFFSET + 2)
 #define AXES_Y_USAGE_OFFSET (AXES_X_USAGE_OFFSET + 25)
 #define AXES_Z_USAGE_OFFSET (AXES_Y_USAGE_OFFSET + 23)
+#define FFB_AXES_USAGE_PAGE_OFFSET (sizeof(_dynamicHidReportDescriptor) - 12 - NB_FF_AXIS * 2)
+#define FFB_AXES_USAGE_OFFSET (FFB_AXES_USAGE_PAGE_OFFSET + 2)
 
-const uint8_t _hidReportDescriptor[] PROGMEM =
+const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
 {
   0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
   0x09, 0x04,	// USAGE (Joystick)
@@ -53,6 +63,8 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [AXES_X_USAGE_OFFSET]
   0x17, X_AXIS_LOG_MIN & 0xFF, (X_AXIS_LOG_MIN >> 8) & 0xFF, (X_AXIS_LOG_MIN >> 16) & 0xFF, (X_AXIS_LOG_MIN >> 24) & 0xFF, // LOGICAL_MINIMUM (0)
   0x27, X_AXIS_LOG_MAX & 0xFF, (X_AXIS_LOG_MAX >> 8) & 0xFF, (X_AXIS_LOG_MAX >> 16) & 0xFF, (X_AXIS_LOG_MAX >> 24) & 0xFF, // LOGICAL_MAXIMUM (2^16-1)
+  //0x16, 0x00, 0x80, // Logical Min (-32768)
+  //0x26, 0xFF, 0x7f, // Logical Max (32767)
   0x35, 0x00,         // PHYSICAL_MINIMUM (00)
   0x47, X_AXIS_PHYS_MAX & 0xFF, (X_AXIS_PHYS_MAX >> 8) & 0xFF, (X_AXIS_PHYS_MAX >> 16) & 0xFF, (X_AXIS_PHYS_MAX >> 24) & 0xFF, // PHYSICAL_MAXIMUM (0xffff)
   0x75, X_AXIS_NB_BITS,  // REPORT_SIZE (AXIS_NB_BITS)
@@ -141,10 +153,7 @@ const uint8_t _hidReportDescriptor[] PROGMEM =
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)	8
 #endif
   0xc0, // END_COLLECTION
-};
 
-const uint8_t _pidReportDescriptor[] PROGMEM =
-{
   //FFB part (PID) starts from here
   0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
   0x09, 0x92,	// USAGE (PID State Report)
@@ -253,8 +262,8 @@ const uint8_t _pidReportDescriptor[] PROGMEM =
   0x91, 0x02,	// OUTPUT (Data,Var,Abs)
   0x09, 0x55,	// USAGE (Axes Enable)
   0xA1, 0x02,	// COLLECTION (Logical)
-  0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
-  0x09, 0x30,	// USAGE (X)
+  0x05, DEFAULT_USAGE_PAGE, // USAGE_PAGE (Generic Desktop: 0x01 / Simulation Controls: 0x02) [FFB_AXES_USAGE_PAGE_OFFSET]
+  0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [FFB_AXES_USAGE_OFFSET]
 #if (NB_FF_AXIS > 1)
   0x09, 0x31,	// USAGE (Y)
 #endif
@@ -264,7 +273,9 @@ const uint8_t _pidReportDescriptor[] PROGMEM =
   0x95, NB_FF_AXIS,	// REPORT_COUNT (NB_FF_AXIS)
   0x91, 0x02,	// OUTPUT (Data,Var,Abs)
   0xC0,	// END COLLECTION ()
+};
 
+const uint8_t _staticHidReportDescriptor[] PROGMEM = {
   0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
   0x09, 0x56,	// USAGE (Direction Enable)
   0x95, 0x01,	// REPORT_COUNT (01)

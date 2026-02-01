@@ -173,16 +173,18 @@ bool HID_::HID_SetReport(USBSetup& setup)
 
 //-------------------------------------------------------------------------------------------------------------
 
-static uint8_t dynamicHidReportDescriptor[sizeof(_hidReportDescriptor)];
+static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
 
 void BuildHIDDescriptor()
 {
-  memcpy_P((void*) dynamicHidReportDescriptor, _hidReportDescriptor, sizeof(_hidReportDescriptor));
+  memcpy_P((void*) dynamicHidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
   if (useDrivingHidProfile) {
     dynamicHidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
     dynamicHidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
     dynamicHidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
     dynamicHidReportDescriptor[AXES_Z_USAGE_OFFSET] = USAGE_SIM_ACCELERATOR;
+    dynamicHidReportDescriptor[FFB_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;    
+    dynamicHidReportDescriptor[FFB_AXES_USAGE_OFFSET] = USAGE_SIM_STEERING;    
   }
 }
 
@@ -192,10 +194,10 @@ void FfbSetDriver(uint8_t id)
   
   BuildHIDDescriptor();
 
-  static HIDSubDescriptor hidNode(dynamicHidReportDescriptor, sizeof(dynamicHidReportDescriptor));
-  static HIDSubDescriptor pidNode(_pidReportDescriptor, sizeof(_pidReportDescriptor), TRANSFER_PGM);
-  HID().AppendDescriptor(&hidNode);
-  HID().AppendDescriptor(&pidNode);
+  static HIDSubDescriptor dynamicHidNode(dynamicHidReportDescriptor, sizeof(dynamicHidReportDescriptor));
+  static HIDSubDescriptor staticPidNode(_staticHidReportDescriptor, sizeof(_staticHidReportDescriptor), TRANSFER_PGM);
+  HID().AppendDescriptor(&dynamicHidNode);
+  HID().AppendDescriptor(&staticPidNode);
   HID().begin();
 }
 
