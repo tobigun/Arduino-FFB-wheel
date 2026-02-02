@@ -21,35 +21,18 @@
 //#define USE_PWM_DIR_MODE
 //#define USE_PWM_PLUS_MINUS_MODE
 
-#define CALIBRATE_AT_INIT	0 // milos, was 1
-
 //------------------------------------- Pins -------------------------------------------------------------
 
-//#define LED_PIN				12
-//#define	LCSYNC_LED_PIN		12
-//#define	SYNC_LED_PIN		12 //milos, USB polling clock
-
-//milos, added - ffb clip LED indicator
-
-#ifdef USE_PROMICRO // milos, if we use proMicro
 //#define LED_GREEN_PIN 1 // Green LED directly connected to 12V supply
 #define LED_BLUE_PIN 0
 #define LED_RED_PIN 3 // for ProMicro if no above i2C devices
 #define FFBCLIP_LED_PIN LED_RED_PIN // for ProMicro if no above i2C devices
-#endif // end of promicro
 
-#ifdef USE_ANALOGFFBAXIS
 #define XAXIS_PIN			A0
 #define BRAKE_PIN     A1
 #define ACCEL_PIN			A2
 #define CLUTCH_PIN		A3
 #define HBRAKE_PIN    A8
-#else
-#define ACCEL_PIN			A0
-#define BRAKE_PIN     A1
-#define CLUTCH_PIN    A2
-#define HBRAKE_PIN    A3
-#endif
 
 #define BUTTON0 5 // D5, used for button0
 #define B0PORTBIT 6 // read bit6 of PINC
@@ -281,11 +264,7 @@ struct s32a { // milos, added - holds individual bit axis properties
 
 const uint8_t avgSamples = 4; // milos, added - number of samples for averaging of arduino analog inputs
 // milos, default axis calibration values depend on usage of averaging or external ADC
-#ifdef AVG_INPUTS
-const uint16_t maxCal = 4095;
-#else // if no avg inputs
 const uint16_t maxCal = ANALOG_MAX;
-#endif // end of avg inputs
 
 void SetEEPROMConfig();
 void LoadEEPROMConfig();

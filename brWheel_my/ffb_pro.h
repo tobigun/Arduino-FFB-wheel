@@ -13,16 +13,6 @@ const int32_t FRC_THRESHOLD = 1; //milos, added - friction treshold
 
 #define ADC_NB_BITS		10
 #define VAL_NB_BITS		16
-#define MAX_VAL			((1<<VAL_NB_BITS)-1)
-#define MID_VAL			(1<<(VAL_NB_BITS-1))
-
-#define MID_REPORT_X  (X_AXIS_PHYS_MAX >> 1) // milos, 32767
-#define MID_REPORT_Y  (Y_AXIS_PHYS_MAX >> 1)
-#define MID_REPORT_Z 	(Z_AXIS_PHYS_MAX >> 1)
-
-#if 0//defined(__AVR_ATmega32U4__)										// On arduino uno we only have 2 external hardware interrupt pins, on Leonardo we can use pin other interrupts
-#define INDEX_USE_INTERRUPTS
-#endif
 
 #define CALIBRATING_LEFT			0x0
 #define CALIBRATING_RIGHT			0x1

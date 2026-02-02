@@ -29,7 +29,6 @@
 #include "ffb_pro.h"
 #include "common.h"
 #include "debug.h"
-#include "QuadEncoder.h"
 #include <util/delay.h>
 
 //------------------------------------- Defines ----------------------------------------------------------
@@ -298,11 +297,6 @@ int32_t ScaleMagnitude (int32_t eMag, u16 eGain, float eDivider) { //milos, adde
 }
 
 //--------------------------------------------------------------------------------------------------------
-
-void SetIndex () {
-  gIndexFound = true;
-  // 	myEnc.set(ROTATION_MID);
-}
 
 float EffectDivider() { //milos, added, calculates effects divider in order to scale magnitudes equaly for all PWM modes
   return (32767.0 / float(TOP)); //milos, was 32767.0
