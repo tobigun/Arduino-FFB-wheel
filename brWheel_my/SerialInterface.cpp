@@ -55,7 +55,8 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         CONFIG_SERIAL.print(FIRMWARE_VERSION, DEC);
         // milos, firmware options
 #ifndef USE_QUADRATURE_ENCODER
-        CONFIG_SERIAL.print("d"); // milos, if no optical encoder
+        // pretend that we are an optical encoder to be able to calibrate Z-Axis
+        //CONFIG_SERIAL.print("d"); // milos, if no optical encoder
 #endif
 #ifdef USE_HATSWITCH
         CONFIG_SERIAL.print("h");
@@ -64,7 +65,8 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         CONFIG_SERIAL.print("t");
 #endif
 #ifdef USE_ANALOGFFBAXIS
-        CONFIG_SERIAL.print("x");
+        // do not send this information to hide steering axis selection, as axis is fixed to X
+        //CONFIG_SERIAL.print("x");
 #endif
 #ifdef USE_PROMICRO
         CONFIG_SERIAL.print("m");
