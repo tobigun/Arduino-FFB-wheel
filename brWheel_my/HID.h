@@ -75,33 +75,31 @@
 
 #define NB_AXIS			5
 #define NB_FF_AXIS		2 // must be 2, otherwise Forza Horizon 4 will crash when starting
-#define NB_BUTTONS		10  //16
-#define X_AXIS_NB_BITS	16  //16
-#define Y_AXIS_NB_BITS	16	//10
-#define Z_AXIS_NB_BITS	12  //10
-#define RX_AXIS_NB_BITS	12  //10
-#define RY_AXIS_NB_BITS 12  //10
-#define RZ_AXIS_NB_BITS 12  //10
+#define NB_BUTTONS		10
+#define X_AXIS_NB_BITS	16
+#define AXIS_NB_BITS    10
+#define Y_AXIS_NB_BITS	AXIS_NB_BITS
+#define Z_AXIS_NB_BITS	AXIS_NB_BITS
+#define RX_AXIS_NB_BITS	AXIS_NB_BITS
+#define RY_AXIS_NB_BITS AXIS_NB_BITS
 
-#define X_AXIS_LOG_MAX	((1L<<(X_AXIS_NB_BITS))-1)//((1L<<(X_AXIS_NB_BITS-1))-1)
-#define X_AXIS_LOG_MIN	0L //(-X_AXIS_LOG_MAX)
-#define X_AXIS_PHYS_MAX	((1L<<X_AXIS_NB_BITS)-1)
+#define AXIS_LOG_MAX	((1L<<(AXIS_NB_BITS))-1) // 1023
 
 #define X_AXIS_LOG_MAX	32767L
 #define X_AXIS_LOG_MIN	0L
 #define MID_REPORT_X  (X_AXIS_LOG_MAX >> 1)
 
-#define Y_AXIS_LOG_MAX	32767L
+#define Y_AXIS_LOG_MAX	AXIS_LOG_MAX
 #define Y_AXIS_LOG_MIN	0L
 
-#define Z_AXIS_LOG_MAX	((1L<<(Z_AXIS_NB_BITS))-1)
+#define Z_AXIS_LOG_MAX	AXIS_LOG_MAX
 #define Z_AXIS_LOG_MIN	0L
 
-#define RX_AXIS_LOG_MAX	((1L<<(RX_AXIS_NB_BITS))-1)
+#define RX_AXIS_LOG_MAX	AXIS_LOG_MAX
 #define RX_AXIS_LOG_MIN	0L
 
-#define RY_AXIS_LOG_MAX ((1L<<(RY_AXIS_NB_BITS))-1)
+#define RY_AXIS_LOG_MAX AXIS_LOG_MAX
 #define RY_AXIS_LOG_MIN 0L
 
-#define RZ_AXIS_LOG_MAX ((1L<<(RZ_AXIS_NB_BITS))-1)
+#define RZ_AXIS_LOG_MAX AXIS_LOG_MAX
 #define RZ_AXIS_LOG_MIN 0L

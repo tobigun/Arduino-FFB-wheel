@@ -121,34 +121,15 @@ extern uint8_t LC_scaling;
 extern uint8_t effstate;
 
 struct fwOpt { // milos, added - firmware option stuct
-  boolean a = false; // autocalibration (of analog axis)
-  boolean b = false; // 2-ffb axis
-  boolean c = false; // center button
   boolean d = false; // no optical encoder
-  boolean e = false; // extra buttons
-  boolean f = false; // xy shifter
-  boolean g = false; // external dac (mcp4725)
   boolean h = false; // hat switch
-  boolean i = false; // averaging (of analog axis)
-  boolean l = false; // load cell
   boolean m = false; // proMicro pinouts
-  boolean n = false; // shift register (nano button box)
-  boolean p = false; // no EEPROM
-  boolean r = false; // shift register (SN74ALS166N)
-  boolean s = false; // exernal adc (ads1015 or ads1115)
   boolean t = false; // button matrix
-  boolean u = false; // i2C multiplexer chip (tca9548), for 2nd as5600
-  boolean w = false; // magnetic encoder (as5600)
   boolean x = false; // analog axis for ffb
-  boolean z = false; // z-index
 };
 
 void update(fwOpt *option);
 
-
-#ifdef USE_ANALOGFFBAXIS
-byte indxFFBAxis(byte value);
-#endif
 
 extern uint8_t pwmstate; // =0b00000101; // milos, PWM settings configuration byte, bit7 is MSB
 
@@ -211,40 +192,8 @@ struct s32v { // milos, added - 2 dimensional vector structure (for ffb and posi
 extern float FFB_bal; // milos, FFB balance slider
 extern float L_bal; // milos, left PWM balance multiplier
 extern float R_bal; // milos, right PWM balance multiplier
-extern float minTorquePP; // milos, added - min torque in percents
-
-// milos, added - RCM pwm mode definitions
-extern float RCM_min; // minimal RCM pulse width in ms
-extern float RCM_zer; // zero RCM pulse width in ms
-extern float RCM_max; // maximal RCM pulse width in ms
-
-extern boolean zIndexFound;
-
-float RCMscaler (byte value);
-
 
 uint32_t decodeHat(uint32_t inbits);
-
-struct xysh { // milos, added - holds shifter configuration
-  uint16_t cal[5]; // calibration limits that define where the gears are
-  // i  cal gears (if <=)
-  // 0  x0  1
-  // 1  x1  3
-  // 2  x2  5
-  // 3  y0  2,4,6,8, R
-  // 4  y1  N
-  uint8_t cfg;
-  //bit0-revBtn invert,bit1-8 gears,bit2-X invert,bit3-Y invert,bit4-unused,bit5-unused,bit6-unused,bit7-unused
-  //bit0=1: reverse gear button inverted (for logitech G25/G27/G29/G923 H-shifters)
-  //bit1=1: 8 gear mode (r gear in 8th)
-  //bit2=1: X-axis inverted
-  //bit3=1: Y-axis inverted
-  int16_t x; // horizontal position
-  int16_t y; // vertical position
-};
-
-// milos - added, function for decoding XY shifter analog values into last 8 buttons
-uint32_t decodeXYshifter (uint32_t inbits, xysh *s);
 
 struct s16a { // milos, added - holds individual 16bit axis properties
   int16_t val;
@@ -262,7 +211,6 @@ struct s32a { // milos, added - holds individual bit axis properties
 
 #define ANALOG_MAX 1023
 
-const uint8_t avgSamples = 4; // milos, added - number of samples for averaging of arduino analog inputs
 // milos, default axis calibration values depend on usage of averaging or external ADC
 const uint16_t maxCal = ANALOG_MAX;
 

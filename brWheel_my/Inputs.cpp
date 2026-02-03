@@ -79,8 +79,33 @@ void InitButtons() { // milos, added - if not using shift register, allocate som
   setMatrixRow(BUTTON7, HIGH);
 }
 
-u32 readInputButtons() {
-  u32 buttons = 0;
+// decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
+uint8_t decodeHat(uint16_t inbits) {
+  byte hat;
+  byte dec = 0b1111 & inbits; //milos, only take 1st 4 bits from inbits
+  if (dec == 1) { //up
+    hat = 1;
+  } else if (dec == 2) { //right
+    hat = 3;
+  } else if (dec == 4) { //down
+    hat = 5;
+  } else if (dec == 8) { //left
+    hat = 7;
+  } else if (dec == 3) { //up_right
+    hat = 2;
+  } else if (dec == 6) { //down_right
+    hat = 4;
+  } else if (dec == 9) { //up_left
+    hat = 8;
+  } else if (dec == 12) { //down_left
+    hat = 6;
+  } else {
+    hat = 0;
+  }
+  return hat;
+}
+
+void readInputButtons(uint16_t& buttons, uint8_t& hat) {
   // buttons 0-3 of are columns j
   // buttons 4-7 of are rows i
   // Matrix element is Bij
@@ -98,9 +123,8 @@ u32 readInputButtons() {
     setMatrixRow (i, HIGH);
   }
 
-  buttons = decodeHat(buttons); // milos, decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
-
-  return (buttons); // milos, we send all 4 bytes
+  hat = decodeHat(buttons);
+  buttons >>= 4; // shift out the hat bits from buttons variable
 }
 
 bool readSingleButton (uint8_t i) { // milos, added

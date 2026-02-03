@@ -28,8 +28,10 @@
 #include "Config.h"
 #include "ConfigHID.h"
 #include "HID.h"
+#include "hidDescriptor.h"
 #include "common.h"
 #include "debug.h"
+#include "packed.h"
 #include <Wire.h>
 
 //--------------------------------------- Globals --------------------------------------------------------
@@ -40,7 +42,6 @@ s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
 s32v turn; // struct containing scaled x and y-axis for usb send report (for one optical or two magnetic encoders)
 s32v axis; // struct containing x and y-axis position input for calculating xy ffb
 s32v ffbs; // instance of struct holding 2 axis FFB data
-u32 button = 0;
 
 cFFB gFFB;
 BRFFB brWheelFFB;
@@ -50,7 +51,7 @@ u32 last_refresh = 0;
 u32 now_micros = micros();
 u32 timeDiffConfigSerial = now_micros;
 
-void SendInputReport(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t ry, uint32_t buttons);
+static void sendInputReport(uint16_t x, uint16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
 
 //--------------------------------------------------------------------------------------------------------
 //-------------------------------------------- SETUP -----------------------------------------------------
@@ -197,9 +198,11 @@ void loop() {
         hbrake.val = map(hbrake.val, hbrake.min, hbrake.max, 0, RY_AXIS_LOG_MAX);
         hbrake.val = constrain(hbrake.val, 0, RY_AXIS_LOG_MAX);
 
-        button = readInputButtons(); // read all buttons including matrix and hat switch
+        uint16_t buttons;
+        uint8_t hat;
+        readInputButtons(buttons, hat); // read all buttons including matrix and hat switch
 
-        SendInputReport(turn.x + MID_REPORT_X + 1, brake.val, accel.val, clutch.val, hbrake.val, button); // milos
+        sendInputReport(turn.x + MID_REPORT_X + 1, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
 
 #ifdef USE_CONFIGCDC
         if (timeDiffConfigSerial >= CONFIG_SERIAL_PERIOD) {
@@ -214,23 +217,36 @@ void loop() {
 }
 
 
-// 16+16+12+12+12 bits axis + 10 buttons
-void SendInputReport(uint16_t x, uint16_t y, uint16_t z, uint16_t rx, uint16_t ry, uint32_t buttons)
+struct ATTR_PACKED InputReport
 {
-  // total of 12 bytes, 2B for x, 2B for y, 3B for z and rx, 4B for ry and buttons
-  uint8_t j[12];
-  j[0] = x;
-  j[1] = x >> 8;
-  j[2] = y;
-  j[3] = y >> 8;
-  j[4] = z;
-  j[5] = ((z >> 8) & 0xf) | ((rx & 0xf) << 4);
-  j[6] = rx >> 4;
-  j[7] = ry;
-  j[8] = ((ry >> 8) & 0xf) | ((buttons & 0xf) << 4);
-  j[9] = ((buttons >> 4) & 0x3f) | ((buttons >> 6) & 0xc0);
-  j[10] = buttons >> 14;
+  int16_t x;
+  int16_t y;
+  int16_t z;
+  int16_t rx;
+  int16_t ry;
+  uint8_t hat;
+  uint16_t buttons : NB_BUTTONS;
+  uint8_t padding : 8 - (NB_BUTTONS % 8);
+};
 
-  HID().SendReport(4, j, 11);
+#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
+
+static void sendInputReport(uint16_t x, uint16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons)
+{
+  uint8_t gearBtns = buttons & 0b11;
+  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
+  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
+  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
+
+  InputReport report = {
+    x: x,
+    y: y,
+    z: z,
+    rx: rx,
+    ry: ry,
+    hat: hat,
+    buttons: dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8)
+  };
+  HID().SendReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
 }
 

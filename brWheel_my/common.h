@@ -15,6 +15,6 @@ void SetPWM (s32v *torque);
 
 void InitInputs();
 void InitButtons();
-u32 readInputButtons();
+void readInputButtons(uint16_t& buttons, uint8_t& hat);
 
 void configCDC();

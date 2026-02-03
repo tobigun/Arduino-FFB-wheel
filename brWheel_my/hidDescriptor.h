@@ -51,50 +51,36 @@
 #define FFB_AXES_USAGE_PAGE_OFFSET (sizeof(_dynamicHidReportDescriptor) - 12 - NB_FF_AXIS * 2)
 #define FFB_AXES_USAGE_OFFSET (FFB_AXES_USAGE_PAGE_OFFSET + 2)
 
+#define INPUT_REPORT_ID 4
+
 const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
 {
   0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
   0x09, 0x04,	// USAGE (Joystick)
   0xA1, 0x01,	// COLLECTION (Application)
-    0x85, 0x04,	// REPORT_ID (04)
+    0x85, INPUT_REPORT_ID,	// REPORT_ID (04)
     0xA1, 0x00, // COLLECTION (Physical)
       #pragma region
       0x05, DEFAULT_USAGE_PAGE, // USAGE_PAGE (Generic Desktop: 0x01 / Simulation Controls: 0x02) [AXES_USAGE_PAGE_OFFSET]
-      0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [AXES_X_USAGE_OFFSET]
-      0x17, X_AXIS_LOG_MIN & 0xFF, (X_AXIS_LOG_MIN >> 8) & 0xFF, (X_AXIS_LOG_MIN >> 16) & 0xFF, (X_AXIS_LOG_MIN >> 24) & 0xFF, // LOGICAL_MINIMUM (0)
-      0x27, X_AXIS_LOG_MAX & 0xFF, (X_AXIS_LOG_MAX >> 8) & 0xFF, (X_AXIS_LOG_MAX >> 16) & 0xFF, (X_AXIS_LOG_MAX >> 24) & 0xFF, // LOGICAL_MAXIMUM (2^16-1)
-      0x75, X_AXIS_NB_BITS,  // REPORT_SIZE (AXIS_NB_BITS)
+      0x75, 0x10,            // REPORT_SIZE (16)
       0x95, 0x01,            // REPORT_COUNT (1)
-      0x81, 0x02,         // INPUT (Data,Var,Abs)
 
+      0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [AXES_X_USAGE_OFFSET]
+      0x15, 0,               // LOGICAL_MINIMUM (0)
+      0x26, 0xFF, 0x7F,      // LOGICAL_MAXIMUM (32767)
+      0x81, 0x02,            // INPUT (Data,Var,Abs)
+
+      0x15, 0,               // LOGICAL_MINIMUM (0)
+      0x26, 0xFF, 0x03,      // LOGICAL_MAXIMUM (1023)
       0x09, DEFAULT_Y_USAGE, // USAGE (Y / Brake) [AXES_Y_USAGE_OFFSET]
-      0x16, Y_AXIS_LOG_MIN & 0xFF, (Y_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
-      0x27, Y_AXIS_LOG_MAX & 0xFF, (Y_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^16-1)
-      0x75, Y_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
-      0x95, 0x01,           // REPORT_COUNT (1)
-      0x81, 0x02,         // INPUT (Data,Var,Abs)
-
+      0x81, 0x02,            // INPUT (Data,Var,Abs)
       0x09, DEFAULT_Z_USAGE, // USAGE (Z / Accelerator) [AXES_Z_USAGE_OFFSET]
-      0x16, Z_AXIS_LOG_MIN & 0xFF, (Z_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
-      0x27, Z_AXIS_LOG_MAX & 0xFF, (Z_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
-      0x75, Z_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
-      0x95, 0x01,           // REPORT_COUNT (1)
-      0x81, 0x02,         // INPUT (Data,Var,Abs)
-
-      0x05, 0x01,	        // USAGE_PAGE (Generic Desktop)
-      0x09, 0x33,         // USAGE (rx)
-      0x16, RX_AXIS_LOG_MIN & 0xFF, (RX_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
-      0x27, RX_AXIS_LOG_MAX & 0xFF, (RX_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
-      0x75, RX_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
-      0x95, 0x01,           // REPORT_COUNT (1)
-      0x81, 0x02,         // INPUT (Data,Var,Abs)
-
-      0x09, 0x34,         // USAGE (ry)
-      0x16, RY_AXIS_LOG_MIN & 0xFF, (RY_AXIS_LOG_MIN >> 8) & 0xFF, // LOGICAL_MINIMUM (0)
-      0x27, RY_AXIS_LOG_MAX & 0xFF, (RY_AXIS_LOG_MAX >> 8) & 0xFF, 0, 0, // LOGICAL_MAXIMUM (2^12-1)
-      0x75, RY_AXIS_NB_BITS,   // REPORT_SIZE (AXIS_NB_BITS)
-      0x95, 0x01,           // REPORT_COUNT (1)
-      0x81, 0x02,         // INPUT (Data,Var,Abs)
+      0x81, 0x02,            // INPUT (Data,Var,Abs)
+      0x05, 0x01,	           // USAGE_PAGE (Generic Desktop)
+      0x09, 0x33,            // USAGE (rx)
+      0x81, 0x02,            // INPUT (Data,Var,Abs)
+      0x09, 0x34,            // USAGE (ry)
+      0x81, 0x02,            // INPUT (Data,Var,Abs)
 
       0x09, 0x39,                     // USAGE (HAT SWITCH)
       0x15, 0x01,                     // LOGICAL_MINIMUM (1)
@@ -103,7 +89,7 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x46, 0x3B, 0x01,               // PHYSICAL_MAXIMUM (315)
       0x65, 0x14,                     // UNIT (Eng Rot:Angular Pos)
       0x55, 0x00,                     // UNIT_EXPONENT (0)
-      0x75, 0x04,                     // REPORT_SIZE (4)
+      0x75, 0x08,                     // REPORT_SIZE (8)
       0x95, 0x01,                     // REPORT_COUNT (1)
       0x81, 0x02,                     // Input (Data,Var,Abs)
 

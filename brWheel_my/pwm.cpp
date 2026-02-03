@@ -15,10 +15,6 @@ void InitPWM() {
 #endif
   TOP = calcTOP(pwmstate); // milos, this will set appropriate TOP value for all PWM modes, depending on pwmstate loaded from EEPROM
   MM_MAX_MOTOR_TORQUE = TOP;
-  minTorquePP = ((float)MM_MIN_MOTOR_TORQUE) / ((float)MM_MAX_MOTOR_TORQUE); // milos
-  RCM_min *= RCMscaler(pwmstate); // milos - takes into account fast pwm or phase correct mode
-  RCM_zer *= RCMscaler(pwmstate); // milos
-  RCM_max *= RCMscaler(pwmstate); // milos
 
   PWM16Begin(); // Timer1 and Timer3 configuration: frequency and mode depend on pwmstate byte
   PWM16A(0);  // Set initial PWM value for Pin 9
@@ -107,19 +103,6 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
       }
       torque->x = map(abs(torque->x), 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, MM_MAX_MOTOR_TORQUE);
       PWM16A(torque->x);
-#elif defined(USE_PWM_RCM_MODE) // RCM mode
-      if (torque->x > 0) {
-        torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 + minTorquePP), RCM_max);
-        PWM16A(torque->x);
-      } else if (torque->x < 0) {
-        torque->x = map(-torque->x, 0, MM_MAX_MOTOR_TORQUE, RCM_zer * (1.0 - minTorquePP), RCM_min);
-        PWM16A(torque->x);
-      } else {
-        PWM16A(RCM_zer);
-      }
-    }
-    PWM16B(RCM_zer);
-    digitalWriteFast(PWM_PIN_R, LOW);
 #else
   #error "No PWM Mode selected"
 #endif
