@@ -14,8 +14,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
   if (CONFIG_SERIAL.available() > 0) {
     uint8_t c = toUpper(CONFIG_SERIAL.read());
     //DEBUG_SERIAL.println(c);
-    int32_t temp, temp1;
-    float wheelAngle;
+    int32_t temp;
     uint8_t ffb_temp;
     switch (c) {
       case 'U': // milos, send all firmware settings
@@ -41,7 +40,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         CONFIG_SERIAL.print(' ');
         CONFIG_SERIAL.print(MM_MIN_MOTOR_TORQUE);
         CONFIG_SERIAL.print(' ');
-        CONFIG_SERIAL.print(LC_scaling);
+        CONFIG_SERIAL.print(ffbBalance);
         CONFIG_SERIAL.print(' ');
         CONFIG_SERIAL.print(effstate, DEC); //milos, desktop effects in decimal form
         CONFIG_SERIAL.print(' ');
@@ -73,54 +72,37 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         CONFIG_SERIAL.print("\r\n");
         break;
       case 'S':
-        CONFIG_SERIAL.println(brWheelFFB.state, DEC);
+        // ununsed
         break;
       case 'R':
-        brWheelFFB.calibrate();
+        // not useful for potentiometer based wheel
         break;
-      case 'B': // milos, added to adjust brake load cell pressure
+      case 'B': // milos, added to adjust balance
         ffb_temp = CONFIG_SERIAL.parseInt();
-        LC_scaling = constrain(ffb_temp, 1, 255);
+        ffbBalance = constrain(ffb_temp, 1, 255);
         CONFIG_SERIAL.println(1);
-        //SetParam(PARAM_ADDR_BRK_PRES, LC_scaling); // milos, update EEPROM
         break;
       case 'P': // milos, added to recalibrate pedals
+        // unused
         CONFIG_SERIAL.println(0);
         break;
       case 'O': // milos, added to adjust optical encoder CPR
-        //temp1 = myEnc.Read() - ROTATION_MID + brWheelFFB.offset; // milos
-        temp1 = 0;
-        temp = CONFIG_SERIAL.parseInt();
-        temp = constrain(temp, 4, 600000); // milos, extended to 32bit (100000*6)
-        wheelAngle = float(temp1) * float(ROTATION_DEG) / float(ROTATION_MAX); // milos, current wheel angle
-        CPR = temp; // milos, update CPR
-        ROTATION_MAX = int32_t(float(CPR) / 360.0 * float(ROTATION_DEG)); // milos, updated
-        ROTATION_MID = ROTATION_MAX >> 1; // milos, updated, divide by 2
-        temp1 = int32_t(wheelAngle * float(ROTATION_MAX) / float(ROTATION_DEG)); // milos, here we recover the old wheel angle
-        //myEnc.Write(temp1 + ROTATION_MID - brWheelFFB.offset); // milos
-        CONFIG_SERIAL.println(1);
-        //SetParam(PARAM_ADDR_ENC_CPR, CPR); // milos, update EEPROM
+        // unused
+        CONFIG_SERIAL.println(0);
         break;
-      case 'C':
-        //myEnc.Write(ROTATION_MID); // milos, just set to zero angle
+      case 'C': // milos, set to zero angle
+        //myEnc.Write(ROTATION_MID);
         CONFIG_SERIAL.println(0);
         break;
       case 'Z': // milos, hard reset the z-index offset
         CONFIG_SERIAL.println(0);
         break;
       case 'G': // milos, set new rotation angle
-        //temp1 = myEnc.Read() - ROTATION_MID + brWheelFFB.offset; // milos
-        temp1 = 0;
         temp = CONFIG_SERIAL.parseInt();
-        temp = constrain(temp, 30, 1800); // milos
-        wheelAngle = float(temp1) * float(ROTATION_DEG) / float(ROTATION_MAX); // milos, current wheel angle
-        ROTATION_DEG = temp; // milos, update degrees of rotation
-        ROTATION_MAX = int32_t(float(CPR) / 360.0 * float(ROTATION_DEG)); // milos, updated
-        ROTATION_MID = ROTATION_MAX >> 1; // milos, updated, divide by 2
-        temp1 = int32_t(wheelAngle * float(ROTATION_MAX) / float(ROTATION_DEG)); // milos, here we recover the old wheel angle
-        //myEnc.Write(temp1 + ROTATION_MID - brWheelFFB.offset); // milos
+        ROTATION_DEG = constrain(temp, 30, 1800); // milos, update degrees of rotation
+        ROTATION_MAX = calcRotationMax();
+        ROTATION_MID = ROTATION_MAX / 2;
         CONFIG_SERIAL.println(1);
-        //SetParam(PARAM_ADDR_ROTATION_DEG, temp);// milos, update EEPROM
         break;
       case 'E': //milos, added - turn desktop effects and ffb monitor on/off
         ffb_temp = CONFIG_SERIAL.parseInt();
@@ -129,8 +111,6 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
           bitWrite(effstate, i, bitRead(ffb_temp, i));
         }
         CONFIG_SERIAL.println(effstate, BIN);
-        //CONFIG_SERIAL.println(1);
-        //SetParam(PARAM_ADDR_DSK_EFFC, effstate); // milos, update EEPROM
         break;
       case 'W': { //milos, added - configure PWM settings and frequency
         ffb_temp = CONFIG_SERIAL.parseInt();
@@ -146,6 +126,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         break;
       }  
       case 'H': // milos, added - configure the XY shifter calibration
+        // unused
         CONFIG_SERIAL.println(0);
         break;
       case 'Y': // milos, added - configure manual calibration for pedals

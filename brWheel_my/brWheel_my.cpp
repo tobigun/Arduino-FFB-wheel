@@ -39,12 +39,8 @@
 fwOpt fwOptions; // struct that holds all firmware options
 s16a accel, clutch, hbrake; // changed from s16
 s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
-s32v turn; // struct containing scaled x and y-axis for usb send report (for one optical or two magnetic encoders)
-s32v axis; // struct containing x and y-axis position input for calculating xy ffb
-s32v ffbs; // instance of struct holding 2 axis FFB data
 
 cFFB gFFB;
-BRFFB brWheelFFB;
 
 u32 last_ConfigSerial = 0;
 u32 last_refresh = 0;
@@ -63,15 +59,13 @@ void setup() {
   accel.val = 0;
   brake.val = 0;
   clutch.val = 0;
-  axis.x = 0;
-  turn.x = 0;
 
   pinMode(LED_BLUE_PIN, OUTPUT);
   digitalWrite(LED_BLUE_PIN, LOW);
 
   SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
-  ROTATION_MAX = int32_t(float(CPR) / 360.0 * float(ROTATION_DEG));
+  ROTATION_MAX = calcRotationMax();
   ROTATION_MID = ROTATION_MAX >> 1;
 
 #ifdef USE_CONFIGHID // used only through HID configuration interface
@@ -81,7 +75,9 @@ void setup() {
   FfbSetDriver(0);
 
   InitPWM(); // initialize PWM (or DAC) settings
-  ffbs.x = 0; // init xFFB at zero
+
+  s32v ffbs; // init xFFB at zero
+  ffbs.x = 0; 
   SetPWM(&ffbs); // zero PWM at startup
   
   last_refresh = micros();
@@ -155,16 +151,18 @@ void loop() {
       int32_t axisXRawVal = (axisXSum << 6) / AXIS_X_NUM_SAMPLES; // max. 22 bits used
 
       // no running average for ffb input
+      s32v axis; // struct containing x and y-axis position input for calculating ffb
       axis.x = map(axisXRawVal, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
+      s32v ffbs = gFFB.CalcTorqueCommands(&axis); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
 
       // apply running average to turn.x for smoother usb report
-      turn.x = axisXRawVal; //averageAxis(axisXRawVal, turn.avg);
-      turn.x = map(turn.x, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);
-
-      ffbs = gFFB.CalcTorqueCommands(&axis); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
-      
-      turn.x *= float(X_AXIS_LOG_MAX) / float(ROTATION_MAX); // conversion to physical HID units
-      turn.x = constrain(turn.x, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
+      uint16_t turnX; // struct containing scaled x and y-axis for usb send report (for one optical or two magnetic encoders)
+      turnX = axisXRawVal; //averageAxis(axisXRawVal, turn.avg);
+      // TODO
+      turnX = map(turnX, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
+      turnX *= float(X_AXIS_LOG_MAX) / float(ROTATION_MAX); // conversion to physical HID units
+      turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
+      turnX += MID_REPORT_X + 1;
 
       SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
       // USB Report
@@ -202,7 +200,7 @@ void loop() {
         uint8_t hat;
         readInputButtons(buttons, hat); // read all buttons including matrix and hat switch
 
-        sendInputReport(turn.x + MID_REPORT_X + 1, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
+        sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
 
 #ifdef USE_CONFIGCDC
         if (timeDiffConfigSerial >= CONFIG_SERIAL_PERIOD) {

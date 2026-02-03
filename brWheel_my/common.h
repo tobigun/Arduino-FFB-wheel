@@ -8,7 +8,6 @@ extern s32a brake;
 extern volatile TEffectState gEffectStates[MAX_EFFECTS + 1];
 
 extern cFFB gFFB;
-extern BRFFB brWheelFFB;
 
 void InitPWM();
 void SetPWM (s32v *torque);

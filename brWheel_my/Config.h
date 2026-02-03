@@ -117,7 +117,7 @@ void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size);
 
 //------------------------------------- FFB/Firmware config -----------------------------------------------------
 
-extern uint8_t LC_scaling;
+extern uint8_t ffbBalance;
 extern uint8_t effstate;
 
 struct fwOpt { // milos, added - firmware option stuct
@@ -189,10 +189,6 @@ struct s32v { // milos, added - 2 dimensional vector structure (for ffb and posi
   int32_t avg;
 };
 
-extern float FFB_bal; // milos, FFB balance slider
-extern float L_bal; // milos, left PWM balance multiplier
-extern float R_bal; // milos, right PWM balance multiplier
-
 uint32_t decodeHat(uint32_t inbits);
 
 struct s16a { // milos, added - holds individual 16bit axis properties
@@ -213,6 +209,10 @@ struct s32a { // milos, added - holds individual bit axis properties
 
 // milos, default axis calibration values depend on usage of averaging or external ADC
 const uint16_t maxCal = ANALOG_MAX;
+
+inline int32_t calcRotationMax() {
+  return int32_t(float(CPR) / 360.0 * float(ROTATION_DEG));
+}
 
 void SetEEPROMConfig();
 void LoadEEPROMConfig();

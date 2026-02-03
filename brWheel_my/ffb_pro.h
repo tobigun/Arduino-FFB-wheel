@@ -83,13 +83,4 @@ class cFFB {
     int8_t mAutoCenter;
 };
 
-class BRFFB {
-  public:
-    BRFFB();
-    void calibrate();
-    int32_t offset;
-    int8_t state;
-    //int8_t autoCenter;
-};
-
 #endif // _FFB_PRO_

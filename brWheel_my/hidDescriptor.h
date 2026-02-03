@@ -66,12 +66,12 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x95, 0x01,            // REPORT_COUNT (1)
 
       0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [AXES_X_USAGE_OFFSET]
-      0x15, 0,               // LOGICAL_MINIMUM (0)
-      0x26, 0xFF, 0x7F,      // LOGICAL_MAXIMUM (32767)
+      0x15, 0,               // LOGICAL_MINIMUM (X_AXIS_LOG_MIN = 0)
+      0x26, 0xFF, 0x7F,      // LOGICAL_MAXIMUM (X_AXIS_LOG_MAX = 32767)
       0x81, 0x02,            // INPUT (Data,Var,Abs)
 
-      0x15, 0,               // LOGICAL_MINIMUM (0)
-      0x26, 0xFF, 0x03,      // LOGICAL_MAXIMUM (1023)
+      0x15, 0,               // LOGICAL_MINIMUM (AXIS_LOG_MIN = 0)
+      0x26, 0xFF, 0x03,      // LOGICAL_MAXIMUM (AXIS_LOG_MAX = 1023)
       0x09, DEFAULT_Y_USAGE, // USAGE (Y / Brake) [AXES_Y_USAGE_OFFSET]
       0x81, 0x02,            // INPUT (Data,Var,Abs)
       0x09, DEFAULT_Z_USAGE, // USAGE (Z / Accelerator) [AXES_Z_USAGE_OFFSET]

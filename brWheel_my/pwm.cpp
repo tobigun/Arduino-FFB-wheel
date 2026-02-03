@@ -53,16 +53,17 @@ void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis
   if (torque != NULL) { // milos, this check is always required for pointers
     activateFFBclipLED(torque->x); // milos, for promicro we can only use ffb clip led on D3 if not using all above
 
-    FFB_bal = (float)(LC_scaling - 128) / 255.0; // milos, max value is 0.5
-    if (FFB_bal >= 0) {
-      L_bal = 1.0 - FFB_bal;
-      R_bal = 1.0;
-    } else {
-      L_bal = 1.0;
-      R_bal = 1.0 + FFB_bal;
-    }
-
 #if defined(USE_PWM_PLUS_MINUS_MODE) // PWM+- mode
+      float L_bal; // milos, left PWM balance multiplier
+      float R_bal; // milos, right PWM balance multiplier
+      float FFB_bal = (float)(ffbBalance - 128) / 255.0; // milos, max value is 0.5
+      if (FFB_bal >= 0) {
+        L_bal = 1.0 - FFB_bal;
+        R_bal = 1.0;
+      } else {
+        L_bal = 1.0;
+        R_bal = 1.0 + FFB_bal;
+      }
       if (torque->x > 0) {
         torque->x = map(torque->x, 0, MM_MAX_MOTOR_TORQUE, MM_MIN_MOTOR_TORQUE, R_bal * MM_MAX_MOTOR_TORQUE);
         PWM16A(torque->x);
