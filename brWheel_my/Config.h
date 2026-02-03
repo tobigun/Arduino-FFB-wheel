@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "HID.h"
 
 //------------------------------------- Firmware options -------------------------------------------------
 
@@ -175,8 +176,10 @@ extern uint16_t PWMtops [13];
 
 extern int16_t ROTATION_DEG; // milos
 extern int32_t CPR; // milos
-extern int32_t ROTATION_MAX; // milos
-extern int32_t ROTATION_MID; // milos
+
+#define ROTATION_MAX X_AXIS_LOG_MAX
+#define ROTATION_MID (ROTATION_MAX / 2)
+
 extern uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
 extern uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
 extern uint16_t MAX_DAC; // milos, loaded from EEPROM
@@ -209,10 +212,6 @@ struct s32a { // milos, added - holds individual bit axis properties
 
 // milos, default axis calibration values depend on usage of averaging or external ADC
 const uint16_t maxCal = ANALOG_MAX;
-
-inline int32_t calcRotationMax() {
-  return int32_t(float(CPR) / 360.0 * float(ROTATION_DEG));
-}
 
 void SetEEPROMConfig();
 void LoadEEPROMConfig();

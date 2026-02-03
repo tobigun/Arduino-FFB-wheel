@@ -79,6 +79,36 @@ void InitButtons() { // milos, added - if not using shift register, allocate som
   setMatrixRow(BUTTON7, HIGH);
 }
 
+#define PEDALS_CONNECTED_THRESHOLD (ANALOG_MAX * 3 / 4)
+
+bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
+  static uint32_t yzHighTimeMs = 0;
+  static bool pedalsConnected = true;
+  static bool startUp = true;
+
+  // Pedal inputs are pulled high (equal to pedals fully pushed) if no pedals are connected
+  if (pedalsConnected && (axisY == ANALOG_MAX && axisZ == ANALOG_MAX)) {
+    if (startUp) { // on startup consider pedals as disconnected immediately if both axes are high (as this is very unlikely at startup)
+      pedalsConnected = false;
+    } else { // after startup require them to be high for some time to avoid false disconnect detections
+      uint32_t curMs = millis();
+      if (yzHighTimeMs == 0) {
+        yzHighTimeMs = curMs;
+      } else if (curMs - yzHighTimeMs > 5000) { // if pedals are high for more than 5 seconds, consider them disconnected
+        pedalsConnected = false;
+        yzHighTimeMs = 0;
+      }
+    }
+  } else if (!pedalsConnected && (axisY < PEDALS_CONNECTED_THRESHOLD || axisZ < PEDALS_CONNECTED_THRESHOLD)) {
+    pedalsConnected = true;
+  } else {
+    yzHighTimeMs = 0;
+  }
+
+  startUp = false;
+  return pedalsConnected;
+}
+
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
 uint8_t decodeHat(uint16_t inbits) {
   byte hat;

@@ -36,6 +36,8 @@
 
 //--------------------------------------- Globals --------------------------------------------------------
 
+#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
+
 fwOpt fwOptions; // struct that holds all firmware options
 s16a accel, clutch, hbrake; // changed from s16
 s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
@@ -47,7 +49,34 @@ u32 last_refresh = 0;
 u32 now_micros = micros();
 u32 timeDiffConfigSerial = now_micros;
 
-static void sendInputReport(uint16_t x, uint16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
+struct ATTR_PACKED InputReport {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+  int16_t rx;
+  int16_t ry;
+  uint8_t hat;
+  uint16_t buttons : NB_BUTTONS;
+  uint8_t padding : 8 - (NB_BUTTONS % 8);
+};
+
+static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
+  uint8_t gearBtns = buttons & 0b11;
+  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
+  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
+  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
+
+  InputReport report = {
+    x: x,
+    y: y,
+    z: z,
+    rx: rx,
+    ry: ry,
+    hat: hat,
+    buttons: dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8)
+  };
+  HID().SendReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
+}
 
 //--------------------------------------------------------------------------------------------------------
 //-------------------------------------------- SETUP -----------------------------------------------------
@@ -65,8 +94,6 @@ void setup() {
 
   SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
-  ROTATION_MAX = calcRotationMax();
-  ROTATION_MID = ROTATION_MAX >> 1;
 
 #ifdef USE_CONFIGHID // used only through HID configuration interface
   update(&fwOptions); // added - update firmware options based on Config.h predefines
@@ -148,21 +175,16 @@ void loop() {
       for (int i = 0; i < AXIS_X_NUM_SAMPLES; ++i) {
         axisXSum += analogRead(XAXIS_PIN);
       }
-      int32_t axisXRawVal = (axisXSum << 6) / AXIS_X_NUM_SAMPLES; // max. 22 bits used
+      uint32_t axisXRawVal = (axisXSum << (X_AXIS_NB_BITS - 10)) / AXIS_X_NUM_SAMPLES;
 
       // no running average for ffb input
       s32v axis; // struct containing x and y-axis position input for calculating ffb
       axis.x = map(axisXRawVal, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
       s32v ffbs = gFFB.CalcTorqueCommands(&axis); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
 
-      // apply running average to turn.x for smoother usb report
-      uint16_t turnX; // struct containing scaled x and y-axis for usb send report (for one optical or two magnetic encoders)
-      turnX = axisXRawVal; //averageAxis(axisXRawVal, turn.avg);
-      // TODO
-      turnX = map(turnX, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
-      turnX *= float(X_AXIS_LOG_MAX) / float(ROTATION_MAX); // conversion to physical HID units
-      turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
-      turnX += MID_REPORT_X + 1;
+      int16_t turnX = constrain(axisXRawVal, 0, X_AXIS_LOG_MAX);
+      //uint16_t turnX = map(axisXRawVal, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
+      //turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
 
       SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
       // USB Report
@@ -213,38 +235,3 @@ void loop() {
     }
   }
 }
-
-
-struct ATTR_PACKED InputReport
-{
-  int16_t x;
-  int16_t y;
-  int16_t z;
-  int16_t rx;
-  int16_t ry;
-  uint8_t hat;
-  uint16_t buttons : NB_BUTTONS;
-  uint8_t padding : 8 - (NB_BUTTONS % 8);
-};
-
-#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
-
-static void sendInputReport(uint16_t x, uint16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons)
-{
-  uint8_t gearBtns = buttons & 0b11;
-  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
-  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
-  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
-
-  InputReport report = {
-    x: x,
-    y: y,
-    z: z,
-    rx: rx,
-    ry: ry,
-    hat: hat,
-    buttons: dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8)
-  };
-  HID().SendReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
-}
-

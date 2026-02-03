@@ -498,14 +498,7 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
     if (bitRead(effstate, 3)) command.x += FrictionEffect(spd, ScaleMagnitude(327 * configFrictionGain, 32767, EffectDivider())) ; //milos, added - user friction effect
 
     int32_t limit = ROTATION_MID; // milos, +-ROTATION_MID distance from center is where endstop spring force will start
-    //if ((pos->x < -limit) || (pos->x > limit)) {
-#ifdef USE_ANALOGFFBAXIS
-#ifndef USE_QUADRATURE_ENCODER
-#ifndef USE_AS5600
     limit -= (ROTATION_MID >> 6); // milos, here you can offset endstop activation point by ROTATION_MID/64 (optical or magnetic encoders can go past the axis range limit, this is required only for analog input - pot)
-#endif // end of as5600
-#endif // end of quad enc
-#endif // end of 2 ffb axis
     if ((pos->x < -limit) || (pos->x > limit)) {
       if (pos->x >= 0) {
         pos->x = pos->x - limit; //milos

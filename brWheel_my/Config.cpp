@@ -70,9 +70,7 @@ uint16_t PWMtops [13] =
 };
 
 int16_t ROTATION_DEG; // milos
-int32_t CPR; // milos
-int32_t ROTATION_MAX; // milos
-int32_t ROTATION_MID; // milos
+int32_t CPR; // counts-per-rotation. Unused, as this only makes sense for optical or magnetic encoders
 uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
 uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
 uint16_t MAX_DAC; // milos, loaded from EEPROM
@@ -105,7 +103,7 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
   SetParam(PARAM_ADDR_FW_VERSION, v16);
   v32 = 0;
   SetParam(PARAM_ADDR_ENC_OFFSET, v32);
-  v16 = 1080; //milos, default degrees of rotation
+  v16 = 210; //milos, default degrees of rotation
   SetParam(PARAM_ADDR_ROTATION_DEG, v16); //milos, added
   v8 = 100; //milos, added
   SetParam(PARAM_ADDR_GEN_GAIN, v8); //milos, added

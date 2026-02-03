@@ -15,5 +15,6 @@ void SetPWM (s32v *torque);
 void InitInputs();
 void InitButtons();
 void readInputButtons(uint16_t& buttons, uint8_t& hat);
+bool checkPedalsConnected(int16_t axisY, int16_t axisZ);
 
 void configCDC();

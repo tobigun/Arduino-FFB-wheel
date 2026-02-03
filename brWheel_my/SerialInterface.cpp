@@ -100,8 +100,6 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
       case 'G': // milos, set new rotation angle
         temp = CONFIG_SERIAL.parseInt();
         ROTATION_DEG = constrain(temp, 30, 1800); // milos, update degrees of rotation
-        ROTATION_MAX = calcRotationMax();
-        ROTATION_MID = ROTATION_MAX / 2;
         CONFIG_SERIAL.println(1);
         break;
       case 'E': //milos, added - turn desktop effects and ffb monitor on/off
