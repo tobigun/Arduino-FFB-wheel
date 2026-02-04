@@ -109,7 +109,11 @@ void setup() {
 
 //-- Averaging
 
-#define AVG_AXIS_NUM_MAX_SAMPLES 32 // +5 bit of precision
+#define AVG_AXIS_NUM_BITS 5
+#define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
+#define AVG_AXIS_OUT_MAX_PREC_BITS (ANALOG_BITS + AVG_AXIS_NUM_BITS) // precision in bits after oversampling
+#define AVG_AXIS_OUT_MAX_PREC_VALUE ((1L << AVG_AXIS_OUT_MAX_PREC_BITS) - 1) // max. value with highest precision after oversampling
+
 enum {
   AVG_AXIS_ID_X = 0,
   AVG_AXIS_ID_Y,
@@ -156,9 +160,9 @@ void loop() {
     if ((now_micros - last_refresh) >= CONTROL_PERIOD) {
       last_refresh = now_micros;  // timer for FFB and USB reports
 
-      int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+      int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, AVG_AXIS_OUT_MAX_PREC_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
       s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
-      ffbAxisValue.x = map(ffbAxisValueRaw, 0, X_AXIS_LOG_MAX, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
+      ffbAxisValue.x = map(ffbAxisValueRaw, 0, AVG_AXIS_OUT_MAX_PREC_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
       s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
       SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
