@@ -79,6 +79,7 @@ void InitButtons() { // milos, added - if not using shift register, allocate som
   setMatrixRow(BUTTON7, HIGH);
 }
 
+#define PEDALS_DISCONNECTED_THRESHOLD (ANALOG_MAX - 2)
 #define PEDALS_CONNECTED_THRESHOLD (ANALOG_MAX * 3 / 4)
 
 bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
@@ -87,7 +88,7 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
   static bool startUp = true;
 
   // Pedal inputs are pulled high (equal to pedals fully pushed) if no pedals are connected
-  if (pedalsConnected && (axisY == ANALOG_MAX && axisZ == ANALOG_MAX)) {
+  if (pedalsConnected && (axisY >= PEDALS_DISCONNECTED_THRESHOLD && axisZ >= PEDALS_DISCONNECTED_THRESHOLD)) {
     if (startUp) { // on startup consider pedals as disconnected immediately if both axes are high (as this is very unlikely at startup)
       pedalsConnected = false;
     } else { // after startup require them to be high for some time to avoid false disconnect detections

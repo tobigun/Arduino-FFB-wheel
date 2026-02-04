@@ -173,10 +173,12 @@ void loop() {
 
       // USB Report
       {
-        bool pedalsConnected = checkPedalsConnected(axisSamples[AVG_AXIS_ID_Y][0], axisSamples[AVG_AXIS_ID_Z][0]);
+        int16_t yAxisValue = getAxisValue(AVG_AXIS_ID_Y, Y_AXIS_NB_BITS);
+        int16_t zAxisValue = getAxisValue(AVG_AXIS_ID_Z, Z_AXIS_NB_BITS);
+        bool pedalsConnected = checkPedalsConnected(yAxisValue, zAxisValue);
         if (pedalsConnected) { // pedals attached, use levers as additional axes
-          accel.val = getAxisValue(AVG_AXIS_ID_Z, Z_AXIS_NB_BITS);
-          brake.val = getAxisValue(AVG_AXIS_ID_Y, Y_AXIS_NB_BITS);
+          accel.val = zAxisValue;
+          brake.val = yAxisValue;
           clutch.val = getAxisValue(AVG_AXIS_ID_RX, RX_AXIS_NB_BITS);
           hbrake.val = getAxisValue(AVG_AXIS_ID_RY, RY_AXIS_NB_BITS);
         } else { // no pedals attached, use levers as accel and brake
