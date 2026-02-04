@@ -29,7 +29,6 @@
 #include "ffb_pro.h"
 #include "common.h"
 #include "USBCore.h"
-#include "ConfigHID.h"
 #include "WHID.h"
 #include <stdint.h>
 #include "debug.h"
@@ -415,9 +414,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
     case 14:
       //FfbHandle_SetCustomForce((USB_FFBReport_SetCustomForce_Output_Data_t*) data); //milos, commented since there was nothing implemented inside
       //LogTextLf("Set customforce");
-      break;
-    case 241:
-      configHID((USB_ConfigReport*) data);
       break;
     default:
       break;

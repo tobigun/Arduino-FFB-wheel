@@ -11,18 +11,14 @@ const int32_t SPD_THRESHOLD	= 0; //8
 const int32_t ACL_THRESHOLD = 0; //milos, added
 const int32_t FRC_THRESHOLD = 1; //milos, added - friction treshold
 
-#define ADC_NB_BITS		10
-#define VAL_NB_BITS		16
-
-#define CALIBRATING_LEFT			0x0
-#define CALIBRATING_RIGHT			0x1
-#define CALIBRATING_INDEX			0x2
-#define CALIBRATING_HOMING		0x3
-#define CALIBRATION_ERROR			0x4
-#define CALIBRATION_DONE			0xFF
-
 const uint8_t NB_TAPS =	10; //milos, was 9
 const uint8_t NB_TAPS_A = 20; //milos, added - for acceleration calc
+
+#define FFB_ROTATION_MAX 7200
+#define FFB_ROTATION_MID (FFB_ROTATION_MAX / 2)
+
+// always keep the rotation range of a 1080° wheel for FFB calculations, even if the actual rotation range is smaller
+#define FFB_ROTATION_DEG 1080
 
 void FfbproSetAutoCenter(uint8_t enable);
 

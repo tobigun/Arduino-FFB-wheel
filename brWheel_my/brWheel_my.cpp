@@ -26,8 +26,8 @@
 #include <Arduino.h>
 
 #include "Config.h"
-#include "ConfigHID.h"
 #include "HID.h"
+#include "WHID.h"
 #include "hidDescriptor.h"
 #include "common.h"
 #include "debug.h"
@@ -95,9 +95,6 @@ void setup() {
   SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
 
-#ifdef USE_CONFIGHID // used only through HID configuration interface
-  update(&fwOptions); // added - update firmware options based on Config.h predefines
-#endif // end of config hid
   InitInputs();
   FfbSetDriver(0);
 
@@ -161,13 +158,15 @@ void loop() {
 
       int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
       s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
-      ffbAxisValue.x = map(ffbAxisValueRaw, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
+      ffbAxisValue.x = map(ffbAxisValueRaw, 0, X_AXIS_LOG_MAX, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
       s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
       SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
       int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
-      int16_t turnX = constrain(turnXRaw, 0, X_AXIS_LOG_MAX);
-      //uint16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
+      int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * 210L / ROTATION_DEG)) / 2;
+      int16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
+      turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
+      //uint16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);      
       //turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
 
       // USB Report
@@ -206,12 +205,10 @@ void loop() {
 
         sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
 
-#ifdef USE_CONFIGCDC
         if (timeDiffConfigSerial >= CONFIG_SERIAL_PERIOD) {
           configCDC(); // configure firmware with virtual serial port
           last_ConfigSerial = now_micros;
         }
-#endif // end of use config cdc
       }
       UpdateDataLed();
     }

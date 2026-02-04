@@ -109,23 +109,6 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x75, 0x01,                     // REPORT_SIZE (1)
       0x95, 8 - (NB_BUTTONS % 8),     // REPORT_COUNT (padding bits)
       0x81, 0x03,                     // Input (Const,Var,Abs)
-
-      #ifdef USE_CONFIGHID
-        // FOR CONFIG PROFILE
-        0x85, 0xf1,                    //   REPORT_ID (f1)
-        0x09, 0x01,                    //   USAGE (Vendor Usage 1)
-        0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-        0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-        0x95, 0x3F, //0x20,            //   REPORT_COUNT (63)
-        0x75, 0x08,                    //   REPORT_SIZE (8)
-        0x91, 0x82,                    //   OUTPUT (Data,Var,Abs,Vol)	//8
-
-        0x85, 0xf2,                    //   REPORT_ID (f2)
-        0x09, 0x01,                    //   USAGE (Vendor Usage 3)
-        0x95, 0x3F, //0x20,            //   REPORT_COUNT (63)
-        0x75, 0x08,                    //   REPORT_SIZE (8)
-        0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)	8
-      #endif
       #pragma endregion
     0xc0, // END_COLLECTION
 

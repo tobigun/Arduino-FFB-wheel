@@ -96,11 +96,6 @@ float cSpeedObs::Update (int32_t new_pos) {
   float speed = new_pos - mLastPos; //milos, was int32_t speed
   mLastPos = new_pos;
   if (mLastValueValid) {
-    //int32_t t = 2;
-    // 		int32_t avg_speed = (mLastSpeed*(16-t) + speed*t) >> 5;
-    // 		mLastSpeed = avg_speed;
-    // 		int32_t avg_speed = (mLastSpeed + speed) >> 1;
-    // 		mLastSpeed = speed;
     mLastSpeeds[mCurrentLS] = speed;
     u8 fls = mCurrentLS;
     float avg_speed = 0;
@@ -170,7 +165,7 @@ int32_t ConstrainEffect (int32_t val) {
 }
 
 float wDegScl() { // milos, added - scaling factor to convert encoder position to wheel angle units
-  return (float(ROTATION_DEG) / float(ROTATION_MAX));
+  return (float(FFB_ROTATION_DEG) / float(FFB_ROTATION_MAX));
 }
 
 int16_t DamperEffect (float spd, int16_t mag) {
@@ -362,7 +357,7 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
                                           , ef.gain, EffectDivider()) * configPeriodicGain / 100; //milos, added
               break;
             case USB_EFFECT_SPRING:
-              command.x += SpringEffect(pos->x - (int16_t)((int32_t(ef.offset) * ROTATION_MID) >> 15), mag * configSpringGain / 100 / 16); //milos, for spring, damper, inertia and friction forces ef.offset is cpOffset, here we scale it to ROTATION_MID
+              command.x += SpringEffect(pos->x - (int16_t)((int32_t(ef.offset) * FFB_ROTATION_MID) >> 15), mag * configSpringGain / 100 / 16); //milos, for spring, damper, inertia and friction forces ef.offset is cpOffset, here we scale it to FFB_ROTATION_MID
               break;
             case USB_EFFECT_DAMPER:
               command.x += DamperEffect(spd - (float)ef.offset / 1638.3, mag * configDamperGain / 100) ; //milos, here we scale it to speed
@@ -389,8 +384,8 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
     if (bitRead(effstate, 2)) command.x += InertiaEffect(acl, ScaleMagnitude(327 * configInertiaGain, 32767, EffectDivider())) ; //milos, added - user inertia effect
     if (bitRead(effstate, 3)) command.x += FrictionEffect(spd, ScaleMagnitude(327 * configFrictionGain, 32767, EffectDivider())) ; //milos, added - user friction effect
 
-    int32_t limit = ROTATION_MID; // milos, +-ROTATION_MID distance from center is where endstop spring force will start
-    limit -= (ROTATION_MID >> 6); // milos, here you can offset endstop activation point by ROTATION_MID/64 (optical or magnetic encoders can go past the axis range limit, this is required only for analog input - pot)
+    int32_t limit = FFB_ROTATION_MID; // milos, +-FFB_ROTATION_MID distance from center is where endstop spring force will start
+    limit -= (FFB_ROTATION_MID >> 6); // milos, here you can offset endstop activation point by FFB_ROTATION_MID/64 (optical or magnetic encoders can go past the axis range limit, this is required only for analog input - pot)
     if ((pos->x < -limit) || (pos->x > limit)) {
       if (pos->x >= 0) {
         pos->x = pos->x - limit; //milos

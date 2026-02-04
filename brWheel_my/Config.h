@@ -5,14 +5,8 @@
 
 //------------------------------------- Firmware options -------------------------------------------------
 
-#define USE_CONFIGCDC      // milos, use virtual RS232 serial port for configuring firmware settings
-//#define USE_CONFIGHID      // milos, use native USB HID protocol for configuring firmware settings (not implemented fully yet)
-//#define USE_QUADRATURE_ENCODER		// milos, optical quadrature encoder (you may comment it out)
-//#define USE_ZINDEX          // milos, use Z-index encoder channel (caution, can not be used with USE_ADS1015, USE_MCP4725 or USE_AS5600)
 #define USE_HATSWITCH        // milos, uncomment to use first 4 buttons for hat switch (D-pad)
 #define USE_BTNMATRIX        // milos, uncomment to use 8 pins as a 4x4 button matrix for total of 16 buttons (can not be used with load cell, shift register or XY shifter)
-//#define AVG_INPUTS        // milos, uncomment to use averaging of arduino analog inputs (can not be used with USE_ADS1015)
-//#define USE_AUTOCALIB        // milos, uncomment to use autocalibration for pedal axis (if left commented manual calibration is enabled)
 #define USE_ANALOGFFBAXIS // milos, uncomment to enable other than X-axis to be tied with xFFB axis (you can use analog inputs instead of digital encoders
 #define USE_PROMICRO    // milos, uncomment if you are using Arduino ProMicro board (leave commented for Leonardo or Micro variants)
 #define USE_EEPROM     // milos, uncomment to enable loading/saving settings from EEPROM (if commented out, default settings will be loaded on each powerup, one needs to reconfigure firmware defautls or use GUI configuration after each powerup) 
@@ -29,11 +23,11 @@
 #define LED_RED_PIN 3 // for ProMicro if no above i2C devices
 #define FFBCLIP_LED_PIN LED_RED_PIN // for ProMicro if no above i2C devices
 
-#define X_AXIS_PIN			A0
-#define Y_AXIS_PIN     A1
-#define Z_AXIS_PIN			A2
+#define X_AXIS_PIN		A0
+#define Y_AXIS_PIN    A1
+#define Z_AXIS_PIN		A2
 #define RX_AXIS_PIN		A3
-#define RY_AXIS_PIN    A8
+#define RY_AXIS_PIN   A8
 
 #define BUTTON0 5 // D5, used for button0
 #define B0PORTBIT 6 // read bit6 of PINC
@@ -176,9 +170,6 @@ extern uint16_t PWMtops [13];
 
 extern int16_t ROTATION_DEG; // milos
 extern int32_t CPR; // unused
-
-#define ROTATION_MAX X_AXIS_LOG_MAX
-#define ROTATION_MID (ROTATION_MAX / 2)
 
 extern uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
 extern uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
