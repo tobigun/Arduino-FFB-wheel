@@ -36,10 +36,10 @@
 
 u8 analog_inputs_pins[] = // milos, changed to u8, from u16
 {
-  ACCEL_PIN,
-  BRAKE_PIN,
-  CLUTCH_PIN,
-  HBRAKE_PIN
+  Z_AXIS_PIN,
+  Y_AXIS_PIN,
+  RX_AXIS_PIN,
+  RY_AXIS_PIN
 };
 
 //----------------------------------------- Options -------------------------------------------------------

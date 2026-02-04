@@ -29,11 +29,11 @@
 #define LED_RED_PIN 3 // for ProMicro if no above i2C devices
 #define FFBCLIP_LED_PIN LED_RED_PIN // for ProMicro if no above i2C devices
 
-#define XAXIS_PIN			A0
-#define BRAKE_PIN     A1
-#define ACCEL_PIN			A2
-#define CLUTCH_PIN		A3
-#define HBRAKE_PIN    A8
+#define X_AXIS_PIN			A0
+#define Y_AXIS_PIN     A1
+#define Z_AXIS_PIN			A2
+#define RX_AXIS_PIN		A3
+#define RY_AXIS_PIN    A8
 
 #define BUTTON0 5 // D5, used for button0
 #define B0PORTBIT 6 // read bit6 of PINC
@@ -189,7 +189,6 @@ uint16_t calcTOP(byte b);
 
 struct s32v { // milos, added - 2 dimensional vector structure (for ffb and position)
   int32_t x;
-  int32_t avg;
 };
 
 uint32_t decodeHat(uint32_t inbits);
@@ -198,14 +197,12 @@ struct s16a { // milos, added - holds individual 16bit axis properties
   int16_t val;
   int16_t min;
   int16_t max;
-  int16_t avg;
 };
 
 struct s32a { // milos, added - holds individual bit axis properties
   int32_t val; // milos, when using load cell we can have more than 16bit range for brake axis
   int16_t min; // milos, these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
   int16_t max; // milos, when we use load cell min/max are unused for brake axis
-  int16_t avg;
 };
 
 #define ANALOG_MAX 1023

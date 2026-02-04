@@ -112,95 +112,76 @@ void setup() {
 
 //-- Averaging
 
-#define AVG_OLD_WEIGHT 15
-#define AVG_TOTAL_WEIGHT (AVG_OLD_WEIGHT + 1)
+#define AVG_BITS_PER_SAMPLE 10
+#define AVG_AXIS_NUM_MAX_SAMPLES 32 // +5 bit of precision
+enum {
+  AVG_AXIS_ID_X = 0,
+  AVG_AXIS_ID_Y,
+  AVG_AXIS_ID_Z,
+  AVG_AXIS_ID_RX,
+  AVG_AXIS_ID_RY,
+  AVG_AXIS_ID_COUNT
+};
 
-// As analog measurements on the AVR are pretty slow we only get 2 samples at best per axis with AVG_INPUTS. So do not use this.
-// Instead use a weighted average to reduce the jitter.
-template<typename T> // s16a / s32a
-int32_t averageAxis(int32_t value, T& average) {
-  average = ((int32_t)average * AVG_OLD_WEIGHT + value) / AVG_TOTAL_WEIGHT;
-  if (value % AVG_TOTAL_WEIGHT > AVG_TOTAL_WEIGHT / 2) {
-    average++; // rounding
+// first index contains the newest sample per axis
+static uint16_t axisSamples[AVG_AXIS_ID_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
+
+static void readAxisSamples(size_t axisIndex, uint8_t sampleCount, uint8_t pin) {
+  uint16_t* samples = axisSamples[axisIndex];
+  memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
+  for (int8_t i = sampleCount - 1; i >= 0; --i) {
+    samples[i] = analogRead(pin);
   }
-  return average;
 }
 
-#define AXIS_X_NUM_SAMPLES 4
+static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES) {
+  uint32_t axisXSum = 0;
+  for (int i = 0; i < sampleCount; ++i) {
+    axisXSum += axisSamples[axisIndex][i];
+  }
+  return (axisXSum << (outputBits - AVG_BITS_PER_SAMPLE)) / sampleCount;
+}
 
 //--------------------------------------------------------------------------------------------------------
 //------------------------------------ Main firmware loop ------------------------------------------------
 //--------------------------------------------------------------------------------------------------------
-
-#define PEDALS_CONNECTED_THRESHOLD (ANALOG_MAX * 3 / 4)
-
-static bool checkPedalsConnected(int axisY, int axisZ) {
-  static uint32_t yzHighTimeMs = 0;
-  static bool pedalsConnected = true;
-  static bool startUp = true;
-
-  // Pedal inputs are pulled high (equal to pedals fully pushed) if no pedals are connected
-  if (pedalsConnected && (axisY == ANALOG_MAX && axisZ == ANALOG_MAX)) {
-    if (startUp) { // on startup consider pedals as disconnected immediately if both axes are high (as this is very unlikely at startup)
-      pedalsConnected = false;
-    } else { // after startup require them to be high for some time to avoid false disconnect detections
-      uint32_t curMs = millis();
-      if (yzHighTimeMs == 0) {
-        yzHighTimeMs = curMs;
-      } else if (curMs - yzHighTimeMs > 5000) { // if pedals are high for more than 5 seconds, consider them disconnected
-        pedalsConnected = false;
-        yzHighTimeMs = 0;
-      }
-    }
-  } else if (!pedalsConnected && (axisY < PEDALS_CONNECTED_THRESHOLD || axisZ < PEDALS_CONNECTED_THRESHOLD)) {
-    pedalsConnected = true;
-  } else {
-    yzHighTimeMs = 0;
-  }
-
-  startUp = false;
-  return pedalsConnected;
-}
 
 void loop() {
   now_micros = micros(); // we are polling the loop (FFB and USB reports are sent periodicaly)
   {
     timeDiffConfigSerial = now_micros - last_ConfigSerial; // timer for serial interface
 
+    readAxisSamples(AVG_AXIS_ID_X, 2, X_AXIS_PIN);
+    readAxisSamples(AVG_AXIS_ID_Y, 1, Y_AXIS_PIN);
+    readAxisSamples(AVG_AXIS_ID_Z, 1, Z_AXIS_PIN);
+    readAxisSamples(AVG_AXIS_ID_RX, 1, RX_AXIS_PIN);
+    readAxisSamples(AVG_AXIS_ID_RY, 1, RY_AXIS_PIN);
+
     if ((now_micros - last_refresh) >= CONTROL_PERIOD) {
       last_refresh = now_micros;  // timer for FFB and USB reports
 
-      // do not use running average for ffb input. Use more expensive oversampling instead
-      int32_t axisXSum = 0;
-      for (int i = 0; i < AXIS_X_NUM_SAMPLES; ++i) {
-        axisXSum += analogRead(XAXIS_PIN);
-      }
-      uint32_t axisXRawVal = (axisXSum << (X_AXIS_NB_BITS - 10)) / AXIS_X_NUM_SAMPLES;
+      int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+      s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
+      ffbAxisValue.x = map(ffbAxisValueRaw, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
+      s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
+      SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
-      // no running average for ffb input
-      s32v axis; // struct containing x and y-axis position input for calculating ffb
-      axis.x = map(axisXRawVal, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID); // xFFB on X-axis
-      s32v ffbs = gFFB.CalcTorqueCommands(&axis); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
-
-      int16_t turnX = constrain(axisXRawVal, 0, X_AXIS_LOG_MAX);
-      //uint16_t turnX = map(axisXRawVal, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
+      int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
+      int16_t turnX = constrain(turnXRaw, 0, X_AXIS_LOG_MAX);
+      //uint16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, -ROTATION_MID - 1, ROTATION_MID);      
       //turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
 
-      SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
       // USB Report
       {
-        int axisZ = analogRead(ACCEL_PIN);
-        int axisY = analogRead(BRAKE_PIN);
-
-        bool pedalsConnected = checkPedalsConnected(axisY, axisZ);
+        bool pedalsConnected = checkPedalsConnected(axisSamples[AVG_AXIS_ID_Y][0], axisSamples[AVG_AXIS_ID_Z][0]);
         if (pedalsConnected) { // pedals attached, use levers as additional axes
-          accel.val = averageAxis(axisZ, accel.avg); // Z axis
-          brake.val = averageAxis(axisY, brake.avg); // Y axis
-          clutch.val = averageAxis(analogRead(CLUTCH_PIN), clutch.avg); // RX axis
-          hbrake.val = averageAxis(analogRead(HBRAKE_PIN), hbrake.avg); // RY axis
+          accel.val = getAxisValue(AVG_AXIS_ID_Z, Z_AXIS_NB_BITS);
+          brake.val = getAxisValue(AVG_AXIS_ID_Y, Y_AXIS_NB_BITS);
+          clutch.val = getAxisValue(AVG_AXIS_ID_RX, RX_AXIS_NB_BITS);
+          hbrake.val = getAxisValue(AVG_AXIS_ID_RY, RY_AXIS_NB_BITS);
         } else { // no pedals attached, use levers as accel and brake
-          accel.val = averageAxis(analogRead(HBRAKE_PIN), accel.avg); // Z axis
-          brake.val = averageAxis(analogRead(CLUTCH_PIN), brake.avg); // Y axis
+          brake.val = getAxisValue(AVG_AXIS_ID_RX, Y_AXIS_NB_BITS);
+          accel.val = getAxisValue(AVG_AXIS_ID_RY, Z_AXIS_NB_BITS);
           clutch.val = 0; // RX axis
           hbrake.val = 0; // RY axis
         }
