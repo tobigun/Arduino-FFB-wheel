@@ -103,7 +103,7 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
   SetParam(PARAM_ADDR_FW_VERSION, v16);
   v32 = 0;
   SetParam(PARAM_ADDR_ENC_OFFSET, v32);
-  v16 = 210; //milos, default degrees of rotation
+  v16 = 1080; //default degrees of rotation. Although we only have 210°, 1080° seem to result in better force feedback behavior
   SetParam(PARAM_ADDR_ROTATION_DEG, v16); //milos, added
   v8 = 100; //milos, added
   SetParam(PARAM_ADDR_GEN_GAIN, v8); //milos, added
