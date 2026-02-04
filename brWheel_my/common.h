@@ -2,6 +2,9 @@
 
 #include "ffb_pro.h"
 
+#define ANALOG_MAX 1023
+#define ANALOG_BITS 10
+
 extern s16a accel, clutch, hbrake;
 extern s32a brake;
 

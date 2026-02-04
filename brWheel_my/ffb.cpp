@@ -38,8 +38,6 @@
 //------------------------------------- Defines ----------------------------------------------------------
 u8 valueglobal = 55;
 
-#define LEDs_SetAllLEDs(l)
-
 bool useDrivingHidProfile = false;
 
 //--------------------------------------- Globals --------------------------------------------------------
@@ -60,8 +58,7 @@ const FFB_Driver ffb_drivers[1] =
     FfbproSetPeriodic,
     FfbproSetConstantForce,
     FfbproSetRampForce,
-    FfbproSetEffect,
-    //FfbproSetDeviceGain, //milos, added
+    FfbproSetEffect
   }
 };
 
@@ -425,8 +422,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
     default:
       break;
   };
-
-  LEDs_SetAllLEDs(LEDS_NO_LEDS);
 }
 
 void FfbOnCreateNewEffect (USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, USB_FFBReport_PIDBlockLoad_Feature_Data_t *outData)
@@ -489,16 +484,6 @@ void FfbOnPIDPool(USB_FFBReport_PIDPool_Feature_Data_t *data)
   data->maxSimultaneousEffects = MAX_EFFECTS;	// FFP supports playing up to 11 simultaneous effects
   data->memoryManagement = 3;
 }
-
-//milos commented these, since nothing was implemented inside
-/*void FfbHandle_SetCustomForceData(USB_FFBReport_SetCustomForceData_Output_Data_t *data)
-  {
-  }
-
-  void FfbHandle_SetDownloadForceSample(USB_FFBReport_SetDownloadForceSample_Output_Data_t *data)
-  {
-  LogTextLf("Download Force Samples");
-  }*/
 
 void FfbHandle_EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t *data)
 {
@@ -569,11 +554,6 @@ void FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t *data)
   uint8_t control = data->control;
   // 1=Enable Actuators, 2=Disable Actuators, 3=Stop All Effects, 4=Reset, 5=Pause, 6=Continue
 
-  // PID State Report:
-  //	uint8_t	reportId;	// =2
-  //	uint8_t	status;	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Override Switch,4=Actuator Power
-  //	uint8_t	effectBlockIndex;	// Bit7=Effect Playing, Bit0..7=EffectId (1..40)
-
   pidState.reportId = 2;
   Bset(pidState.status, SAFETY_SWITCH);
   Bset(pidState.status, ACTUATOR_POWER);
@@ -616,21 +596,10 @@ void FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t *data)
 
 void FfbHandle_DeviceGain(USB_FFBReport_DeviceGain_Output_Data_t *data)
 {
-  /*
-    uint8_t reportId; // =13
-    uint8_t deviceGain; //0..255  (physical 0..10000) //milos, back to 8bit
-  */
   //LogTextP(PSTR("Device Gain: "));
   //LogBinaryLf(&data->deviceGain, 1);
   //ffb->SetDeviceGain(data->deviceGain, 63); //milos, added
 }
-
-//milos, commented since nothing was implemented inside
-/*void FfbHandle_SetCustomForce(USB_FFBReport_SetCustomForce_Output_Data_t *data)
-  {
-  LogTextLf("Set Custom Force");
-  //	LogBinary(&data, sizeof(USB_FFBReport_SetCustomForce_Output_Data_t));
-  }*/
 
 //------------------------------------------------------------------------------
 
@@ -662,21 +631,6 @@ void FfbSendEnable()
 void FfbSendDisable()
 {
 }
-
-/*
-  typedef struct {
-	uint8_t state;	// see constants <MEffectState_*>
-	uint16_t usb_duration, usb_fadeTime;	// used to calculate fadeTime to MIDI, since in USB it is given as time difference from the end while in MIDI it is given as time from start
-	// These are used to calculate effects of USB gain to MIDI data
-	uint8_t usb_gain, usb_offset, usb_attackLevel, usb_fadeLevel;
-	uint8_t usb_magnitude;
-	FFP_MIDI_Effect_Basic	data;	// For FFP, this is enough for all types of effects - cast for other effect types when necessary
-	} TEffectState;
-
-  const uint8_t MEffectState_Allocated = 0x01;
-  const uint8_t MEffectState_Playing = 0x02;
-  const uint8_t MEffectState_SentToJoystick = 0x04;
-*/
 
 uint8_t FfbDebugListEffects(uint8_t *index)
 {

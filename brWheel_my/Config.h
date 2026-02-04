@@ -175,7 +175,7 @@ extern uint8_t configStopGain;
 extern uint16_t PWMtops [13];
 
 extern int16_t ROTATION_DEG; // milos
-extern int32_t CPR; // milos
+extern int32_t CPR; // unused
 
 #define ROTATION_MAX X_AXIS_LOG_MAX
 #define ROTATION_MID (ROTATION_MAX / 2)
@@ -204,11 +204,6 @@ struct s32a { // milos, added - holds individual bit axis properties
   int16_t min; // milos, these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
   int16_t max; // milos, when we use load cell min/max are unused for brake axis
 };
-
-#define ANALOG_MAX 1023
-
-// milos, default axis calibration values depend on usage of averaging or external ADC
-const uint16_t maxCal = ANALOG_MAX;
 
 void SetEEPROMConfig();
 void LoadEEPROMConfig();

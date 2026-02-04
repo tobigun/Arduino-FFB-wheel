@@ -112,7 +112,6 @@ void setup() {
 
 //-- Averaging
 
-#define AVG_BITS_PER_SAMPLE 10
 #define AVG_AXIS_NUM_MAX_SAMPLES 32 // +5 bit of precision
 enum {
   AVG_AXIS_ID_X = 0,
@@ -139,7 +138,7 @@ static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sample
   for (int i = 0; i < sampleCount; ++i) {
     axisXSum += axisSamples[axisIndex][i];
   }
-  return (axisXSum << (outputBits - AVG_BITS_PER_SAMPLE)) / sampleCount;
+  return (axisXSum << (outputBits - ANALOG_BITS)) / sampleCount;
 }
 
 //--------------------------------------------------------------------------------------------------------

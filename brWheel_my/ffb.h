@@ -310,10 +310,6 @@ typedef struct
   int16_t magnitude, positiveCoefficient;  //milos, added positiveCoefficient
   int16_t offset;
   uint8_t phase; //milos, changed back to uint8_t from uint16_t
-#ifdef USE_TWOFFBAXIS // milos, added - used for conditional block effects for yFFB axis
-  uint8_t deadBand2;
-  int16_t magnitude2, offset2;
-#endif // end of 2 ffb axis
 } TEffectState;
 
 typedef struct
@@ -327,7 +323,6 @@ typedef struct
   void (*FreeEffect)(uint8_t eid);
 
   void (*ModifyDuration)(uint8_t effectId, uint16_t duration, uint16_t stdelay);
-  //void (*SetDeviceGain)(USB_FFBReport_DeviceGain_Output_Data_t* data, volatile TEffectState* effect); //milos, added
 
   void (*CreateNewEffect)(USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, volatile TEffectState* effect);
   void (*SetEnvelope)(USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile TEffectState* effect);
