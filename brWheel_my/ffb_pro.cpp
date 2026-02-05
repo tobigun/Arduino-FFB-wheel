@@ -380,9 +380,10 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
         }
       }
     // milos, at the moment only xFFB axis has conditional desktop (internal) effects
-    if (bitRead(effstate, 1)) command.x += DamperEffect(spd, ScaleMagnitude(327 * configDamperGain, 32767, EffectDivider())) ; //milos, added - user damper effect
-    if (bitRead(effstate, 2)) command.x += InertiaEffect(acl, ScaleMagnitude(327 * configInertiaGain, 32767, EffectDivider())) ; //milos, added - user inertia effect
-    if (bitRead(effstate, 3)) command.x += FrictionEffect(spd, ScaleMagnitude(327 * configFrictionGain, 32767, EffectDivider())) ; //milos, added - user friction effect
+    // milos, casted effect gain into u16 to fix desktop effects oveflow when using gains above 100
+    if (bitRead(effstate, 1)) command.x += DamperEffect(spd, ScaleMagnitude((uint16_t)configDamperGain * 327, 32767, EffectDivider())) ; //milos, added - user damper effect
+    if (bitRead(effstate, 2)) command.x += InertiaEffect(acl, ScaleMagnitude((uint16_t)configInertiaGain * 327, 32767, EffectDivider())) ; //milos, added - user inertia effect
+    if (bitRead(effstate, 3)) command.x += FrictionEffect(spd, ScaleMagnitude((uint16_t)configFrictionGain * 327, 32767, EffectDivider())) ; //milos, added - user friction effect
 
     int32_t limit = FFB_ROTATION_MID; // milos, +-FFB_ROTATION_MID distance from center is where endstop spring force will start
     limit -= (FFB_ROTATION_MID >> 6); // milos, here you can offset endstop activation point by FFB_ROTATION_MID/64 (optical or magnetic encoders can go past the axis range limit, this is required only for analog input - pot)
