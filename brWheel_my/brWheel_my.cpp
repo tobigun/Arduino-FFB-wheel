@@ -167,11 +167,9 @@ void loop() {
       SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
       int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
-      int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * 210L / ROTATION_DEG)) / 2;
-      int16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
+      int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
+      int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
       turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
-      //uint16_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);      
-      //turnX = constrain(turnX, -MID_REPORT_X - 1, MID_REPORT_X); // -32768,0,32767 constrained to signed 16bit range
 
       // USB Report
       {

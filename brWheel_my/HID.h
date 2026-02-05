@@ -88,7 +88,7 @@
 
 #define X_AXIS_LOG_MAX	((1L << X_AXIS_NB_BITS) - 1) // 32767
 #define X_AXIS_LOG_MIN	0L
-#define MID_REPORT_X  (X_AXIS_LOG_MAX >> 1)
+#define X_AXIS_LOG_MID  (X_AXIS_LOG_MAX / 2)
 
 #define Y_AXIS_LOG_MAX	AXIS_LOG_MAX
 #define Y_AXIS_LOG_MIN	AXIS_LOG_MIN
