@@ -45,9 +45,6 @@ const u16 STRING_LANGUAGE[2] = {
 	0x0409	// English
 };
 
-// CHANGE: Define custom USB product string
-#undef USB_PRODUCT
-#define USB_PRODUCT "Racing Wheel"
 #ifndef USB_PRODUCT
 // If no product is provided, use USB IO Board
 #define USB_PRODUCT     "USB IO Board"
