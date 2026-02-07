@@ -38,6 +38,7 @@
 u8 valueglobal = 55;
 
 bool useDrivingHidProfile = false;
+bool useCombinedAxes = false;
 
 //--------------------------------------- Globals --------------------------------------------------------
 

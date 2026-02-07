@@ -185,10 +185,19 @@ void loop() {
           clutch.val = getAxisValue(AVG_AXIS_ID_RX, RX_AXIS_NB_BITS);
           hbrake.val = getAxisValue(AVG_AXIS_ID_RY, RY_AXIS_NB_BITS);
         } else { // no pedals attached, use levers as accel and brake
-          brake.val = getAxisValue(AVG_AXIS_ID_RX, Y_AXIS_NB_BITS);
           accel.val = getAxisValue(AVG_AXIS_ID_RY, Z_AXIS_NB_BITS);
+          brake.val = getAxisValue(AVG_AXIS_ID_RX, Y_AXIS_NB_BITS);
           clutch.val = 0; // RX axis
           hbrake.val = 0; // RY axis
+        }
+
+        if (useCombinedAxes) {
+          if (accel.val > brake.val) {
+            brake.val = (Y_AXIS_LOG_MAX + accel.val) / 2;
+          } else {
+            brake.val = (Y_AXIS_LOG_MAX - brake.val) / 2;;
+          }
+          accel.val = 0;
         }
 
         // rescale all analog axis according to a new manual calibration

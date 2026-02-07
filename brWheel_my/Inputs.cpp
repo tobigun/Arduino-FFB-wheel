@@ -62,6 +62,10 @@ void InitInputs() {
   if (digitalRead(PROFILE_SWITCH_PIN) == LOW) {
     useDrivingHidProfile = true;
   }
+
+  if (digitalRead(RX_AXIS_PIN) == HIGH) {
+    useCombinedAxes = true;
+  }
 }
 
 void InitButtons() { // milos, added - if not using shift register, allocate some free pins for buttons
