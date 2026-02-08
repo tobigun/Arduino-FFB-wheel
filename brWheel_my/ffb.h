@@ -222,32 +222,12 @@ void FfbSetDriver(uint8_t id);
 // Initializes and enables MIDI to joystick using USART1 TX
 void FfbInitMidi(void);
 
-// Send "enable FFB" to joystick
-void FfbSendEnable(void);
-
-// Send "disable FFB" to joystick
-void FfbSendDisable(void);
-
 // Handle incoming data from USB
 void FfbOnUsbData(uint8_t *data, uint16_t len);
 
 // Handle incoming feature requests
 void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, USB_FFBReport_PIDBlockLoad_Feature_Data_t *outData);
 void FfbOnPIDPool(USB_FFBReport_PIDPool_Feature_Data_t *data);
-
-// Utility to wait any amount of milliseconds.
-// Resets watchdog for each 1ms wait.
-void WaitMs(int ms);
-
-// delay_us has max limits and the wait time must be known at compile time.
-// function for making 10us delays that don't have be known at compile time.
-// max delay 2560us.
-void _delay_us10(uint8_t delay);
-
-// Send raw data to the
-void FfbSendData(const uint8_t *data, uint16_t len);
-void FfbSendPackets(const uint8_t *data, uint16_t len);
-void FfbPulseX1( void );
 
 // Debugging
 //	<index> should be pointer to an index variable whose value should be set to 0 to start iterating.

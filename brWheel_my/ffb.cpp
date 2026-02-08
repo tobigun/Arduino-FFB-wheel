@@ -598,36 +598,10 @@ void FfbHandle_DeviceGain(USB_FFBReport_DeviceGain_Output_Data_t *data)
   //ffb->SetDeviceGain(data->deviceGain, 63); //milos, added
 }
 
-//------------------------------------------------------------------------------
-
-void WaitMs(int ms)
-{
-  while (ms--)
-    delay(1);
-}
-
-void FfbSendData(const uint8_t *data, uint16_t len)
-{
-}
-
-void FfbSendPackets(const uint8_t *data, uint16_t len)
-{
-}
-
 // ----------------------------------------------
 // Debug and other settings
 // ----------------------------------------------
 
-
-// Send "enable FFB" to joystick
-void FfbSendEnable()
-{
-}
-
-// Send "disable FFB" to joystick
-void FfbSendDisable()
-{
-}
 
 uint8_t FfbDebugListEffects(uint8_t *index)
 {
