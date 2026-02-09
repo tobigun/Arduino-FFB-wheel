@@ -27,12 +27,14 @@
 
 #include "Config.h"
 #include "HID.h"
-#include "WHID.h"
 #include "hidDescriptor.h"
 #include "common.h"
 #include "debug.h"
 #include "packed.h"
-#include <Wire.h>
+#ifdef __AVR__
+#include "WHID.h"
+#include <avdweb_AnalogReadFast.h>
+#endif
 
 //--------------------------------------- Globals --------------------------------------------------------
 
@@ -44,10 +46,8 @@ s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
 
 cFFB gFFB;
 
-u32 last_ConfigSerial = 0;
-u32 last_refresh = 0;
-u32 now_micros = micros();
-u32 timeDiffConfigSerial = now_micros;
+uint32_t last_ConfigSerial = 0;
+uint32_t last_refresh = 0;
 
 struct ATTR_PACKED InputReport {
   int16_t x;
@@ -150,81 +150,79 @@ static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sample
 //--------------------------------------------------------------------------------------------------------
 
 void loop() {
-  now_micros = micros(); // we are polling the loop (FFB and USB reports are sent periodicaly)
-  {
-    timeDiffConfigSerial = now_micros - last_ConfigSerial; // timer for serial interface
+  uint32_t now_micros = micros(); // we are polling the loop (FFB and USB reports are sent periodicaly)
+  uint32_t timeDiffConfigSerial = now_micros - last_ConfigSerial; // timer for serial interface
 
-    readAxisSamples(AVG_AXIS_ID_X, 2, X_AXIS_PIN);
-    readAxisSamples(AVG_AXIS_ID_Y, 1, Y_AXIS_PIN);
-    readAxisSamples(AVG_AXIS_ID_Z, 1, Z_AXIS_PIN);
-    readAxisSamples(AVG_AXIS_ID_RX, 1, RX_AXIS_PIN);
-    readAxisSamples(AVG_AXIS_ID_RY, 1, RY_AXIS_PIN);
+  readAxisSamples(AVG_AXIS_ID_X, 2, X_AXIS_PIN);
+  readAxisSamples(AVG_AXIS_ID_Y, 1, Y_AXIS_PIN);
+  readAxisSamples(AVG_AXIS_ID_Z, 1, Z_AXIS_PIN);
+  readAxisSamples(AVG_AXIS_ID_RX, 1, RX_AXIS_PIN);
+  readAxisSamples(AVG_AXIS_ID_RY, 1, RY_AXIS_PIN);
 
-    if ((now_micros - last_refresh) >= CONTROL_PERIOD) {
-      last_refresh = now_micros;  // timer for FFB and USB reports
+  if ((now_micros - last_refresh) >= CONTROL_PERIOD) {
+    last_refresh = now_micros;  // timer for FFB and USB reports
 
-      int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, AVG_AXIS_OUT_MAX_PREC_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
-      s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
-      ffbAxisValue.x = map(ffbAxisValueRaw, 0, AVG_AXIS_OUT_MAX_PREC_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
-      s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
-      SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
+    int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, AVG_AXIS_OUT_MAX_PREC_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+    s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
+    ffbAxisValue.x = map(ffbAxisValueRaw, 0, AVG_AXIS_OUT_MAX_PREC_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
+    s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
+    SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
-      int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
-      int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
-      int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
-      turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
+    int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
+    int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
+    int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
+    turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
 
-      // USB Report
-      {
-        int16_t yAxisValue = getAxisValue(AVG_AXIS_ID_Y, Y_AXIS_NB_BITS);
-        int16_t zAxisValue = getAxisValue(AVG_AXIS_ID_Z, Z_AXIS_NB_BITS);
-        bool pedalsConnected = checkPedalsConnected(yAxisValue, zAxisValue);
-        if (pedalsConnected) { // pedals attached, use levers as additional axes
-          accel.val = zAxisValue;
-          brake.val = yAxisValue;
-          clutch.val = getAxisValue(AVG_AXIS_ID_RX, RX_AXIS_NB_BITS);
-          hbrake.val = getAxisValue(AVG_AXIS_ID_RY, RY_AXIS_NB_BITS);
-        } else { // no pedals attached, use levers as accel and brake
-          accel.val = getAxisValue(AVG_AXIS_ID_RY, Z_AXIS_NB_BITS);
-          brake.val = getAxisValue(AVG_AXIS_ID_RX, Y_AXIS_NB_BITS);
-          clutch.val = 0; // RX axis
-          hbrake.val = 0; // RY axis
-        }
-
-        if (useCombinedAxes) {
-          if (accel.val > brake.val) {
-            brake.val = (Y_AXIS_LOG_MAX + accel.val) / 2;
-          } else {
-            brake.val = (Y_AXIS_LOG_MAX - brake.val) / 2;;
-          }
-          accel.val = 0;
-        }
-
-        // rescale all analog axis according to a new manual calibration
-        brake.val = map(brake.val, brake.min, brake.max, 0, Y_AXIS_LOG_MAX);
-        brake.val = constrain(brake.val, 0, Y_AXIS_LOG_MAX);
-
-        accel.val = map(accel.val, accel.min, accel.max, 0, Z_AXIS_LOG_MAX);  // with manual calibration and dead zone
-        accel.val = constrain(accel.val, 0, Z_AXIS_LOG_MAX);
-
-        clutch.val = map(clutch.val, clutch.min, clutch.max, 0, RX_AXIS_LOG_MAX);
-        clutch.val = constrain(clutch.val, 0, RX_AXIS_LOG_MAX);
-
-        hbrake.val = map(hbrake.val, hbrake.min, hbrake.max, 0, RY_AXIS_LOG_MAX);
-        hbrake.val = constrain(hbrake.val, 0, RY_AXIS_LOG_MAX);
-
-        uint16_t buttons;
-        uint8_t hat;
-        readInputButtons(buttons, hat); // read all buttons including matrix and hat switch
-
-        sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
-
-        if (timeDiffConfigSerial >= CONFIG_SERIAL_PERIOD) {
-          configCDC(); // configure firmware with virtual serial port
-          last_ConfigSerial = now_micros;
-        }
+    // USB Report
+    {
+      int16_t yAxisValue = getAxisValue(AVG_AXIS_ID_Y, Y_AXIS_NB_BITS);
+      int16_t zAxisValue = getAxisValue(AVG_AXIS_ID_Z, Z_AXIS_NB_BITS);
+      bool pedalsConnected = checkPedalsConnected(yAxisValue, zAxisValue);
+      if (pedalsConnected) { // pedals attached, use levers as additional axes
+        accel.val = zAxisValue;
+        brake.val = yAxisValue;
+        clutch.val = getAxisValue(AVG_AXIS_ID_RX, RX_AXIS_NB_BITS);
+        hbrake.val = getAxisValue(AVG_AXIS_ID_RY, RY_AXIS_NB_BITS);
+      } else { // no pedals attached, use levers as accel and brake
+        accel.val = getAxisValue(AVG_AXIS_ID_RY, Z_AXIS_NB_BITS);
+        brake.val = getAxisValue(AVG_AXIS_ID_RX, Y_AXIS_NB_BITS);
+        clutch.val = 0; // RX axis
+        hbrake.val = 0; // RY axis
       }
-      UpdateDataLed();
+
+      if (useCombinedAxes) {
+        if (accel.val > brake.val) {
+          brake.val = (Y_AXIS_LOG_MAX + accel.val) / 2;
+        } else {
+          brake.val = (Y_AXIS_LOG_MAX - brake.val) / 2;
+        }
+        accel.val = 0;
+      }
+
+      // rescale all analog axis according to a new manual calibration
+      brake.val = map(brake.val, brake.min, brake.max, 0, Y_AXIS_LOG_MAX);
+      brake.val = constrain(brake.val, 0, Y_AXIS_LOG_MAX);
+
+      accel.val = map(accel.val, accel.min, accel.max, 0, Z_AXIS_LOG_MAX);  // with manual calibration and dead zone
+      accel.val = constrain(accel.val, 0, Z_AXIS_LOG_MAX);
+
+      clutch.val = map(clutch.val, clutch.min, clutch.max, 0, RX_AXIS_LOG_MAX);
+      clutch.val = constrain(clutch.val, 0, RX_AXIS_LOG_MAX);
+
+      hbrake.val = map(hbrake.val, hbrake.min, hbrake.max, 0, RY_AXIS_LOG_MAX);
+      hbrake.val = constrain(hbrake.val, 0, RY_AXIS_LOG_MAX);
+
+      uint16_t buttons;
+      uint8_t hat;
+      readInputButtons(buttons, hat); // read all buttons including matrix and hat switch
+
+      sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
+
+      if (timeDiffConfigSerial >= CONFIG_SERIAL_PERIOD) {
+        configCDC(); // configure firmware with virtual serial port
+        last_ConfigSerial = now_micros;
+      }
     }
+    UpdateDataLed();
   }
 }

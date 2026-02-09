@@ -60,7 +60,6 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
   0xA1, 0x01,	// COLLECTION (Application)
     0x85, INPUT_REPORT_ID,	// REPORT_ID (04)
     0xA1, 0x00, // COLLECTION (Physical)
-      #pragma region
       0x05, DEFAULT_USAGE_PAGE, // USAGE_PAGE (Generic Desktop: 0x01 / Simulation Controls: 0x02) [AXES_USAGE_PAGE_OFFSET]
       0x75, 0x10,            // REPORT_SIZE (16)
       0x95, 0x01,            // REPORT_COUNT (1)
@@ -109,14 +108,12 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x75, 0x01,                     // REPORT_SIZE (1)
       0x95, 8 - (NB_BUTTONS % 8),     // REPORT_COUNT (padding bits)
       0x81, 0x03,                     // Input (Const,Var,Abs)
-      #pragma endregion
     0xc0, // END_COLLECTION
 
     //FFB part (PID) starts from here
     0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
     0x09, 0x92,	// USAGE (PID State Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x02,	// REPORT_ID (02)
       0x09, 0x9F,	// USAGE (Device Paused)
       0x09, 0xA0,	// USAGE (Actuators Enabled)
@@ -148,12 +145,10 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x75, 0x07,	// REPORT_SIZE (07)
       0x95, 0x01,	// REPORT_COUNT (01)
       0x81, 0x02,	// INPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x21,	// USAGE (Set Effect Output Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x01,	// REPORT_ID (01)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -165,7 +160,6 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x09, 0x25,	// USAGE (Effect type)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x09, 0x26,	// USAGE (ET Constant Force)
         0x09, 0x27,	// USAGE (ET Ramp)
         0x09, 0x30,	// USAGE (ET Square)
@@ -187,7 +181,6 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
         0x75, 0x08,	// REPORT_SIZE (08)
         0x95, 0x01,	// REPORT_COUNT (01)
         0x91, 0x00,	// OUTPUT (Data)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x09, 0x50,	// USAGE (Duration)
       0x09, 0x54,	// USAGE (Trigger Repeat Interval)
@@ -225,7 +218,6 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x09, 0x55,	// USAGE (Axes Enable)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x05, DEFAULT_USAGE_PAGE, // USAGE_PAGE (Generic Desktop: 0x01 / Simulation Controls: 0x02) [FFB_AXES_USAGE_PAGE_OFFSET]
         0x09, DEFAULT_X_USAGE, // USAGE (X / Steering) [FFB_AXES_USAGE_OFFSET]
         #if (NB_FF_AXIS > 1)
@@ -236,13 +228,10 @@ const uint8_t _dynamicHidReportDescriptor[] PROGMEM =
         0x75, 0x01,	// REPORT_SIZE (01)
         0x95, NB_FF_AXIS,	// REPORT_COUNT (NB_FF_AXIS)
         0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-        #pragma endregion
-      0xC0,	// END COLLECTION ()
-      #pragma endregion // "Set Effect Output Report" continued in _staticHidReportDescriptor ...
+      0xC0,	// END COLLECTION () // "Set Effect Output Report" continued in _staticHidReportDescriptor ...
 };
 
-const uint8_t _staticHidReportDescriptor[] PROGMEM = {
-      #pragma region // "Set Effect Output Report" -- continue
+const uint8_t _staticHidReportDescriptor[] PROGMEM = { // "Set Effect Output Report" -- continue
       0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
       0x09, 0x56,	// USAGE (Direction Enable)
       0x95, 0x01,	// REPORT_COUNT (01)
@@ -251,7 +240,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x03,	// OUTPUT (Constant,Var,Abs)
       0x09, 0x57,	// USAGE (Direction)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x0B, 0x01, 0x00, 0x0A, 0x00, // USAGE (Ordinals:Instance 1)
         0x0B, 0x02, 0x00, 0x0A, 0x00, // USAGE (Ordinals:Instance 2)
         0x66, 0x14, 0x00,	// UNIT (Eng Rot:Angular Pos)
@@ -269,7 +257,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
         0x91, 0x02,	// OUTPUT (Data,Var,Abs)
         0x55, 0x00,	// UNIT_EXPONENT (00)
         0x66, 0x00, 0x00,	// UNIT (None)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
       0x09, 0xA7,	// USAGE (Start Delay) //milos, uncommented
@@ -284,13 +271,11 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x02,	// OUTPUT (Data,Var,Abs) //milos, uncommented
       0x66, 0x00, 0x00,	// UNIT (None)
       0x55, 0x00,	// UNIT_EXPONENT (00)
-      #pragma endregion
     0xC0,	// END COLLECTION () "Set Effect Output Report"
 
     0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
     0x09, 0x5A,	// USAGE (Set Envelope Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x02,	// REPORT_ID (02)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -324,12 +309,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x66, 0x00, 0x00,	// UNIT (None)
       0x55, 0x00,	// UNIT_EXPONENT (00)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x5F,	// USAGE (Set Condition Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x03,	// REPORT_ID (03)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -349,13 +332,11 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x09, 0x58,	// USAGE (Type Specific Block Offset)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x0B, 0x01, 0x00, 0x0A, 0x00,	// USAGE (Instance 1)
         0x0B, 0x02, 0x00, 0x0A, 0x00,	// USAGE (Instance 2)
         0x75, 0x02,	// REPORT_SIZE (02)
         0x95, 0x02,	// REPORT_COUNT (02)
         0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x09, 0x60, // USAGE (CP Offset)
       //0x15, 0x80,	// LOGICAL_MINIMUM (-128)
@@ -397,12 +378,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08, // REPORT_SIZE (08) //milos
       0x95, 0x01,	// REPORT_COUNT (01) //milos, uncommented
       0x91, 0x02,	// OUTPUT (Data,Var,Abs) //milos, uncommented
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x6E,	// USAGE (Set Periodic Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x04,	// REPORT_ID (04)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -459,12 +438,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x66, 0x00, 0x00,	// UNIT (None)
       0x55, 0x00,	// UNIT_EXPONENT (00)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x73,	// USAGE (Set Constant Force Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x05,	// REPORT_ID (05)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -488,12 +465,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x10,	// REPORT_SIZE (16)
       0x95, 0x01,	// REPORT_COUNT (01)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x74,	// USAGE (Set Ramp Force Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x06,	// REPORT_ID (06)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -514,14 +489,12 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08,	// REPORT_SIZE (08)
       0x95, 0x02,	// REPORT_COUNT (02)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     //milos, commented since it was not used
     /*
     0x09, 0x68,	// USAGE (Custom Force Data Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x07,	// REPORT_ID (07)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -553,7 +526,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08,	// REPORT_SIZE (08)
       0x95, 0x0C,	// REPORT_COUNT (12)
       0x92, 0x02, 0x01,	// OUTPUT (Data,Var,Abs,Buf)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
     */
 
@@ -561,7 +533,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
     /*
     0x09, 0x66,	// USAGE (Download Force Sample)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x08,	// REPORT_ID (08)
       0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
       0x09, 0x30,	// USAGE (X)
@@ -575,14 +546,12 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08,	// REPORT_SIZE (08)
       0x95, 0x02,	// REPORT_COUNT (02)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
     */
 
     0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
     0x09, 0x77,	// USAGE (Effect Operation Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x0A,	// REPORT_ID (10)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01,	// LOGICAL_MINIMUM (01)
@@ -594,7 +563,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
       0x09, 0x78,	// USAGE (78)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x09, 0x79,	// USAGE (Op Effect Start)
         0x09, 0x7A,	// USAGE (Op Effect Start Solo)
         0x09, 0x7B,	// USAGE (Op Effect Stop)
@@ -603,7 +571,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
         0x75, 0x08,	// REPORT_SIZE (08)
         0x95, 0x01,	// REPORT_COUNT (01)
         0x91, 0x00,	// OUTPUT (Data,Ary,Abs)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x09, 0x7C,	// USAGE (Loop Count)
       0x15, 0x00,	// LOGICAL_MINIMUM (00)
@@ -611,12 +578,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x35, 0x00,	// PHYSICAL_MINIMUM (00)
       0x46, 0xFF, 0x00,	// PHYSICAL_MAXIMUM (255)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x90,	// USAGE (PID Block Free Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x0B,	// REPORT_ID (11)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x15, 0x01, // LOGICAL_MINIMUM (01)
@@ -626,12 +591,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08,	// REPORT_SIZE (08)
       0x95, 0x01,	// REPORT_COUNT (01)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x96,	// USAGE (PID Device Control)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x0C,	// REPORT_ID (12)
       0x09, 0x97,	// USAGE (DC Enable Actuators)
       0x09, 0x98,	// USAGE (DC Disable Actuators)
@@ -644,12 +607,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x08,	// REPORT_SIZE (08)
       0x95, 0x01,	// REPORT_COUNT (01)
       0x91, 0x00,	// OUTPUT (Data)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x7D,	// USAGE (Device Gain Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x0D,	// REPORT_ID (14)
       0x09, 0x7E,	// USAGE (Device Gain)
       0x15, 0x00,	// LOGICAL_MINIMUM (00)
@@ -662,7 +623,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       //0x75, 0x10,  // REPORT_SIZE (16) //milos, back to 8bit
       0x95, 0x01,	// REPORT_COUNT (01)
       0x91, 0x02,	// OUTPUT (Data,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     //milos, commented since it was not used
@@ -703,11 +663,9 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
 
     0x09, 0xAB,	// USAGE (Create New Effect Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x05,	// REPORT_ID (05)
       0x09, 0x25,	// USAGE (Effect Type)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x09, 0x26, // USAGE (ET Constant Force)
         0x09, 0x27, // USAGE (ET Ramp)
         0x09, 0x30, // USAGE (ET Square)
@@ -727,7 +685,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
         0x75, 0x08,	// REPORT_SIZE (08)
         0x95, 0x01,	// REPORT_COUNT (01)
         0xB1, 0x00,	// FEATURE (Data)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x05, 0x01,	// USAGE_PAGE (Generic Desktop)
       0x09, 0x3B,	// USAGE (Byte Count)
@@ -740,13 +697,11 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0xB1, 0x02,	// FEATURE (Data,Var,Abs)
       0x75, 0x06,	// REPORT_SIZE (06)
       0xB1, 0x01,	// FEATURE (Constant,Ary,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x05, 0x0F,	// USAGE_PAGE (Physical Interface)
     0x09, 0x89,	// USAGE (PID Block Load Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x06,	// REPORT_ID (06)
       0x09, 0x22,	// USAGE (Effect Block Index)
       0x25, 0x28,	// LOGICAL_MAXIMUM (40)
@@ -758,7 +713,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0xB1, 0x02,	// FEATURE (Data,Var,Abs)
       0x09, 0x8B,	// USAGE (Block Load Status)
       0xA1, 0x02,	// COLLECTION (Logical)
-        #pragma region
         0x09, 0x8C,	// USAGE (Block Load Success)
         0x09, 0x8D,	// USAGE (Block Load Full)
         0x09, 0x8E,	// USAGE (Block Load Error)
@@ -769,7 +723,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
         0x75, 0x08,	// REPORT_SIZE (08)
         0x95, 0x01,	// REPORT_COUNT (01)
         0xB1, 0x00,	// FEATURE (Data)
-        #pragma endregion
       0xC0,	// END COLLECTION ()
       0x09, 0xAC,	// USAGE (RAM Pool Available)
       0x15, 0x00,	// LOGICAL_MINIMUM (00)
@@ -779,12 +732,10 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x10,	// REPORT_SIZE (16)
       0x95, 0x01,	// REPORT_COUNT (01)
       0xB1, 0x00,	// FEATURE (Data)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
     0x09, 0x7F,	// USAGE (PID Pool Report)
     0xA1, 0x02,	// COLLECTION (Logical)
-      #pragma region
       0x85, 0x07,	// REPORT_ID (07)
       0x09, 0x80,	// USAGE (RAM Pool Size)
       0x75, 0x10,	// REPORT_SIZE (16)
@@ -812,7 +763,6 @@ const uint8_t _staticHidReportDescriptor[] PROGMEM = {
       0x75, 0x06,	// REPORT_SIZE (06)
       0x95, 0x01,	// REPORT_COUNT (01)
       0xB1, 0x03,	// FEATURE ( Cnst,Var,Abs)
-      #pragma endregion
     0xC0,	// END COLLECTION ()
 
   0xC0,	// END COLLECTION ()

@@ -1,8 +1,13 @@
 // milos, completely rewritten - all possible configurations of PWM and DAC settings are handeled here
 
-#include <avr/io.h>
 #include "Config.h"
+#ifdef __AVR__
+#include <avr/io.h>
 #include <digitalWriteFast.h>
+#else
+#define pinModeFast pinMode
+#define digitalWriteFast digitalWrite
+#endif
 
 inline void PWM16A(uint16_t PWMValue);
 void PWM16Begin();

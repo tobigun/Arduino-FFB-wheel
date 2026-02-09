@@ -30,11 +30,17 @@
 #include "debug.h"
 #include "HID.h"
 #include <Wire.h>
+#ifdef __AVR__
 #include <digitalWriteFast.h>
+#else
+#define pinModeFast pinMode
+#define digitalReadFast(pin) digitalRead(pin)
+#define digitalWriteFast(pin, val) digitalWrite(pin, val)
+#endif
 
 //--------------------------------------- Globals --------------------------------------------------------
 
-u8 analog_inputs_pins[] = // milos, changed to u8, from u16
+uint8_t analog_inputs_pins[] = // milos, changed to u8, from u16
 {
   Z_AXIS_PIN,
   Y_AXIS_PIN,
@@ -52,7 +58,7 @@ bool readSingleButton (uint8_t i);
 
 void InitInputs() {
   //analogReference(INTERNAL); // sets 2.56V on AREF pin for Leonardo or Micro, can be EXTERNAL also
-  for (u8 i = 0; i < sizeof(analog_inputs_pins); i++) {
+  for (uint8_t i = 0; i < sizeof(analog_inputs_pins); i++) {
     pinMode(analog_inputs_pins[i], INPUT);
   }
 

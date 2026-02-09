@@ -29,7 +29,9 @@
 #include "ffb_pro.h"
 #include "common.h"
 #include "debug.h"
+#ifdef __AVR__
 #include <util/delay.h>
+#endif
 
 //------------------------------------- Defines ----------------------------------------------------------
 
@@ -88,7 +90,7 @@ void cSpeedObs::Init () {
   mLastSpeed = 0;
   mLastValueValid = false;
   mCurrentLS = 0;
-  for (u8 i = 0; i < NB_TAPS; i++)
+  for (uint8_t i = 0; i < NB_TAPS; i++)
     mLastSpeeds[i] = 0;
 }
 
@@ -97,9 +99,9 @@ float cSpeedObs::Update (int32_t new_pos) {
   mLastPos = new_pos;
   if (mLastValueValid) {
     mLastSpeeds[mCurrentLS] = speed;
-    u8 fls = mCurrentLS;
+    uint8_t fls = mCurrentLS;
     float avg_speed = 0;
-    for (u8 i = 0; i < NB_TAPS; i++) {
+    for (uint8_t i = 0; i < NB_TAPS; i++) {
       avg_speed += mLastSpeeds[fls]; //* fir_coefs[i];
       if (fls == 0) {
         fls = NB_TAPS - 1;
@@ -123,7 +125,7 @@ void cAccelObs::Init () { //milos, added
   mLastAccel = 0;
   mLastValueValid = false;
   mCurrentLA = 0;
-  for (u8 i = 0; i < NB_TAPS_A; i++) {
+  for (uint8_t i = 0; i < NB_TAPS_A; i++) {
     mLastAccels[i] = 0;
   }
 }
@@ -133,9 +135,9 @@ float cAccelObs::Update (float new_spd) { //milos, added, was int32_t new_spd
   mLastSpd = new_spd;
   if (mLastValueValid) {
     mLastAccels[mCurrentLA] = accel;
-    u8 fla = mCurrentLA;
+    uint8_t fla = mCurrentLA;
     float avg_accel = 0;
-    for (u8 i = 0; i < NB_TAPS_A; i++) {
+    for (uint8_t i = 0; i < NB_TAPS_A; i++) {
       avg_accel += mLastAccels[fla]; // * fir_coefs[i];
       if (fla == 0) {
         fla = NB_TAPS_A - 1;
@@ -204,7 +206,7 @@ int32_t SpringEffect (int32_t err, int16_t mag) { //milos, modified - normalized
   return (-ConstrainEffect((int32_t)((int32_t)mag * err * wDegScl() * SPRING_COEF * 10 / 256))); //milos, added - with wheel angle as metric
 }
 
-int16_t SineEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos
+int16_t SineEffect (int16_t mag, uint16_t period, uint8_t phase, uint16_t t) { //milos
   t %= period; //milos, reset timer after period reached
   return ((int16_t)(((float)mag) * sin(TWO_PI * (1.0 / (((float)period) / 1000.0) * (((float)t) / 1000.0) + (((float)phase) / 256.0))))); //milos, t increments in each cycle
 }
@@ -217,14 +219,14 @@ int16_t linFunction (float k, float x, int32_t n) { //milos added, linear functi
   return ((int16_t)(k * x) + n);
 }
 
-int16_t SquareEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
+int16_t SquareEffect (int16_t mag, uint16_t period, uint8_t phase, uint16_t t) { //milos, added
   t %= period; //milos, reset timer after period reached
   return ((int16_t)(((float)mag) * sgn(sin(TWO_PI * (1.0 / (((float)period) / 1000.0) * (((float)t) / 1000.0) + (((float)phase) / 256.0)))))); //milos
 }
 
-int16_t TriangleEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
+int16_t TriangleEffect (int16_t mag, uint16_t period, uint8_t phase, uint16_t t) { //milos, added
   phase += 64; //milos, moved phase by PI/4, starts from 0 with rising edge
-  t += (u16)(((float)phase) / 256.0 * period); //milos, phase shifts time
+  t += (uint16_t)(((float)phase) / 256.0 * period); //milos, phase shifts time
   t %= period; //milos, reset timer after period reached
   if ((((float)t) / 1000.0) >= 0.0 && (((float)t) / 1000.0) < (((float)period) / 1000.0) / 2.0) {
     return (linFunction(4.0 * ((float)mag) / (((float)period) / 1000.0), ((float)t) / 1000.0, -mag));
@@ -235,9 +237,9 @@ int16_t TriangleEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, add
   return 0;
 }
 
-int16_t SawtoothUpEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
+int16_t SawtoothUpEffect (int16_t mag, uint16_t period, uint8_t phase, uint16_t t) { //milos, added
   phase += 128; //milos, moved phase by PI/2, starts from 0 with rising edge
-  t += (u16)(((float)phase) / 256.0 * period); //milos, phase shifts time
+  t += (uint16_t)(((float)phase) / 256.0 * period); //milos, phase shifts time
   t %= period; //milos, reset timer after period reached
   if (t >= 0 && t < period) {
     return (linFunction(2.0 * ((float)mag) / (((float)period) / 1000.0), ((float)t) / 1000.0, -mag));
@@ -245,9 +247,9 @@ int16_t SawtoothUpEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, a
   return 0;
 }
 
-int16_t SawtoothDownEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos, added
+int16_t SawtoothDownEffect (int16_t mag, uint16_t period, uint8_t phase, uint16_t t) { //milos, added
   phase += 128; //milos, moved phase by PI/2, starts from 0 with falling edge
-  t += (u16)(((float)phase) / 256.0 * period);
+  t += (uint16_t)(((float)phase) / 256.0 * period);
   t %= period; //milos, reset timer after period reached
   if (t >= 0 && t < period) {
     return (linFunction(2.0 * ((float)(-mag)) / (((float)period) / 1000.0), ((float)t) / 1000.0, mag));
@@ -255,14 +257,14 @@ int16_t SawtoothDownEffect (int16_t mag, u16 period, u8 phase, u16 t) { //milos,
   return 0;
 }
 
-int16_t RampEffect (int8_t rStart, int8_t rEnd, u16 rPeriod, u16 t) { //milos, added
+int16_t RampEffect (int8_t rStart, int8_t rEnd, uint16_t rPeriod, uint16_t t) { //milos, added
   float rSlope;
   t %= rPeriod; //milos, reset timer after period reached
   rSlope = ((float)((int32_t)(rEnd - rStart) * 256)) / (((float)rPeriod) / 1000.0); //milos, ramp slope (units magnitude/seconds)
   return (linFunction(rSlope, ((float)t) / 1000.0, (int16_t)rStart * 256));
 }
 
-int16_t ApplyEnvelope (int16_t metric, u16 t, u8 atLvl, u8 fdLvl, u16 atTime, u16 fdTime, u16 eDuration, u16 eStartDelay) { //milos, added - envelope block effect, start delay and duration
+int16_t ApplyEnvelope (int16_t metric, uint16_t t, uint8_t atLvl, uint8_t fdLvl, uint16_t atTime, uint16_t fdTime, uint16_t eDuration, uint16_t eStartDelay) { //milos, added - envelope block effect, start delay and duration
   float kA, kF;
   int16_t nA;
   if (metric >= 0) { // for positive magnitudes
@@ -287,7 +289,7 @@ int16_t ApplyEnvelope (int16_t metric, u16 t, u8 atLvl, u8 fdLvl, u16 atTime, u1
   return (0);
 }
 
-int32_t ScaleMagnitude (int32_t eMag, u16 eGain, float eDivider) { //milos, added
+int32_t ScaleMagnitude (int32_t eMag, uint16_t eGain, float eDivider) { //milos, added
   return ((int32_t)eMag * (int32_t)eGain / 32767 / eDivider); // normalizes magnitude to effect gain and all PWM modes
 }
 
@@ -311,7 +313,7 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
       if (bitRead(effstate, 0)) {
         /*if (abs(pos->x) > 1)*/ command.x += SpringEffect(pos->x, AUTO_CENTER_SPRING / EffectDivider() * configCenterGain / 100); //milos, autocenter spring force is equal (scaled accordingly) for all PWM modes
       }
-    } else for (u8 id = FIRST_EID; id <= MAX_EFFECTS; id++) { // milos, if an app or game is sending FFB
+    } else for (uint8_t id = FIRST_EID; id <= MAX_EFFECTS; id++) { // milos, if an app or game is sending FFB
         volatile TEffectState &ef = gEffectStates[id];
         if (Btest(ef.state, MEffectState_Allocated | MEffectState_Playing)) {
 
@@ -380,7 +382,7 @@ s32v cFFB::CalcTorqueCommands (s32v *pos) { // milos, pointer struct agument, re
         }
       }
     // milos, at the moment only xFFB axis has conditional desktop (internal) effects
-    // milos, casted effect gain into u16 to fix desktop effects oveflow when using gains above 100
+    // milos, casted effect gain into uint16_t to fix desktop effects oveflow when using gains above 100
     if (bitRead(effstate, 1)) command.x += DamperEffect(spd, ScaleMagnitude((uint16_t)configDamperGain * 327, 32767, EffectDivider())) ; //milos, added - user damper effect
     if (bitRead(effstate, 2)) command.x += InertiaEffect(acl, ScaleMagnitude((uint16_t)configInertiaGain * 327, 32767, EffectDivider())) ; //milos, added - user inertia effect
     if (bitRead(effstate, 3)) command.x += FrictionEffect(spd, ScaleMagnitude((uint16_t)configFrictionGain * 327, 32767, EffectDivider())) ; //milos, added - user friction effect
@@ -448,19 +450,19 @@ void FfbproModifyDuration(uint8_t effectId, uint16_t duration, uint16_t stdelay)
 
 void FfbproSetEnvelope (USB_FFBReport_SetEnvelope_Output_Data_t* data, volatile TEffectState * effect)
 {
-  effect->attackLevel = (u8)data->attackLevel;
-  effect->fadeLevel = (u8)data->fadeLevel;
-  effect->attackTime = (u16)data->attackTime; // milos, added
-  effect->fadeTime = (u16)data->fadeTime;
+  effect->attackLevel = (uint8_t)data->attackLevel;
+  effect->fadeLevel = (uint8_t)data->fadeLevel;
+  effect->attackTime = (uint16_t)data->attackTime; // milos, added
+  effect->fadeTime = (uint16_t)data->fadeTime;
 }
 
 void FfbproSetCondition (USB_FFBReport_SetCondition_Output_Data_t* data, volatile TEffectState * effect)
 {
-  effect->parameterBlockOffset = (u8)data->parameterBlockOffset; // milos, added - pass the effect condition block index
+  effect->parameterBlockOffset = (uint8_t)data->parameterBlockOffset; // milos, added - pass the effect condition block index
   if (effect->parameterBlockOffset == 0) { // milos, condition block for xFFB
     effect->magnitude = (int16_t)data->positiveCoefficient; // milos, postitve coefficient can also be negative
     effect->offset = (int16_t)data->cpOffset; // milos, this offset changes X-pos
-    effect->deadBand = (u8)data->deadBand; // milos, added
+    effect->deadBand = (uint8_t)data->deadBand; // milos, added
   } else if (effect->parameterBlockOffset == 1) { // milos, condition block for yFFB
   }
   //effect->positiveSaturation = (int16_t)data->positiveSaturation; // milos, posititve saturation can also be negative (not used currently)
@@ -468,10 +470,10 @@ void FfbproSetCondition (USB_FFBReport_SetCondition_Output_Data_t* data, volatil
 
 void FfbproSetPeriodic (USB_FFBReport_SetPeriodic_Output_Data_t* data, volatile TEffectState * effect)
 {
-  effect->magnitude = (u16)data->magnitude;
+  effect->magnitude = (uint16_t)data->magnitude;
   effect->offset = (((int16_t)data->offset)); // milos, this offset changes magnitude
-  effect->phase = (u8)data->phase;
-  effect->period = (u16)data->period;
+  effect->phase = (uint8_t)data->phase;
+  effect->period = (uint16_t)data->period;
 }
 
 void FfbproSetConstantForce (USB_FFBReport_SetConstantForce_Output_Data_t* data, volatile TEffectState * effect)
@@ -490,9 +492,9 @@ uint8_t FfbproSetEffect (USB_FFBReport_SetEffect_Output_Data_t* data, volatile T
   uint8_t eid = data->effectBlockIndex;
   effect->type = data->effectType; // milos, this is where effect type is being set
   effect->gain = (int16_t)data->gain;
-  FfbproModifyDuration(eid, (u16)data->duration, (u16)data->startDelay); // milos, added
-  effect->direction = (u16)data->direction; // milos, added
-  effect->enableAxis = (u8)data->enableAxis; // milos, added
+  FfbproModifyDuration(eid, (uint16_t)data->duration, (uint16_t)data->startDelay); // milos, added
+  effect->direction = (uint16_t)data->direction; // milos, added
+  effect->enableAxis = (uint8_t)data->enableAxis; // milos, added
   return 1;
 }
 

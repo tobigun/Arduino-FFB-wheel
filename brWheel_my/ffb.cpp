@@ -28,14 +28,16 @@
 #include "ffb.h"
 #include "ffb_pro.h"
 #include "common.h"
+#ifdef __AVR__
 #include "USBCore.h"
 #include "WHID.h"
+#endif
 #include <stdint.h>
 #include "debug.h"
 #include "hidDescriptor.h"
 
 //------------------------------------- Defines ----------------------------------------------------------
-u8 valueglobal = 55;
+uint8_t valueglobal = 55;
 
 bool useDrivingHidProfile = false;
 bool useCombinedAxes = false;
@@ -96,7 +98,7 @@ void StopAllEffects(void);
 void FreeEffect(uint8_t id);
 void FreeAllEffects(void);
 
-static u32 dataLedActiveTimeMs = 0;
+static uint32_t dataLedActiveTimeMs = 0;
 
 //-------------------------------------------------------------------------------------------------------------
 

@@ -89,8 +89,10 @@ void getParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
 void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
 #ifdef USE_EEPROM
   for (uint8_t i = 0; i < size; i++) {
+  #ifdef __AVR__
     //EEPROM.write(offset + i, addr_to[i]);
     EEPROM.update(offset + i, addr_to[i]); //milos, re-write only when neccessary
+  #endif
   }
 #endif
 }

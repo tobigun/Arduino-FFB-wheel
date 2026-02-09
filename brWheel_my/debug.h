@@ -31,7 +31,9 @@
 #define _DEBUG_H_
 
 #include <stdint.h>
+#ifdef __AVR__
 #include "USBDesc.h"
+#endif
 
 /*// Method of debugging
   extern const uint8_t DEBUG_TO_NONE;

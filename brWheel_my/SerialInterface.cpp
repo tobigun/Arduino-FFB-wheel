@@ -255,7 +255,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
             ffb_temp = CONFIG_SERIAL.parseInt();
             ffb_temp = constrain(ffb_temp, 0, 255); //milos
             float minTorquePP = (float)ffb_temp * 0.001; // milos, max is 25.5% or 0.255
-            MM_MIN_MOTOR_TORQUE = (u16)(minTorquePP * (float)MM_MAX_MOTOR_TORQUE); // milos, we can set it during run time
+            MM_MIN_MOTOR_TORQUE = (uint16_t)(minTorquePP * (float)MM_MAX_MOTOR_TORQUE); // milos, we can set it during run time
             CONFIG_SERIAL.println(1);
             break;
           }
