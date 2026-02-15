@@ -116,11 +116,17 @@ static void readAxisSamples(size_t axisIndex, uint8_t sampleCount, uint8_t pin) 
 }
 
 static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES) {
+#if 1
   uint32_t axisXSum = 0;
   for (int i = 0; i < sampleCount; ++i) {
     axisXSum += axisSamples[axisIndex][i];
-  }
+  }  
   return (axisXSum << (outputBits - ANALOG_BITS)) / sampleCount;
+#else
+  static int16_t value = 0;
+  value = (value + 1) % 1024;
+  return (value << (outputBits - ANALOG_BITS));
+#endif
 }
 
 static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
