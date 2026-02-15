@@ -127,7 +127,7 @@
 
 #define EEPROM_SIZE              1024 // same as used for Arduino Pro Micro
 
-#define FIRMWARE_VERSION         0xFA //  firmware version (FA=250, FB=251, FC=252, FD=253)
+#define FIRMWARE_VERSION         0x01 //  firmware version
 
 void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size);
 
@@ -195,7 +195,6 @@ extern int32_t CPR; // unused
 extern uint16_t MM_MIN_MOTOR_TORQUE; //  loaded from EEPROM
 extern uint16_t MM_MAX_MOTOR_TORQUE; //  loaded from EEPROM
 extern uint16_t MAX_DAC; //  loaded from EEPROM
-extern uint16_t TOP; //  pwmstate byte loaded from EEPROM, then in InitPWM() function calcTOP(pwmstate) defines TOP value
 
 uint16_t calcTOP(byte b);
 

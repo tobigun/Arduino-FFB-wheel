@@ -6,6 +6,8 @@
 #include <avr/io.h>
 #include <digitalWriteFast.h>
 
+static uint16_t TOP;
+
 inline void PWM16A(uint16_t PWMValue);
 void PWM16Begin();
 void PWM16EnableA();
@@ -14,9 +16,6 @@ void InitPWM() {
 #ifdef DIR_PIN
   pinModeFast(DIR_PIN, OUTPUT);
 #endif
-
-  TOP = calcTOP(pwmstate); // milos, this will set appropriate TOP value for all PWM modes, depending on pwmstate loaded from EEPROM
-  MM_MAX_MOTOR_TORQUE = TOP;
 
   PWM16Begin(); // Timer1 and Timer3 configuration: frequency and mode depend on pwmstate byte
   PWM16A(0);  // Set initial PWM value for Pin 9

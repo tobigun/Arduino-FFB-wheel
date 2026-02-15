@@ -72,7 +72,6 @@ int32_t CPR; // counts-per-rotation. Unused, as this only makes sense for optica
 uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
 uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
 uint16_t MAX_DAC; // milos, loaded from EEPROM
-uint16_t TOP; // milos, pwmstate byte loaded from EEPROM, then in InitPWM() function calcTOP(pwmstate) defines TOP value
 
 //-------------------------------------------------------------------------------------------------------
 
@@ -233,6 +232,7 @@ int32_t myMap (int32_t value, int32_t x0, int32_t x1, int32_t y0, int32_t y1) {
 }
 
 uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value from pwmstate byte argument
+#ifdef __AVR__
   byte j = 0b00000000; // index of frequency and PWM resolution
   for (uint8_t i = 0; i < 4; i++) {
     bitWrite(j, i, bitRead(b, i + 2)); // milos, decode bits2-5 from pwmstate byte into index
@@ -242,4 +242,7 @@ uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value fr
   } else { // if fast PWM mode (pwmstate bit0=0)
     return (PWMtops[j]);
   }
+#else
+  return MM_MAX_MOTOR_TORQUE;
+#endif
 }

@@ -296,7 +296,7 @@ int32_t ScaleMagnitude (int32_t eMag, uint16_t eGain, float eDivider) { //milos,
 //--------------------------------------------------------------------------------------------------------
 
 float EffectDivider() { //milos, added, calculates effects divider in order to scale magnitudes equaly for all PWM modes
-  return (32767.0 / float(TOP)); //milos, was 32767.0
+  return (32767.0 / float(MM_MAX_MOTOR_TORQUE)); //milos, was 32767.0
 }
 
 //--------------------------------------------------------------------------------------------------------
