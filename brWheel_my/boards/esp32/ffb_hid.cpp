@@ -12,22 +12,24 @@ Adafruit_USBD_HID usb_hid(NULL, 0, HID_ITF_PROTOCOL_NONE, 2, true);
 volatile uint16_t ffbReportLength = 0;
 volatile uint8_t ffbReport[64];
 
-static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
+constexpr size_t hidReportDescriptorSize = sizeof(_dynamicHidReportDescriptor) + sizeof(_staticHidReportDescriptor);
+static uint8_t hidReportDescriptor[hidReportDescriptorSize];
 
 uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen);
 void set_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
 
 void buildHIDDescriptor()
 {
-  memcpy_P((void*) dynamicHidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
+  memcpy(hidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
   if (useDrivingHidProfile) {
-    dynamicHidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
-    dynamicHidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
-    dynamicHidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
-    dynamicHidReportDescriptor[AXES_Z_USAGE_OFFSET] = USAGE_SIM_ACCELERATOR;
-    dynamicHidReportDescriptor[FFB_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;    
-    dynamicHidReportDescriptor[FFB_AXES_USAGE_OFFSET] = USAGE_SIM_STEERING;    
+    hidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
+    hidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
+    hidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
+    hidReportDescriptor[AXES_Z_USAGE_OFFSET] = USAGE_SIM_ACCELERATOR;
+    hidReportDescriptor[FFB_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;    
+    hidReportDescriptor[FFB_AXES_USAGE_OFFSET] = USAGE_SIM_STEERING;    
   }
+  memcpy(&hidReportDescriptor[sizeof(_dynamicHidReportDescriptor)], _staticHidReportDescriptor, sizeof(_staticHidReportDescriptor));
 }
 
 void HidAdapter::begin() {
@@ -37,9 +39,10 @@ void HidAdapter::begin() {
     TinyUSBDevice.begin(0);
   }
 
-  //buildHIDDescriptor();
+  buildHIDDescriptor();
+  
   //usb_hid.setPollInterval(2);
-  usb_hid.setReportDescriptor(_dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
+  usb_hid.setReportDescriptor(hidReportDescriptor, sizeof(hidReportDescriptor));
   usb_hid.setReportCallback(get_report_callback, set_report_callback);
   usb_hid.begin();
 
