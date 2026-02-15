@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "HID_pid.h"
+#include "ffb_hid.h"
 
 #define USAGE_PAGE_GENERIC_DESKTOP 0x01
 #define USAGE_PAGE_SIMULATION_CONTROLS 0x02

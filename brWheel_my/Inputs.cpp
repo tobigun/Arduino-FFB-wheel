@@ -28,7 +28,7 @@
 #include "common.h"
 #include "ffb_pro.h"
 #include "debug.h"
-#include "HID_pid.h"
+#include "ffb_hid.h"
 #include <Wire.h>
 #ifdef __AVR__
 #include <digitalWriteFast.h>

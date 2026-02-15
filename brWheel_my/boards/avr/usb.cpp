@@ -34,7 +34,7 @@ void HidAdapter::recvFromUsb() {
   // no polling. RecvFfbReport is triggered by IRQ instead
 }
 
-void HidAdapter::sendInputReport(uint8_t id, const void* data, int len) {
+void HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
   HID().SendReport(INPUT_REPORT_ID, data, len);
 }
 

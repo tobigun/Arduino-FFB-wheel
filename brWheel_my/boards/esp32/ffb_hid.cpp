@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
 #include <tusb.h>
+#include <USB.h>
 #include "hidDescriptor.h"
 #include "ffb.h"
 #include "ffb_hid.h"
@@ -60,17 +61,8 @@ void HidAdapter::recvFromUsb()
 	}
 }
 
-void HidAdapter::sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
-  InputReport report = {
-    x: x,
-    y: y,
-    z: z,
-    rx: rx,
-    ry: ry,
-    hat: hat,
-    buttons: rearrangeButtons(buttons)
-  };
-  usb_hid.sendReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
+void HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
+  usb_hid.sendReport(INPUT_REPORT_ID, data, len);
 }
 
 // Invoked when received GET_REPORT control request

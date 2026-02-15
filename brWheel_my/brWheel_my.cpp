@@ -34,12 +34,9 @@
 #ifdef __AVR__
 #include <avdweb_AnalogReadFast.h>
 #else
-#include <Adafruit_TinyUSB.h>
 #define analogReadFast analogRead
 #endif
-#ifdef ARDUINO_ARCH_ESP32
-#include <USB.h>
-#endif
+
 
 //--------------------------------------- Globals --------------------------------------------------------
 
@@ -125,6 +122,8 @@ static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sample
   }
   return (axisXSum << (outputBits - ANALOG_BITS)) / sampleCount;
 }
+
+static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
 
 //--------------------------------------------------------------------------------------------------------
 //------------------------------------ Main firmware loop ------------------------------------------------

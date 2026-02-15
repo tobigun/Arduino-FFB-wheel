@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "HID_pid.h"
+#include "ffb_hid.h"
 
 //------------------------------------- Firmware options -------------------------------------------------
 
