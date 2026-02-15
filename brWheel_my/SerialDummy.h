@@ -2,8 +2,6 @@
 
 #include <Arduino.h>
 
-#ifndef CDC_ENABLED
-
 class SerialDummy : public Stream
 {
   public:
@@ -22,5 +20,3 @@ class SerialDummy : public Stream
 };
 
 extern SerialDummy SerialDummy_;
-
-#endif

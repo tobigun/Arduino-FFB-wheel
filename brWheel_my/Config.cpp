@@ -1,8 +1,6 @@
 #include "Config.h"
 #include "common.h"
-#ifdef USE_EEPROM
-#include <EEPROM.h> // milos, re-implemented
-#endif
+#include <EEPROM.h>
 
 uint8_t ffbBalance; // milos, load cell scaling factor (affects brake pressure, but depends on your load cell's maximum specified load)
 
@@ -79,21 +77,24 @@ uint16_t TOP; // milos, pwmstate byte loaded from EEPROM, then in InitPWM() func
 //-------------------------------------------------------------------------------------------------------
 
 void getParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
-#ifdef USE_EEPROM
   for (uint8_t i = 0; i < size; i++) {
     addr_to[i] = EEPROM.read(offset + i);
   }
-#endif
 }
 
 void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
-#ifdef USE_EEPROM
   for (uint8_t i = 0; i < size; i++) {
   #ifdef __AVR__
-    //EEPROM.write(offset + i, addr_to[i]);
     EEPROM.update(offset + i, addr_to[i]); //milos, re-write only when neccessary
+  #else
+    EEPROM.write(offset + i, addr_to[i]);
   #endif
   }
+}
+
+void InitEEPROMConfig() {
+#ifndef __AVR__
+  EEPROM.begin(EEPROM_SIZE);
 #endif
 }
 
@@ -121,7 +122,7 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
   SetParam(PARAM_ADDR_CTS_GAIN, v8); // milos, added
   v16 = 0; // milos, added
   SetParam(PARAM_ADDR_MIN_TORQ, v16); //milos, added
-  v16 = 2047; // milos, for PWM signals
+  v16 = MAX_TORQ_DEFAULT; // milos, for PWM signals
   SetParam(PARAM_ADDR_MAX_TORQ, v16); //milos, added
   v16 = 4095; // milos, for 12bit DAC
   SetParam(PARAM_ADDR_MAX_DAC, v16); // milos, added
@@ -133,13 +134,25 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
   SetParam(PARAM_ADDR_ENC_CPR, v32); // milos, added
   v8 = 0b01000100; // milos, PWM out enabled, fast pwm, pwm+-, 7.8kHz, TOP 11bit (2047)
   SetParam(PARAM_ADDR_PWM_SET, v8); // milos, added
+  v16 = 0;
+  SetParam(PARAM_ADDR_ACEL_LO, v16);
+  SetParam(PARAM_ADDR_BRAK_LO, v16);
+  SetParam(PARAM_ADDR_CLUT_LO, v16);
+  SetParam(PARAM_ADDR_HBRK_LO, v16);
+  v16 = 1023;
+  SetParam(PARAM_ADDR_ACEL_HI, v16);
+  SetParam(PARAM_ADDR_BRAK_HI, v16);
+  SetParam(PARAM_ADDR_CLUT_HI, v16);
+  SetParam(PARAM_ADDR_HBRK_HI, v16);
+#ifndef __AVR__
+  EEPROM.commit();
+#endif
 }
 
 void SetEEPROMConfig() { // milos, changed FIRMWARE_VERSION to 16bit from 32bit
   uint16_t v16;
   GetParam(PARAM_ADDR_FW_VERSION, v16);
   if (v16 != FIRMWARE_VERSION) { // milos, first time run, or version change - set default values for safety
-    //ClearEEPROMConfig(); // milos, clear EEPROM before loading defaults
     SetDefaultEEPROMConfig(); // milos, set default firmware settings
   }
 }
@@ -198,15 +211,18 @@ void SaveEEPROMConfig () { //milos, added - saves all v8 parameters in EEPROM
   SetParam(PARAM_ADDR_CLUT_HI, clutch.max);
   SetParam(PARAM_ADDR_HBRK_LO, hbrake.min);
   SetParam(PARAM_ADDR_HBRK_HI, hbrake.max);
+#ifndef __AVR__
+  EEPROM.commit();
+#endif
 }
 
 void ClearEEPROMConfig() { //milos, added - clears EEPROM (1KB on ATmega32U4)
-#ifdef USE_EEPROM
-  uint8_t zero;
-  zero = 0;
-  for (uint16_t i = 0; i < 1024; i++) {
+  uint8_t zero = 0;
+  for (uint16_t i = 0; i < EEPROM_SIZE; i++) {
     SetParam(i, zero);
   }
+#ifndef __AVR__
+  EEPROM.commit();
 #endif
 }
 
@@ -214,24 +230,6 @@ void ClearEEPROMConfig() { //milos, added - clears EEPROM (1KB on ATmega32U4)
 // I wrote mine that can handle 32bit variables or int32_t
 int32_t myMap (int32_t value, int32_t x0, int32_t x1, int32_t y0, int32_t y1) {
   return (y0 + value * (y1 - y0) / (x1 - x0));
-}
-
-void update(fwOpt *option) { // milos, added - update firmware options from predefines above
-#ifndef USE_QUADRATURE_ENCODER
-  option->d = true;
-#endif
-#ifdef USE_HATSWITCH
-  option->h = true;
-#endif
-#ifdef USE_PROMICRO
-  option->m = true;
-#endif
-#ifdef USE_BTNMATRIX
-  option->t = true;
-#endif
-#ifdef USE_ANALOGFFBAXIS
-  option->x = true;
-#endif
 }
 
 uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value from pwmstate byte argument

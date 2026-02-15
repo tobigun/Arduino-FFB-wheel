@@ -28,19 +28,18 @@
 #include "common.h"
 #include "ffb_pro.h"
 #include "debug.h"
-#include "HID.h"
+#include "HID_pid.h"
 #include <Wire.h>
 #ifdef __AVR__
 #include <digitalWriteFast.h>
 #else
 #define pinModeFast pinMode
-#define digitalReadFast(pin) digitalRead(pin)
 #define digitalWriteFast(pin, val) digitalWrite(pin, val)
 #endif
 
 //--------------------------------------- Globals --------------------------------------------------------
 
-uint8_t analog_inputs_pins[] = // milos, changed to u8, from u16
+uint8_t analog_inputs_pins[] =
 {
   Z_AXIS_PIN,
   Y_AXIS_PIN,
@@ -57,7 +56,6 @@ bool readSingleButton (uint8_t i);
 //--------------------------------------------------------------------------------------------------------
 
 void InitInputs() {
-  //analogReference(INTERNAL); // sets 2.56V on AREF pin for Leonardo or Micro, can be EXTERNAL also
   for (uint8_t i = 0; i < sizeof(analog_inputs_pins); i++) {
     pinMode(analog_inputs_pins[i], INPUT);
   }
@@ -74,11 +72,11 @@ void InitInputs() {
   }
 }
 
-void InitButtons() { // milos, added - if not using shift register, allocate some free pins for buttons
+void InitButtons() { // if not using shift register, allocate some free pins for buttons
   pinMode(BUTTON0, INPUT_PULLUP);
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
-  pinMode(BUTTON3, INPUT_PULLUP); // on proMicro only available if we do not use z-index
+  pinMode(BUTTON3, INPUT_PULLUP);
   pinModeFast(BUTTON4, OUTPUT);
   pinModeFast(BUTTON5, OUTPUT);
   pinModeFast(BUTTON6, OUTPUT);
@@ -123,7 +121,7 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
 uint8_t decodeHat(uint16_t inbits) {
   byte hat;
-  byte dec = 0b1111 & inbits; //milos, only take 1st 4 bits from inbits
+  byte dec = 0b1111 & inbits; //only take 1st 4 bits from inbits
   if (dec == 1) { //up
     hat = 1;
   } else if (dec == 2) { //right
@@ -168,29 +166,34 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
   buttons >>= 4; // shift out the hat bits from buttons variable
 }
 
-bool readSingleButton (uint8_t i) { // milos, added
-  bool temp;
+#ifdef __AVR__
+#define READ_BUTTON_(pin, bit) (!bitRead(digitalReadFast(pin), (bit)))
+#define READ_BUTTON(id) READ_BUTTON_(BUTTON##id, B##id##PORTBIT)
+#else
+#define READ_BUTTON(id) (digitalRead(BUTTON##id))
+#endif
+
+bool readSingleButton(uint8_t i) {
   if (i == 0) {
-    temp = !bitRead(digitalReadFast(BUTTON0), B0PORTBIT); // milos, read bit4 from PINF A3 (or bit4 from PIND D4 when no LC, or bit6 from PINC D5 on leonardo/micro when XY shifter) into buttons bit0
+    return READ_BUTTON(0);
   } else if (i == 1) {
-    temp = !bitRead(digitalReadFast(BUTTON1), B1PORTBIT); // milos, read bit1 from PINF A4 (or bit3 from PINB D14 on ProMicro) into buttons bit1
+    return READ_BUTTON(1);
   } else if (i == 2) {
-    temp = !bitRead(digitalReadFast(BUTTON2), B2PORTBIT); // milos, read bit0 from PINF A5 (or bit1 from PINB D15 on ProMicro) into buttons bit2
+    return READ_BUTTON(2);
   } else if (i == 3) {
-    temp = !bitRead(digitalReadFast(BUTTON3), B3PORTBIT); // milos, read bit6 from PIND D12 into buttons bit3
+    return READ_BUTTON(3);
   } else if (i == 4) {
-    temp = !bitRead(digitalReadFast(BUTTON4), B4PORTBIT); // milos, read bit7 from PIND D6 into buttons bit4
+    return READ_BUTTON(4);
   } else if (i == 5) {
-    temp = !bitRead(digitalReadFast(BUTTON5), B5PORTBIT); // milos, read bit6 from PINE D7 into buttons bit5
+    return READ_BUTTON(5);
   } else if (i == 6) {
-    temp = !bitRead(digitalReadFast(BUTTON6), B6PORTBIT); // milos, read bit4 from PINB D8 into buttons bit6
+    return READ_BUTTON(6);
   } else {
-    temp = false;
+    return false;
   }
-  return temp;
 }
 
-void setMatrixRow (uint8_t j, uint8_t k) { // milos, added
+void setMatrixRow(uint8_t j, uint8_t k) {
   if (j == 0) {
     digitalWriteFast(BUTTON4, k);
   } else if (j == 1) {

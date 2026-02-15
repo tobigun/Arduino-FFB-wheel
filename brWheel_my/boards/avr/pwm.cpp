@@ -1,23 +1,20 @@
 // milos, completely rewritten - all possible configurations of PWM and DAC settings are handeled here
 
 #include "Config.h"
-#ifdef __AVR__
+#include "common.h"
+
 #include <avr/io.h>
 #include <digitalWriteFast.h>
-#else
-#define pinModeFast pinMode
-#define digitalWriteFast digitalWrite
-#endif
 
 inline void PWM16A(uint16_t PWMValue);
 void PWM16Begin();
 void PWM16EnableA();
-void blinkFFBclipLED();
 
 void InitPWM() {
 #ifdef DIR_PIN
   pinModeFast(DIR_PIN, OUTPUT);
 #endif
+
   TOP = calcTOP(pwmstate); // milos, this will set appropriate TOP value for all PWM modes, depending on pwmstate loaded from EEPROM
   MM_MAX_MOTOR_TORQUE = TOP;
 
@@ -28,29 +25,6 @@ void InitPWM() {
   PWM16B(0);  // Set initial PWM value for Pin 10
   PWM16EnableB();  // Turn PWM on for Pin 10
 #endif
-
-  pinMode(FFBCLIP_LED_PIN, OUTPUT); // milos, for promicro we can only use ffb clip led on D3 if not using all above
-  blinkFFBclipLED(); // milos, signals end of configuration
-}
-
-void blinkFFBclipLED() { // milos, added - blink FFB clip LED a few times at startup to indicate succesful boot
-  for (uint8_t i = 0; i < 3; i++) {
-    digitalWrite(FFBCLIP_LED_PIN, HIGH);
-    delay(20);
-    digitalWrite(FFBCLIP_LED_PIN, LOW);
-    delay(20);
-  }
-}
-
-void activateFFBclipLED(int32_t t) {  // milos, added - turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
-  float level = 0.01 * configGeneralGain;
-  if (abs(t) >= 0.9 * MM_MAX_MOTOR_TORQUE * level && abs(t) < level * MM_MAX_MOTOR_TORQUE - 1) {
-    analogWrite(FFBCLIP_LED_PIN, map(abs(t), 0.9 * MM_MAX_MOTOR_TORQUE * level, level * MM_MAX_MOTOR_TORQUE, 1, 63)); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
-  } else if (abs(t) >= level * MM_MAX_MOTOR_TORQUE - 1) {
-    digitalWrite(FFBCLIP_LED_PIN, HIGH); // for 100% FFB set full brightness
-  } else {
-    digitalWrite(FFBCLIP_LED_PIN, LOW); // if under 90% FFB turn off LED
-  }
 }
 
 //void SetPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // milos, torque is xFFB, while yFFB is passed from torqueY global variable outside of this function

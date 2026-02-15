@@ -6,24 +6,10 @@
 #include "ffb_hid.h"
 #include "packed.h"
 
-struct ATTR_PACKED InputReport {
-  int16_t x;
-  int16_t y;
-  int16_t z;
-  int16_t rx;
-  int16_t ry;
-  uint8_t hat;
-  uint16_t buttons : NB_BUTTONS;
-  uint8_t padding : 8 - (NB_BUTTONS % 8);
-};
-
 Adafruit_USBD_HID usb_hid(NULL, 0, HID_ITF_PROTOCOL_NONE, 2, true);
 
 volatile uint16_t ffbReportLength = 0;
 volatile uint8_t ffbReport[64];
-
-bool useDrivingHidProfile = false;
-bool useCombinedAxes = false;
 
 static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
 
@@ -44,10 +30,11 @@ void buildHIDDescriptor()
 }
 
 void HidAdapter::begin() {
-  //if (!TinyUSBDevice.isInitialized()) {
+  TinyUSBDevice.setSerialDescriptor("HIDPH");
+
+  if (!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
-  //}
-  //  TinyUSBDevice.clearConfiguration();
+  }
 
   //buildHIDDescriptor();
   //usb_hid.setPollInterval(2);
@@ -55,18 +42,11 @@ void HidAdapter::begin() {
   usb_hid.setReportCallback(get_report_callback, set_report_callback);
   usb_hid.begin();
 
-  Serial.println("USB HID added");
-  
-  // if already enumerated, re-attach
-  //if (TinyUSBDevice.mounted()) {
-  //  TinyUSBDevice.detach();
-  //  delay(10);
-  //  TinyUSBDevice.attach();
-  //}
+  USB.begin();
 
-  Serial0.println("USB wait");
-  while (!TinyUSBDevice.mounted()) { delay(10); }
-  Serial0.println("USB HID started");
+  while (!TinyUSBDevice.mounted()) {
+    delay(10);
+  }
 }
 
 void HidAdapter::recvFromUsb() 
@@ -79,17 +59,6 @@ void HidAdapter::recvFromUsb()
 		ffbReportLength = 0;
 	}
 }
-
-#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
-
-static uint16_t rearrangeButtons(uint16_t buttons) {
-  uint8_t gearBtns = buttons & 0b11;
-  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
-  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
-  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
-  return dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8);
-}
-
 
 void HidAdapter::sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
   InputReport report = {

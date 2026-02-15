@@ -247,6 +247,7 @@ typedef struct
 } TDisabledEffectTypes;
 
 extern volatile TDisabledEffectTypes gDisabledEffects;
+extern USB_FFBReport_PIDBlockLoad_Feature_Data_t gNewEffectBlockLoad;
 
 void FfbSendSysEx(const uint8_t* midi_data, uint8_t len);
 

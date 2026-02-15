@@ -68,9 +68,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         // do not send this information to hide steering axis selection, as axis is fixed to X
         //CONFIG_SERIAL.print("x");
 #endif
-#ifdef USE_PROMICRO
-        CONFIG_SERIAL.print("m");
-#endif
+        CONFIG_SERIAL.print("m"); // promicro
         CONFIG_SERIAL.print("\r\n");
         break;
       case 'S':

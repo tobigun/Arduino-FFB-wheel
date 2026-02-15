@@ -26,21 +26,23 @@
 #include <Arduino.h>
 
 #include "Config.h"
-#include "HID.h"
+#include "ffb_hid.h"
 #include "hidDescriptor.h"
 #include "common.h"
 #include "debug.h"
 #include "packed.h"
 #ifdef __AVR__
-#include "WHID.h"
 #include <avdweb_AnalogReadFast.h>
+#else
+#include <Adafruit_TinyUSB.h>
+#define analogReadFast analogRead
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+#include <USB.h>
 #endif
 
 //--------------------------------------- Globals --------------------------------------------------------
 
-#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
-
-fwOpt fwOptions; // struct that holds all firmware options
 s16a accel, clutch, hbrake; // changed from s16
 s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
 
@@ -49,37 +51,10 @@ cFFB gFFB;
 uint32_t last_ConfigSerial = 0;
 uint32_t last_refresh = 0;
 
-struct ATTR_PACKED InputReport {
-  int16_t x;
-  int16_t y;
-  int16_t z;
-  int16_t rx;
-  int16_t ry;
-  uint8_t hat;
-  uint16_t buttons : NB_BUTTONS;
-  uint8_t padding : 8 - (NB_BUTTONS % 8);
-};
+HidAdapter hidAdapter;
 
-static uint16_t rearrangeButtons(uint16_t buttons) {
-  uint8_t gearBtns = buttons & 0b11;
-  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
-  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
-  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
-  return dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8);
-}
-
-static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
-  InputReport report = {
-    x: x,
-    y: y,
-    z: z,
-    rx: rx,
-    ry: ry,
-    hat: hat,
-    buttons: rearrangeButtons(buttons)
-  };
-  HID().SendReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
-}
+bool useDrivingHidProfile = false;
+bool useCombinedAxes = false;
 
 //--------------------------------------------------------------------------------------------------------
 //-------------------------------------------- SETUP -----------------------------------------------------
@@ -88,6 +63,8 @@ static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t
 void setup() {
   CONFIG_SERIAL.begin(115200);
 
+  hidAdapter.begin();
+
   accel.val = 0;
   brake.val = 0;
   clutch.val = 0;
@@ -95,11 +72,15 @@ void setup() {
   pinMode(LED_BLUE_PIN, OUTPUT);
   digitalWrite(LED_BLUE_PIN, LOW);
 
+  InitEEPROMConfig();
   SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
 
   InitInputs();
   FfbSetDriver(0);
+
+  pinMode(FFBCLIP_LED_PIN, OUTPUT);
+  blinkFFBclipLED();
 
   InitPWM(); // initialize PWM (or DAC) settings
 
@@ -133,7 +114,7 @@ static void readAxisSamples(size_t axisIndex, uint8_t sampleCount, uint8_t pin) 
   uint16_t* samples = axisSamples[axisIndex];
   memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
   for (int8_t i = sampleCount - 1; i >= 0; --i) {
-    samples[i] = analogRead(pin);
+    samples[i] = analogReadFast(pin);
   }
 }
 
@@ -224,5 +205,62 @@ void loop() {
       }
     }
     UpdateDataLed();
+  }
+
+  hidAdapter.recvFromUsb();
+}
+
+struct ATTR_PACKED InputReport {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+  int16_t rx;
+  int16_t ry;
+  uint8_t hat;
+  uint16_t buttons : NB_BUTTONS;
+  uint8_t padding : 8 - (NB_BUTTONS % 8);
+};
+
+#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
+
+static uint16_t rearrangeButtons(uint16_t buttons) {
+  uint8_t gearBtns = buttons & 0b11;
+  uint8_t dpadBtns = (buttons >> 2) & 0b1111;
+  uint8_t sideBtns = SWAP_BITS((buttons >> 8) & 0b11);
+  uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
+  return dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8);
+}
+
+static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
+  InputReport report = {
+    x: x,
+    y: y,
+    z: z,
+    rx: rx,
+    ry: ry,
+    hat: hat,
+    buttons: rearrangeButtons(buttons)
+  };
+  hidAdapter.sendInputReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
+}
+
+void blinkFFBclipLED() { // milos, added - blink FFB clip LED a few times at startup to indicate succesful boot
+  for (uint8_t i = 0; i < 3; i++) {
+    digitalWrite(FFBCLIP_LED_PIN, HIGH);
+    delay(20);
+    digitalWrite(FFBCLIP_LED_PIN, LOW);
+    delay(20);
+  }
+}
+
+void activateFFBclipLED(int32_t t) {  // milos, added - turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
+  float level = 0.01 * configGeneralGain;
+  if (abs(t) >= 0.9 * MM_MAX_MOTOR_TORQUE * level && abs(t) < level * MM_MAX_MOTOR_TORQUE - 1) {
+    //analogWrite(FFBCLIP_LED_PIN, map(abs(t), 0.9 * MM_MAX_MOTOR_TORQUE * level, level * MM_MAX_MOTOR_TORQUE, 1, 63)); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
+    digitalWrite(FFBCLIP_LED_PIN, HIGH);
+  } else if (abs(t) >= level * MM_MAX_MOTOR_TORQUE - 1) {
+    digitalWrite(FFBCLIP_LED_PIN, HIGH); // for 100% FFB set full brightness
+  } else {
+    digitalWrite(FFBCLIP_LED_PIN, LOW); // if under 90% FFB turn off LED
   }
 }

@@ -12,7 +12,9 @@
 #include "soc/soc_caps.h"
 
 #define USB_VID 0x303A
+#ifndef USB_PID
 #define USB_PID 0x1001
+#endif
 #define USB_MANUFACTURER "Waveshare"
 #define USB_PRODUCT "Waveshare ESP32 S3 Pico"
 #define USB_SERIAL ""
