@@ -82,12 +82,12 @@ void FlushDebugBuffer(void);
 
 #ifdef CDC_ENABLED
 #define DEBUG_SERIAL		Serial
-#define CONFIG_SERIAL		Serial
 #else
 #include "SerialDummy.h"
 #define DEBUG_SERIAL		SerialDummy_
-#define CONFIG_SERIAL		SerialDummy_
 #endif
+
+#define CONFIG_SERIAL		Serial
 
 //#define DEBUG_FFB // milos, uncomment this to enable FFB debugging via UART
 //#define DEBUG_CALIBRATION

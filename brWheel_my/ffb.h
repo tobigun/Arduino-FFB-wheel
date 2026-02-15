@@ -57,16 +57,15 @@ extern bool useCombinedAxes;
 
 // ---- Input
 
-typedef struct
+typedef struct ATTR_PACKED
 {
-  uint8_t	reportId;	// =2
   uint8_t	status;	// Bits: 0=Device Paused,1=Actuators Enabled,2=Safety Switch,3=Actuator Override Switch,4=Actuator Power
   uint8_t	effectBlockIndex;	// Bit7=Effect Playing, Bit0..7=EffectId (1..40)
 } USB_FFBReport_PIDStatus_Input_Data_t;
 
 // ---- Output
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set Effect Output Report
   uint8_t	reportId;	// =1
   uint8_t	effectBlockIndex;	// 1..40
@@ -84,7 +83,7 @@ typedef struct
   uint16_t startDelay;	// 0..65535, exp -3, s //milos, uncommented
 } USB_FFBReport_SetEffect_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set Envelope Output Report
   uint8_t	reportId;	// =2
   uint8_t	effectBlockIndex;	// 1..40
@@ -94,20 +93,20 @@ typedef struct
   uint16_t fadeTime;	// 0..32767  (physical 0..32767), exp -3, s
 } USB_FFBReport_SetEnvelope_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set Condition Output Report
   uint8_t	reportId;	// =3
   uint8_t	effectBlockIndex;	// 1..40
   uint8_t	parameterBlockOffset;	// bits: 0..3=parameterBlockOffset, 4..5=instance1, 6..7=instance2
   int16_t cpOffset;	// -32768..32767 (physical -32768..32767) //milos, was -128(-10000)..127(10000), int8_t
   int16_t	positiveCoefficient;	// -32767..32767 (physical -32767..32767) //milos, was -128(-10000)..127(10000), int8_t
-  //  int16_t	negativeCoefficient;	// -32768..32767 (physical -32768..32767) //milos, was -128(-10000)..127(10000), int8_t, commented out
-  //  int16_t positiveSaturation;	// 0..32767 (physical 0..32767) //milos, was 0(0)..255(10000), int8_t, commented out
+  //  int16_t	negativeCoefficient;	// -32768..32767 (physical -32768..32767) //milos, was -128(-10000)..127(10000), int8_t
+  int16_t positiveSaturation;	// 0..32767 (physical 0..32767) //milos, was 0(0)..255(10000), int8_t, commented out
   //  uint8_t	negativeSaturation;	// -128..127
   uint8_t deadBand;	// 0..255 (physical 0..32767) //milos, was 0(0)..255(10000)
 } USB_FFBReport_SetCondition_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set Periodic Output Report
   uint8_t	reportId;	// =4
   uint8_t	effectBlockIndex;	// 1..40
@@ -118,14 +117,14 @@ typedef struct
   uint16_t period;	// 0..65535  (physical 0..65535), exp -3, s //milos, was 0(0)..32767(32767)
 } USB_FFBReport_SetPeriodic_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set ConstantForce Output Report
   uint8_t	reportId;	// =5
   uint8_t	effectBlockIndex;	// 1..40
   int16_t magnitude;	// -32767..32737  (physical -32767..32737) //milos, logical was -255..255
 } USB_FFBReport_SetConstantForce_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set RampForce Output Report
   uint8_t	reportId;	// =6
   uint8_t	effectBlockIndex;	// 1..40
@@ -134,7 +133,7 @@ typedef struct
 } USB_FFBReport_SetRampForce_Output_Data_t;
 
 //milos, commented since it was not used
-/*typedef struct
+/*typedef struct ATTR_PACKED
   { // FFB: Set CustomForceData Output Report
   uint8_t	reportId;	// =7
   uint8_t	effectBlockIndex;	// 1..40
@@ -144,14 +143,14 @@ typedef struct
   } USB_FFBReport_SetCustomForceData_Output_Data_t;*/
 
 //milos, commented since it was not used
-/*typedef struct
+/*typedef struct ATTR_PACKED
   { // FFB: Set DownloadForceSample Output Report
   uint8_t	reportId;	// =8
   int8_t	x; // -127..127  (physical -32767..32767) //milos, physical was 0..255
   int8_t	y; // -127..127  (physical -32767..32767) //milos, physical was 0..255
   } USB_FFBReport_SetDownloadForceSample_Output_Data_t;*/
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Set EffectOperation Output Report
   uint8_t	reportId;	// =10
   uint8_t effectBlockIndex;	// 1..40
@@ -159,19 +158,19 @@ typedef struct
   uint8_t	loopCount; //0..255 (physical 0..255)
 } USB_FFBReport_EffectOperation_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Block Free Output Report
   uint8_t	reportId;	// =11
   uint8_t effectBlockIndex;	// 1..40
 } USB_FFBReport_BlockFree_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Device Control Output Report
   uint8_t	reportId;	// =12
   uint8_t control;	// 1=Enable Actuators, 2=Disable Actuators, 4=Stop All Effects, 8=Reset, 16=Pause, 32=Continue
 } USB_FFBReport_DeviceControl_Output_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: DeviceGain Output Report
   uint8_t	reportId;	// =13
   //uint16_t deviceGain; //0..32767  (physical 0..32767) //milos, was 0(0)..255(10000), uint8_t
@@ -179,7 +178,7 @@ typedef struct
 } USB_FFBReport_DeviceGain_Output_Data_t;
 
 //milos, commented since it was not used
-/*typedef struct
+/*typedef struct ATTR_PACKED
   { // FFB: Set Custom Force Output Report
   uint8_t	reportId;	// =14
   uint8_t effectBlockIndex;	// 1..40
@@ -189,24 +188,30 @@ typedef struct
 
 // ---- Features
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: Create New Effect Feature Report
+#ifdef FFBREPORT_WITH_REPORTID
   uint8_t reportId;	// =1
+#endif
   uint8_t	effectType;	// Enum (1..12): ET 26,27,30,31,32,33,34,40,41,42,43 //,28 //milos, total 11, 28 custom force is removed
   uint16_t byteCount;	// 0..511
 } USB_FFBReport_CreateNewEffect_Feature_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: PID Block Load Feature Report
+#ifdef FFBREPORT_WITH_REPORTID
   uint8_t	reportId;	// =2
+#endif
   uint8_t effectBlockIndex;	// 1..40
   uint8_t	loadStatus;	// 1=Success,2=Full,3=Error
   uint16_t ramPoolAvailable;	// =0 or 0xFFFF?
 } USB_FFBReport_PIDBlockLoad_Feature_Data_t;
 
-typedef struct
+typedef struct ATTR_PACKED
 { // FFB: PID Pool Feature Report
+#ifdef FFBREPORT_WITH_REPORTID
   uint8_t	reportId;	// =3
+#endif
   uint16_t ramPoolSize;	// 65535
   uint8_t	maxSimultaneousEffects;	// ?? 40?
   uint8_t	memoryManagement;	// Bits: 0=DeviceManagedPool, 1=SharedParameterBlocks
@@ -236,7 +241,7 @@ uint8_t FfbDebugListEffects(uint8_t *index);
 
 // Effect manipulations
 
-typedef struct
+typedef struct ATTR_PACKED
 {
   uint8_t midi;	// disables all MIDI-traffic
   uint8_t springs;
@@ -280,7 +285,7 @@ void UpdateDataLed(void);
 #define USB_EFFECT_CUSTOM		0x0C
 #define USB_EFFECT_PERIODIC		0x0D
 
-typedef struct
+typedef struct ATTR_PACKED
 {
   uint8_t state;	// see constants MEffectState_*
   uint8_t type;	// see constants USB_EFFECT_*

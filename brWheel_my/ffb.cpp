@@ -168,25 +168,6 @@ void FreeAllEffects(void)
   LogTextLf("FFB.ino FreeAllEffects");
 }
 
-// Lengths of each report type
-const uint16_t OutReportSize[] =
-{
-  sizeof(USB_FFBReport_SetEffect_Output_Data_t),		// 1
-  sizeof(USB_FFBReport_SetEnvelope_Output_Data_t),	// 2
-  sizeof(USB_FFBReport_SetCondition_Output_Data_t),	// 3
-  sizeof(USB_FFBReport_SetPeriodic_Output_Data_t),	// 4
-  sizeof(USB_FFBReport_SetConstantForce_Output_Data_t),	// 5
-  sizeof(USB_FFBReport_SetRampForce_Output_Data_t),	// 6
-  0,//sizeof(USB_FFBReport_SetCustomForceData_Output_Data_t),	// 7 //milos, commented
-  0,//sizeof(USB_FFBReport_SetDownloadForceSample_Output_Data_t),	// 8 //milos, commented
-  0,	// 9
-  sizeof(USB_FFBReport_EffectOperation_Output_Data_t),	// 10
-  sizeof(USB_FFBReport_BlockFree_Output_Data_t),	// 11
-  sizeof(USB_FFBReport_DeviceControl_Output_Data_t),	// 12
-  sizeof(USB_FFBReport_DeviceGain_Output_Data_t),	// 13
-  0,//sizeof(USB_FFBReport_SetCustomForce_Output_Data_t),	// 14 //milos, commented
-};
-
 void FfbHandle_EffectOperation(USB_FFBReport_EffectOperation_Output_Data_t *data);
 void FfbHandle_BlockFree(USB_FFBReport_BlockFree_Output_Data_t *data);
 void FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t *data);
@@ -204,9 +185,10 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
   digitalWrite(LED_BLUE_PIN, HIGH);
   dataLedActiveTimeMs = millis();
 
+  uint8_t reportId = data[0];
   uint8_t effectId = data[1]; // effectBlockIndex is always the second byte.
 
-  switch (data[0])	// reportID
+  switch (reportId)
   {
     case 1:
       FfbHandle_SetEffect((USB_FFBReport_SetEffect_Output_Data_t *) data);
@@ -324,7 +306,9 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
 
 void FfbOnCreateNewEffect (USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, USB_FFBReport_PIDBlockLoad_Feature_Data_t *outData)
 {
+#ifdef FFBREPORT_WITH_REPORTID
   outData->reportId = 6;
+#endif
   outData->effectBlockIndex = GetNextFreeEffect();
 
   if (outData->effectBlockIndex == 0)
@@ -377,7 +361,9 @@ void FfbOnPIDPool(USB_FFBReport_PIDPool_Feature_Data_t *data)
 {
   FreeAllEffects();
 
+#ifdef FFBREPORT_WITH_REPORTID
   data->reportId = 7;
+#endif
   data->ramPoolSize = 0xFFFF; // MEMORY_SIZE;
   data->maxSimultaneousEffects = MAX_EFFECTS;	// FFP supports playing up to 11 simultaneous effects
   data->memoryManagement = 3;
@@ -452,7 +438,6 @@ void FfbHandle_DeviceControl(USB_FFBReport_DeviceControl_Output_Data_t *data)
   uint8_t control = data->control;
   // 1=Enable Actuators, 2=Disable Actuators, 3=Stop All Effects, 4=Reset, 5=Pause, 6=Continue
 
-  pidState.reportId = 2;
   Bset(pidState.status, SAFETY_SWITCH);
   Bset(pidState.status, ACTUATOR_POWER);
   pidState.effectBlockIndex = 0;
