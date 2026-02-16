@@ -49,8 +49,8 @@ uint8_t analog_inputs_pins[] =
 
 //----------------------------------------- Options -------------------------------------------------------
 
-void setMatrixRow (uint8_t j, uint8_t k);
-bool readSingleButton (uint8_t i);
+void setMatrixRow(uint8_t j, uint8_t k);
+bool readMatrixCol(uint8_t i);
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -73,18 +73,19 @@ void InitInputs() {
 }
 
 void InitButtons() { // if not using shift register, allocate some free pins for buttons
-  pinMode(BUTTON0, INPUT_PULLUP);
-  pinMode(BUTTON1, INPUT_PULLUP);
-  pinMode(BUTTON2, INPUT_PULLUP);
-  pinMode(BUTTON3, INPUT_PULLUP);
-  pinModeFast(BUTTON4, OUTPUT);
-  pinModeFast(BUTTON5, OUTPUT);
-  pinModeFast(BUTTON6, OUTPUT);
-  setMatrixRow(BUTTON4, HIGH);
-  setMatrixRow(BUTTON5, HIGH);
-  setMatrixRow(BUTTON6, HIGH);
-  pinModeFast(BUTTON7, OUTPUT);
-  setMatrixRow(BUTTON7, HIGH);
+  pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL3_PIN, INPUT_PULLUP);
+
+  pinModeFast(BUTTON_MATRIX_ROW0_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW1_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW2_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW3_PIN, OUTPUT);
+  setMatrixRow(BUTTON_MATRIX_ROW0_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
 }
 
 #define PEDALS_DISCONNECTED_THRESHOLD (ANALOG_MAX - 2)
@@ -153,13 +154,13 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
   // D7 |b21 b22 b23 b24|
   // D8 |b31 b32 b33 b34|
   // D5 |b41 b42 b43 b44|
-  for (uint8_t i = 0; i < 4; i++) { // rows (along X), we set each row high, one at a time
-    setMatrixRow (i, LOW);
+  for (uint8_t i = 0; i < 4; i++) { // rows (along X), we set each row low, one at a time
+    setMatrixRow(i, LOW);
     delayMicroseconds(5); // required to avoid the detection of false button presses
     for (uint8_t j = 0; j < 4; j++) { // columns (along Y), read each button from that row by scanning over columns
-      bitWrite(buttons, i * 4 + j, readSingleButton(j));
+      bitWrite(buttons, i * 4 + j, readMatrixCol(j));
     }
-    setMatrixRow (i, HIGH);
+    setMatrixRow(i, HIGH);
   }
 
   hat = decodeHat(buttons);
@@ -167,27 +168,21 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
 }
 
 #ifdef __AVR__
-#define READ_BUTTON_(pin, bit) (!bitRead(digitalReadFast(pin), (bit)))
-#define READ_BUTTON(id) READ_BUTTON_(BUTTON##id, B##id##PORTBIT)
+#define READ_MATRIX_COL_(pin, bit) (!bitRead(digitalReadFast(pin), (bit)))
+#define READ_MATRIX_COL(id) READ_MATRIX_COL_(BUTTON_MATRIX_COL##id##_PIN, BMCOL##id##_PORTBIT)
 #else
-#define READ_BUTTON(id) (digitalRead(BUTTON##id))
+#define READ_MATRIX_COL(id) (digitalRead(BUTTON_MATRIX_COL##id##_PIN))
 #endif
 
-bool readSingleButton(uint8_t i) {
+bool readMatrixCol(uint8_t i) {
   if (i == 0) {
-    return READ_BUTTON(0);
+    return READ_MATRIX_COL(0);
   } else if (i == 1) {
-    return READ_BUTTON(1);
+    return READ_MATRIX_COL(1);
   } else if (i == 2) {
-    return READ_BUTTON(2);
+    return READ_MATRIX_COL(2);
   } else if (i == 3) {
-    return READ_BUTTON(3);
-  } else if (i == 4) {
-    return READ_BUTTON(4);
-  } else if (i == 5) {
-    return READ_BUTTON(5);
-  } else if (i == 6) {
-    return READ_BUTTON(6);
+    return READ_MATRIX_COL(3);
   } else {
     return false;
   }
@@ -195,12 +190,12 @@ bool readSingleButton(uint8_t i) {
 
 void setMatrixRow(uint8_t j, uint8_t k) {
   if (j == 0) {
-    digitalWriteFast(BUTTON4, k);
+    digitalWriteFast(BUTTON_MATRIX_ROW0_PIN, k);
   } else if (j == 1) {
-    digitalWriteFast(BUTTON5, k);
+    digitalWriteFast(BUTTON_MATRIX_ROW1_PIN, k);
   } else if (j == 2) {
-    digitalWriteFast(BUTTON6, k);
+    digitalWriteFast(BUTTON_MATRIX_ROW2_PIN, k);
   } else if (j == 3) {
-    digitalWriteFast(BUTTON7, k);
+    digitalWriteFast(BUTTON_MATRIX_ROW3_PIN, k);
   }
 }

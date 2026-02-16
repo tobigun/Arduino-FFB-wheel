@@ -80,80 +80,81 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <img src="./docs/main-pcb.jpg" height="600px"/>
 
 <table>
-<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (Arduino Pro Micro)</th><th rowspan="2">Comment</th></tr>
+<tr><th colspan="3">Connector</th><th rowspan="2">Signal</th><th rowspan="2">Pin (ESP32-S3)</th><th rowspan="2">Pin (Pro Micro)</th><th rowspan="2">Comment</th></tr>
 <tr><th>Name</th><th>Pin</th><th>Color</th></tr>
 
 <tr><td rowspan="6">J5 (Motor PCB Connector)</td>
-    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>D9</td><td rowspan="6">Motor Enable switch must be connected to D10 via a BJT transistor to make sure that the motor is disabled when the microcontroller is powered down (i.e. not connected to USB).<br>
+    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>GP40</td><td>D9</td>
+    <td rowspan="6">* Motor Enable switch must be connected to GP39/D10 via a BJT transistor to make sure that the motor is disabled when the microcontroller is powered down (i.e. not connected to USB).<br>
     This is necessary as the Motor PCB would erroneously interpret the missing PWM signal to apply maximum force. It would turn the wheel with full force in one direction and try to move it past the end stop. As this is not possible the motor gets quite hot after some minutes.
     <br>See schematic for more info.
     </td></tr>
-<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>(See Comment)</td></tr>
-<tr><td>3</td><td style="background:orange">orange</td><td>GND</td><td>GND</td></tr>
-<tr><td>4</td><td style="background:red">red</td><td>GND</td><td>GND</td></tr>
-<tr><td>5</td><td style="background:brown">brown</td><td>GND</td><td>GND</td></tr>
-<tr><td>6</td><td style="background:black;color:white">black</td><td>+20V (from power supply)</td><td>- (unused)</td></tr>
+<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>[GP39]*</td><td>[D10]*</td></tr>
+<tr><td>3</td><td style="background:orange">orange</td><td>GND</td><td colspan="2">GND</td></tr>
+<tr><td>4</td><td style="background:red">red</td><td>GND</td><td colspan="2">GND</td></tr>
+<tr><td>5</td><td style="background:brown">brown</td><td>GND</td><td colspan="2">GND</td></tr>
+<tr><td>6</td><td style="background:black;color:white">black</td><td>+20V (from power supply)</td><td colspan="2">- (unused)</td></tr>
 
 <tr><td rowspan="3">J6 (X-Axis Potentiometer)</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
-<tr><td>2</td><td style="background:white">white</td><td>Analog X-Axis (0 .. VCC)</td><td>A0</td></tr>
-<tr><td>3</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td colspan="2">VCC</td><td rowspan="3"></td></tr>
+<tr><td>2</td><td style="background:white">white</td><td>Analog X-Axis (0 .. VCC)</td><td>A0</td><td>A0</td></tr>
+<tr><td>3</td><td style="background:green">green</td><td>GND</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="3">J7 (Y-Axis Potentiometer)</td>
-    <td>1</td><td style="background:red">red</td><td>74HC4066 Supply Voltage</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
-<tr><td>2</td><td style="background:blue;color:white">blue</td><td>Analog Y-Axis (0 .. VCC)</td><td>A1</td></tr>
-<tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
+    <td>1</td><td style="background:red">red</td><td>74HC4066 Supply Voltage</td><td colspan="2">VCC</td><td rowspan="3"></td></tr>
+<tr><td>2</td><td style="background:blue;color:white">blue</td><td>Analog Y-Axis (0 .. VCC)</td><td>A1</td><td>A1</td></tr>
+<tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
 
 <tr><td rowspan="3">J8 (Z-Axis Potentiometer)</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td><td rowspan="3"></td></tr>
-<tr><td>2</td><td style="background:brown">brown</td><td>Analog Z-Axis (0 .. VCC)</td><td>A2</td></tr>
-<tr><td>3</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td colspan="2">VCC</td><td rowspan="3"></td></tr>
+<tr><td>2</td><td style="background:brown">brown</td><td>Analog Z-Axis (0 .. VCC)</td><td>A3</td><td>A2</td></tr>
+<tr><td>3</td><td style="background:green">green</td><td>GND</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="12">J12 (Button Matrix)</td>
-    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>D5</td><td rowspan="12"></td></tr>
-<tr><td>2</td><td style="background:brown">brown</td><td>Matrix column 2</td><td>D14</td></tr>
-<tr><td>3</td><td style="background:red">red</td><td>Matrix column 3</td><td>D15</td></tr>
-<tr><td>4</td><td style="background:orange">orange</td><td>Matrix column 4</td><td>D2</td></tr>
-<tr><td>5</td><td style="background:yellow">yellow</td><td>Matrix row 1</td><td>D6</td></tr>
-<tr><td>6</td><td style="background:green">green</td><td>Matrix row 2</td><td>D7</td></tr>
-<tr><td>7</td><td style="background:blue;color:white">blue</td><td>Matrix row 3</td><td>D1 (TX0)</td></tr>
-<tr><td>8</td><td style="background:#add8e6">light blue</td><td>Matrix row 4</td><td>D4</td></tr>
-<tr><td>9</td><td style="background:#d3d3d3">light grey</td><td>Gear Shifter - Up (Matrix column 1)</td><td>D5</td></tr>
-<tr><td>10</td><td style="background:grey">grey</td><td>Gear Shifter - Down (Matrix column 2)</td><td>D14</td></tr>
-<tr><td>11</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
-<tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>D7</td></tr>
+    <td>1</td><td style="background:black;color:white">black</td><td>Matrix column 1</td><td>GP38</td><td>D5</td><td rowspan="12"></td></tr>
+<tr><td>2</td><td style="background:brown">brown</td><td>Matrix column 2</td><td>GP37</td><td>D14</td></tr>
+<tr><td>3</td><td style="background:red">red</td><td>Matrix column 3</td><td>GP36</td><td>D15</td></tr>
+<tr><td>4</td><td style="background:orange">orange</td><td>Matrix column 4</td><td>GP35</td><td>D2</td></tr>
+<tr><td>5</td><td style="background:yellow">yellow</td><td>Matrix row 1</td><td>GP17</td><td>D6</td></tr>
+<tr><td>6</td><td style="background:green">green</td><td>Matrix row 2</td><td>GP33</td><td>D7</td></tr>
+<tr><td>7</td><td style="background:blue;color:white">blue</td><td>Matrix row 3</td><td>GP18</td><td>D1 (TX0)</td></tr>
+<tr><td>8</td><td style="background:#add8e6">light blue</td><td>Matrix row 4</td><td>GP34</td><td>D4</td></tr>
+<tr><td>9</td><td style="background:#d3d3d3">light grey</td><td>Gear Shifter - Up (Matrix column 1)</td><td>GP38</td><td>D5</td></tr>
+<tr><td>10</td><td style="background:grey">grey</td><td>Gear Shifter - Down (Matrix column 2)</td><td>GP37</td><td>D14</td></tr>
+<tr><td>11</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
+<tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>GP33</td><td>D7</td></tr>
 
 <tr><td rowspan="4">J13 (Front LED)</td>
-    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>(See Comment)</td><td rowspan="4">Connect LED's Anode via 820 Ohms resistor to D3.<br>See schematic for more info.</td></tr>
-<tr><td>2</td><td style="background:black;color:white">black</td><td>LED Cathode (-)</td><td>GND</td></tr>
-<tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
-<tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td>-</td></tr>
+    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>[GP42]*</td><td>[D3]*</td><td rowspan="4">* Connect LED's Anode via 820 Ohms resistor to pin.<br>See schematic for more info.</td></tr>
+<tr><td>2</td><td style="background:black;color:white">black</td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
+<tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
+<tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
 
 <tr><td rowspan="4">JP101 (Analog Levers)<br>[Optional]</td>
-    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td>VCC (+5V)</td>
+    <td>1</td><td style="background:orange">orange</td><td>VCC</td><td colspan="2">VCC</td>
     <td rowspan="4">Wires can be unsoldered from connector JP101 of the power PCB and directly connected to the microcontroller.
     This way the pedals and levers can be used in parallel (5 instead of 3 axes). The Pins 2+3 on the JP101 connector on the power board should be pulled high then (i.e. connected to Pin 1).<br>See schematic for more info.</td></tr>
-<tr><td>2</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A3</td></tr>
-<tr><td>3</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A10</td></tr>
-<tr><td>4</td><td style="background:green">green</td><td>GND</td><td>GND</td></tr>
+<tr><td>2</td><td style="background:red">red</td><td>Analog Axis - Lever left</td><td>A4</td><td>A3</td></tr>
+<tr><td>3</td><td style="background:brown">brown</td><td>Analog Axis - Lever right</td><td>A5</td><td>A8</td></tr>
+<tr><td>4</td><td style="background:green">green</td><td>GND</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="2">Blue Front LED<br>[Optional]</td>
-    <td>A</td><td style="background:blue"></td><td>LED Anode (+)</td><td>(See Comment)</td>
-    <td rowspan="2">Connect LED's Anode via 4.7 kOhms resistor to D0 (RX1).<br>See schematic for more info.</td>
+    <td>A</td><td style="background:blue"></td><td>LED Anode (+)</td><td>[GP41]*</td><td>[D0]* (RX1)</td>
+    <td rowspan="2">* Connect LED's Anode via 4.7 kOhms resistor to pin.<br>See schematic for more info.</td>
     </tr>
-<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="2">Green Front LED<br>[Optional]</td>
-    <td>A</td><td style="background:green"></td><td>LED Anode (+)</td><td>(See Comment)</td>
-    <td rowspan="2">Connect LED's Anode via 150 kOhms resistor to +20V.<br>See schematic for more info.</td>
+    <td>A</td><td style="background:green"></td><td>LED Anode (+)</td><td colspan="2">[+20V]*</td>
+    <td rowspan="2">* Connect LED's Anode via 150 kOhms resistor to +20V.<br>See schematic for more info.</td>
     </tr>
-<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td>GND</td></tr>
+<tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="2">Profile Switch<br>[Optional]</td>
-    <td>1</td><td></td><td>Pin 1</td><td>D16</td>
+    <td>1</td><td></td><td>Pin 1</td><td>GP16</td><td>D16</td>
     <td rowspan="2">For three pin switches: connect middle pin to D16 and any of the other two pins to GND.<br>
     </td></tr>
-<tr><td>2</td><td style="background:black;color:white"></td><td>Pin 2</td><td>GND</td></tr>
+<tr><td>2</td><td style="background:black;color:white"></td><td>Pin 2</td><td colspan="2">GND</td></tr>
 </table>
 
 Make a little connector hub PCB to hold the motor switch transistor and  to connect all of the GND and VCC pins together. This way you can keep the existing connectors and you will still be able to reconnect them to the original Main PCB. But you can also cut the original connectors and solder the wires directly to the Arduino board.

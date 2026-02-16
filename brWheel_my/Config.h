@@ -44,31 +44,29 @@
 #endif
 
 #ifdef __AVR__
-#define BUTTON0 5 // D5, used for button0
-#define B0PORTBIT 6 // read bit6 of PINC
-#define BUTTON1 14 // D14, used for button1 instead
-#define B1PORTBIT 3 // read bit3 of PINB
-#define BUTTON2 15 // D15, used for button2 instead
-#define B2PORTBIT 1 // read bit1 of PINB
-#define BUTTON3 2 // D2, used for button3 instead on proMicro
-#define B3PORTBIT 1 // read bit1 of PIND
-#define BUTTON4 4 // D4, used for button4
-#define B4PORTBIT 4 // read bit4 of PIND
-#define BUTTON5 7 // D7 or bit6 of PINE
-#define B5PORTBIT 6 // bit6
-#define BUTTON6 1 // D1 or bit3 of PIND
-#define B6PORTBIT 3 // bit3
-#define BUTTON7 6 // D6, used for button7
-#define B7PORTBIT 7 // read bit7 of PIND
+#define BUTTON_MATRIX_COL0_PIN 5 // D5, used for button0
+#define BMCOL0_PORTBIT 6 // read bit6 of PINC
+#define BUTTON_MATRIX_COL1_PIN 14 // D14, used for button1 instead
+#define BMCOL1_PORTBIT 3 // read bit3 of PINB
+#define BUTTON_MATRIX_COL2_PIN 15 // D15, used for button2 instead
+#define BMCOL2_PORTBIT 1 // read bit1 of PINB
+#define BUTTON_MATRIX_COL3_PIN 2 // D2, used for button3 instead on proMicro
+#define BMCOL3_PORTBIT 1 // read bit1 of PIND
+
+#define BUTTON_MATRIX_ROW0_PIN 4 // D4, used for button4
+#define BUTTON_MATRIX_ROW1_PIN 7 // D7 or bit6 of PINE
+#define BUTTON_MATRIX_ROW2_PIN 1 // D1 or bit3 of PIND
+#define BUTTON_MATRIX_ROW3_PIN 6 // D6, used for button7
 #else
-#define BUTTON0 38
-#define BUTTON1 37
-#define BUTTON2 36
-#define BUTTON3 35
-#define BUTTON4 34
-#define BUTTON5 33
-#define BUTTON6 18
-#define BUTTON7 17
+#define BUTTON_MATRIX_COL0_PIN 38
+#define BUTTON_MATRIX_COL1_PIN 37
+#define BUTTON_MATRIX_COL2_PIN 36
+#define BUTTON_MATRIX_COL3_PIN 35
+
+#define BUTTON_MATRIX_ROW0_PIN 34
+#define BUTTON_MATRIX_ROW1_PIN 33
+#define BUTTON_MATRIX_ROW2_PIN 18
+#define BUTTON_MATRIX_ROW3_PIN 17
 #endif
 
 #define PROFILE_SWITCH_PIN 16
