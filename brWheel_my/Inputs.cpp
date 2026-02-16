@@ -49,8 +49,8 @@ uint8_t analog_inputs_pins[] =
 
 //----------------------------------------- Options -------------------------------------------------------
 
-void setMatrixRow(uint8_t j, uint8_t k);
-bool readMatrixCol(uint8_t i);
+void setMatrixRow(uint8_t row, uint8_t value);
+bool readMatrixCol(uint8_t col);
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -174,28 +174,28 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
 #define READ_MATRIX_COL(id) (digitalRead(BUTTON_MATRIX_COL##id##_PIN))
 #endif
 
-bool readMatrixCol(uint8_t i) {
-  if (i == 0) {
+bool readMatrixCol(uint8_t col) {
+  if (col == 0) {
     return READ_MATRIX_COL(0);
-  } else if (i == 1) {
+  } else if (col == 1) {
     return READ_MATRIX_COL(1);
-  } else if (i == 2) {
+  } else if (col == 2) {
     return READ_MATRIX_COL(2);
-  } else if (i == 3) {
+  } else if (col == 3) {
     return READ_MATRIX_COL(3);
   } else {
     return false;
   }
 }
 
-void setMatrixRow(uint8_t j, uint8_t k) {
-  if (j == 0) {
-    digitalWriteFast(BUTTON_MATRIX_ROW0_PIN, k);
-  } else if (j == 1) {
-    digitalWriteFast(BUTTON_MATRIX_ROW1_PIN, k);
-  } else if (j == 2) {
-    digitalWriteFast(BUTTON_MATRIX_ROW2_PIN, k);
-  } else if (j == 3) {
-    digitalWriteFast(BUTTON_MATRIX_ROW3_PIN, k);
+void setMatrixRow(uint8_t row, uint8_t value) {
+  if (row == 0) {
+    digitalWriteFast(BUTTON_MATRIX_ROW0_PIN, value);
+  } else if (row == 1) {
+    digitalWriteFast(BUTTON_MATRIX_ROW1_PIN, value);
+  } else if (row == 2) {
+    digitalWriteFast(BUTTON_MATRIX_ROW2_PIN, value);
+  } else if (row == 3) {
+    digitalWriteFast(BUTTON_MATRIX_ROW3_PIN, value);
   }
 }

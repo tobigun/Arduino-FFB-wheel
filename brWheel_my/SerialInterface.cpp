@@ -10,14 +10,13 @@ uint8_t toUpper(uint8_t c) {
   return (c);
 }
 
-void configCDC() { // milos, virtual serial port firmware configuration interface
+void configCDC() { // virtual serial port firmware configuration interface
   if (CONFIG_SERIAL.available() > 0) {
     uint8_t c = toUpper(CONFIG_SERIAL.read());
-    //DEBUG_SERIAL.println(c);
     int32_t temp;
     uint8_t ffb_temp;
     switch (c) {
-      case 'U': // milos, send all firmware settings
+      case 'U': // send all firmware settings
         CONFIG_SERIAL.print(ROTATION_DEG);
         CONFIG_SERIAL.print(' ');
         CONFIG_SERIAL.print(configGeneralGain);
@@ -42,92 +41,81 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
         CONFIG_SERIAL.print(' ');
         CONFIG_SERIAL.print(ffbBalance);
         CONFIG_SERIAL.print(' ');
-        CONFIG_SERIAL.print(effstate, DEC); //milos, desktop effects in decimal form
+        CONFIG_SERIAL.print(effstate, DEC); //desktop effects in decimal form
         CONFIG_SERIAL.print(' ');
-        CONFIG_SERIAL.print(MM_MAX_MOTOR_TORQUE); //milos, send max torque as parameter
+        CONFIG_SERIAL.print(MM_MAX_MOTOR_TORQUE); //send max torque as parameter
         CONFIG_SERIAL.print(' ');
-        CONFIG_SERIAL.print(CPR); //milos, send CPR as parameter
+        CONFIG_SERIAL.print(CPR); //send CPR as parameter
         CONFIG_SERIAL.print(' ');
-        CONFIG_SERIAL.println(pwmstate, DEC); //milos, send pwmstate byte in decimal form
+        CONFIG_SERIAL.println(pwmstate, DEC); //send pwmstate byte in decimal form
         break;
       case 'V':
         CONFIG_SERIAL.print("fw-v");
         CONFIG_SERIAL.print(FIRMWARE_VERSION, DEC);
-        // milos, firmware options
-#ifndef USE_QUADRATURE_ENCODER
-        // pretend that we are an optical encoder to be able to calibrate Z-Axis
-        //CONFIG_SERIAL.print("d"); // milos, if no optical encoder
-#endif
-#ifdef USE_HATSWITCH
-        CONFIG_SERIAL.print("h");
-#endif
-#ifdef USE_BTNMATRIX
-        CONFIG_SERIAL.print("t");
-#endif
-#ifdef USE_ANALOGFFBAXIS
-        // do not send this information to hide steering axis selection, as axis is fixed to X
-        //CONFIG_SERIAL.print("x");
-#endif
+        // firmware options
+        //CONFIG_SERIAL.print("d"); // no optical encoder (pretend that we are an optical encoder to be able to calibrate Z-Axis) 
+        CONFIG_SERIAL.print("h"); // USE_HATSWITCH
+        CONFIG_SERIAL.print("t"); // USE_BTNMATRIX
         CONFIG_SERIAL.print("m"); // promicro
         CONFIG_SERIAL.print("\r\n");
         break;
       case 'S':
-        // ununsed
+        // unused
         break;
       case 'R':
         // not useful for potentiometer based wheel
         break;
-      case 'B': // milos, added to adjust balance
+      case 'B': // added to adjust balance
         ffb_temp = CONFIG_SERIAL.parseInt();
         ffbBalance = constrain(ffb_temp, 1, 255);
         CONFIG_SERIAL.println(1);
         break;
-      case 'P': // milos, added to recalibrate pedals
+      case 'P': // added to recalibrate pedals
         // unused
         CONFIG_SERIAL.println(0);
         break;
-      case 'O': // milos, added to adjust optical encoder CPR
+      case 'O': // added to adjust optical encoder CPR
         // unused
         CONFIG_SERIAL.println(0);
         break;
-      case 'C': // milos, set to zero angle
+      case 'C': // set to zero angle
         //myEnc.Write(ROTATION_MID);
         CONFIG_SERIAL.println(0);
         break;
-      case 'Z': // milos, hard reset the z-index offset
+      case 'Z': // hard reset the z-index offset
         CONFIG_SERIAL.println(0);
         break;
-      case 'G': // milos, set new rotation angle
+      case 'G': // set new rotation angle
         temp = CONFIG_SERIAL.parseInt();
-        ROTATION_DEG = constrain(temp, 30, 1800); // milos, update degrees of rotation
+        ROTATION_DEG = constrain(temp, 30, 1800); // update degrees of rotation
         CONFIG_SERIAL.println(1);
         break;
-      case 'E': //milos, added - turn desktop effects and ffb monitor on/off
+      case 'E': //added - turn desktop effects and ffb monitor on/off
         ffb_temp = CONFIG_SERIAL.parseInt();
         ffb_temp = constrain(ffb_temp, 0, 255);
-        for (uint8_t i = 0; i < 8; i++) { //milos, decode incomming number into individual bits
+        for (uint8_t i = 0; i < 8; i++) { //decode incomming number into individual bits
           bitWrite(effstate, i, bitRead(ffb_temp, i));
         }
         CONFIG_SERIAL.println(effstate, BIN);
         break;
-      case 'W': { //milos, added - configure PWM settings and frequency
+      case 'W': { //added - configure PWM settings and frequency
         ffb_temp = CONFIG_SERIAL.parseInt();
         ffb_temp = constrain(ffb_temp, 0, 255);
-        for (uint8_t i = 0; i < 8; i++) { // milos, decode incomming number into individual bits
+        for (uint8_t i = 0; i < 8; i++) { // decode incomming number into individual bits
           bitWrite(pwmstate, i, bitRead(ffb_temp, i));
         }
-        SetParam(PARAM_ADDR_PWM_SET, pwmstate); // milos, update EEPROM with new pwm settings
+        SetParam(PARAM_ADDR_PWM_SET, pwmstate); // update EEPROM with new pwm settings
         float minTorquePP = ((float)MM_MIN_MOTOR_TORQUE) / ((float)MM_MAX_MOTOR_TORQUE);
-        temp = calcTOP(pwmstate) * minTorquePP; // milos, recalculate new min torque for curent min torque %
-        SetParam(PARAM_ADDR_MIN_TORQ, temp); // milos, update min torque in EEPROM
+        temp = calcTOP(pwmstate) * minTorquePP; // recalculate new min torque for curent min torque %
+        SetParam(PARAM_ADDR_MIN_TORQ, temp); // update min torque in EEPROM
         CONFIG_SERIAL.println(calcTOP(pwmstate));
         break;
       }  
-      case 'H': // milos, added - configure the XY shifter calibration
+      case 'H': // added - configure the XY shifter calibration
         // unused
         CONFIG_SERIAL.println(0);
         break;
-      case 'Y': // milos, added - configure manual calibration for pedals
+      case 'Y': // added - configure manual calibration for pedals
         c = toUpper(CONFIG_SERIAL.read());
         switch (c) {
           case 'A':
@@ -197,7 +185,7 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
             break;
         }
         break;
-      case 'A': //milos, save all firmware settings in EEPROM
+      case 'A': //save all firmware settings in EEPROM
         SaveEEPROMConfig ();
         CONFIG_SERIAL.println(1);
         break;
@@ -252,8 +240,8 @@ void configCDC() { // milos, virtual serial port firmware configuration interfac
           case 'J': {
             ffb_temp = CONFIG_SERIAL.parseInt();
             ffb_temp = constrain(ffb_temp, 0, 255); //milos
-            float minTorquePP = (float)ffb_temp * 0.001; // milos, max is 25.5% or 0.255
-            MM_MIN_MOTOR_TORQUE = (uint16_t)(minTorquePP * (float)MM_MAX_MOTOR_TORQUE); // milos, we can set it during run time
+            float minTorquePP = (float)ffb_temp * 0.001; // max is 25.5% or 0.255
+            MM_MIN_MOTOR_TORQUE = (uint16_t)(minTorquePP * (float)MM_MAX_MOTOR_TORQUE); // we can set it during run time
             CONFIG_SERIAL.println(1);
             break;
           }

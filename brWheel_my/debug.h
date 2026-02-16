@@ -90,14 +90,5 @@ void FlushDebugBuffer(void);
 #define CONFIG_SERIAL		Serial
 
 //#define DEBUG_FFB // milos, uncomment this to enable FFB debugging via UART
-//#define DEBUG_CALIBRATION
-
-#ifdef DEBUG_CALIBRATION
-#define cal_print(str)			DEBUG_SERIAL.print(str)
-#define cal_println(str)		DEBUG_SERIAL.println(str)
-#else
-#define cal_print(str)
-#define cal_println(str)
-#endif
 
 #endif // _DEBUG_H_

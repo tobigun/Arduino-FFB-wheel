@@ -5,11 +5,6 @@
 
 //------------------------------------- Firmware options -------------------------------------------------
 
-#define USE_HATSWITCH        //  uncomment to use first 4 buttons for hat switch (D-pad)
-#define USE_BTNMATRIX        //  uncomment to use 8 pins as a 4x4 button matrix for total of 16 buttons (can not be used with load cell, shift register or XY shifter)
-#define USE_ANALOGFFBAXIS //  uncomment to enable other than X-axis to be tied with xFFB axis (you can use analog inputs instead of digital encoders
-#define USE_ANALOG_XAXIS // use dedicated analog X-Axis
-
 #define USE_PWM_0_50_100_MODE
 //#define USE_PWM_DIR_MODE
 //#define USE_PWM_PLUS_MINUS_MODE
@@ -27,7 +22,7 @@
 #define LED_BLUE_PIN 41
 #define LED_RED_PIN 42
 #endif
-#define FFBCLIP_LED_PIN LED_RED_PIN // for ProMicro if no above i2C devices
+#define FFBCLIP_LED_PIN LED_RED_PIN
 
 #ifdef __AVR__
 #define X_AXIS_PIN		A0
@@ -44,39 +39,39 @@
 #endif
 
 #ifdef __AVR__
-#define BUTTON_MATRIX_COL0_PIN 5 // D5, used for button0
-#define BMCOL0_PORTBIT 6 // read bit6 of PINC
-#define BUTTON_MATRIX_COL1_PIN 14 // D14, used for button1 instead
-#define BMCOL1_PORTBIT 3 // read bit3 of PINB
-#define BUTTON_MATRIX_COL2_PIN 15 // D15, used for button2 instead
-#define BMCOL2_PORTBIT 1 // read bit1 of PINB
-#define BUTTON_MATRIX_COL3_PIN 2 // D2, used for button3 instead on proMicro
-#define BMCOL3_PORTBIT 1 // read bit1 of PIND
+#define BUTTON_MATRIX_COL0_PIN 5
+#define BMCOL0_PORTBIT 6
+#define BUTTON_MATRIX_COL1_PIN 14
+#define BMCOL1_PORTBIT 3
+#define BUTTON_MATRIX_COL2_PIN 15
+#define BMCOL2_PORTBIT 1
+#define BUTTON_MATRIX_COL3_PIN 2
+#define BMCOL3_PORTBIT 1
 
-#define BUTTON_MATRIX_ROW0_PIN 4 // D4, used for button4
-#define BUTTON_MATRIX_ROW1_PIN 7 // D7 or bit6 of PINE
-#define BUTTON_MATRIX_ROW2_PIN 1 // D1 or bit3 of PIND
-#define BUTTON_MATRIX_ROW3_PIN 6 // D6, used for button7
+#define BUTTON_MATRIX_ROW0_PIN 4
+#define BUTTON_MATRIX_ROW1_PIN 7
+#define BUTTON_MATRIX_ROW2_PIN 1
+#define BUTTON_MATRIX_ROW3_PIN 6
 #else
 #define BUTTON_MATRIX_COL0_PIN 38
 #define BUTTON_MATRIX_COL1_PIN 37
 #define BUTTON_MATRIX_COL2_PIN 36
 #define BUTTON_MATRIX_COL3_PIN 35
 
-#define BUTTON_MATRIX_ROW0_PIN 34
-#define BUTTON_MATRIX_ROW1_PIN 33
-#define BUTTON_MATRIX_ROW2_PIN 18
-#define BUTTON_MATRIX_ROW3_PIN 17
+#define BUTTON_MATRIX_ROW0_PIN 34 //?
+#define BUTTON_MATRIX_ROW1_PIN 33 //?
+#define BUTTON_MATRIX_ROW2_PIN 18 //?
+#define BUTTON_MATRIX_ROW3_PIN 17 //?
 #endif
 
 #define PROFILE_SWITCH_PIN 16
 
 #ifdef __AVR__
-#define PWM_PIN_L     9 // milos, left PWM pin
+#define PWM_PIN_L     9 // left PWM pin
 #if defined(USE_PWM_0_50_100_MODE) || defined(USE_PWM_DIR_MODE)
 #define DIR_PIN       10
 #else
-#define PWM_PIN_R     10 // milos, right PWM pin
+#define PWM_PIN_R     10 // right PWM pin
 #endif
 #else
 #define PWM_PIN_L     40 // left PWM pin
@@ -134,9 +129,7 @@ void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size);
 
 //------------------------------------- Main Config -----------------------------------------------------
 
-//#define CONTROL_FPS		500 //  commented out
 #define CONTROL_PERIOD	2000 //  original 2000 (us), be careful since this defines ffb calculation rate (min is 1000us for max 1000Hz ffb calc rate, but 16MHz clock is not fast enough)
-//#define SEND_PERIOD		4000 //  commented out
 #define CONFIG_SERIAL_PERIOD 10000 //  original 50000 (us)
 
 //------------------------------------- FFB/Firmware config -----------------------------------------------------
@@ -178,7 +171,7 @@ extern uint8_t configStopGain;
 // this might be a trouble for some very powerful H-bridges if you use PWM+- mode, but on most it will be just fine
 // in PWM+dir mode it does not matter since only one channel of PWM is used, dir pin is not on the same pin as the second PWM channel which is unused in dir mode
 
-//  added - available TOP selection, defines PWM output resolution and frequency => affects output FFB fidelity, you want high TOP's
+// available TOP selection, defines PWM output resolution and frequency => affects output FFB fidelity, you want high TOP's
 // I've set FFB steps to 32767 in HID descriptor, but games usualy have only up to 10000 FFB steps for force magnitude
 // therefore you don't really need anything above PWMtops = 10000
 // bare in mind that what you can feel in your hands will finaly depend on used motor and motor driver (good quality of digital audio signal will sound bad on shitty speakers, even with a good amp)
@@ -196,19 +189,19 @@ extern uint16_t MAX_DAC; //  loaded from EEPROM
 
 uint16_t calcTOP(byte b);
 
-struct s32v { //  added - 2 dimensional vector structure (for ffb and position)
+struct s32v { //  2 dimensional vector structure (for ffb and position)
   int32_t x;
 };
 
 uint32_t decodeHat(uint32_t inbits);
 
-struct s16a { //  added - holds individual 16bit axis properties
+struct s16a { //  holds individual 16bit axis properties
   int16_t val;
   int16_t min;
   int16_t max;
 };
 
-struct s32a { //  added - holds individual bit axis properties
+struct s32a { //  holds individual bit axis properties
   int32_t val; //  when using load cell we can have more than 16bit range for brake axis
   int16_t min; //  these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
   int16_t max; //  when we use load cell min/max are unused for brake axis
