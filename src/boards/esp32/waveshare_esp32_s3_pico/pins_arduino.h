@@ -11,13 +11,21 @@
 #include <stdint.h>
 #include "soc/soc_caps.h"
 
+#ifndef USB_VID
 #define USB_VID 0x303A
+#endif
 #ifndef USB_PID
 #define USB_PID 0x1001
 #endif
+#ifndef USB_MANUFACTURER
 #define USB_MANUFACTURER "Waveshare"
+#endif
+#ifndef USB_PRODUCT
 #define USB_PRODUCT "Waveshare ESP32 S3 Pico"
+#endif
+#ifndef USB_SERIAL
 #define USB_SERIAL ""
+#endif
 
 static const uint8_t TX = 43;
 static const uint8_t RX = 44;

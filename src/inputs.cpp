@@ -51,9 +51,6 @@ static uint16_t axisSamples[AVG_AXIS_ID_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
 
 
 void initButtonMatrix();
-void setMatrixRow(uint8_t row, uint8_t value);
-bool readMatrixCol(uint8_t col);
-
 
 void initInputs() {
   for (uint8_t i = 0; i < sizeof(analog_inputs_pins); i++) {
@@ -124,24 +121,8 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
   return pedalsConnected;
 }
 
-void initButtonMatrix() { // if not using shift register, allocate some free pins for buttons
-  pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL3_PIN, INPUT_PULLUP);
-
-  pinModeFast(BUTTON_MATRIX_ROW0_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW1_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW2_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW3_PIN, OUTPUT);
-  setMatrixRow(BUTTON_MATRIX_ROW0_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
-}
-
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
-uint8_t decodeHat(uint8_t hatBits) {
+static uint8_t decodeHat(uint8_t hatBits) {
   switch (hatBits) {
     case 0b0001: return 1; // up
     case 0b0011: return 2; // up_right
@@ -152,6 +133,41 @@ uint8_t decodeHat(uint8_t hatBits) {
     case 0b1000: return 7; // left
     case 0b1001: return 8; // up_left
     default: return 0; // center
+  }
+}
+
+static const uint8_t matrixColPins[] = {
+  BUTTON_MATRIX_COL0_PIN,
+  BUTTON_MATRIX_COL1_PIN,
+  BUTTON_MATRIX_COL2_PIN,
+  BUTTON_MATRIX_COL3_PIN,
+};
+
+static const uint8_t matrixRowPins[] = {
+  BUTTON_MATRIX_ROW0_PIN,
+  BUTTON_MATRIX_ROW1_PIN,
+  BUTTON_MATRIX_ROW2_PIN,
+  BUTTON_MATRIX_ROW3_PIN,
+};
+
+#ifdef __AVR__
+#define READ_MATRIX_COL_(col) (!bitRead(digitalReadFast(matrixColPins[col]), BMCOL##col##_PORTBIT))
+#else
+#define READ_MATRIX_COL(col) (!digitalRead(matrixColPins[col]))
+#endif
+
+static void setMatrixRow(uint8_t row, uint8_t value) {
+  digitalWriteFast(matrixRowPins[row], value);
+}
+
+void initButtonMatrix() { // if not using shift register, allocate some free pins for buttons
+  for (uint8_t col = 0; col < 4; ++col) {
+    pinMode(matrixColPins[col], INPUT_PULLUP);
+  }
+
+  for (uint8_t row = 0; row < 4; ++row) {
+    pinModeFast(matrixRowPins[row], OUTPUT);
+    setMatrixRow(matrixRowPins[row], HIGH);
   }
 }
 
@@ -168,7 +184,7 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
     setMatrixRow(row, LOW);
     delayMicroseconds(5); // required to avoid the detection of false button presses
     for (uint8_t col = 0; col < 4; col++) { // columns (along Y), read each button from that row by scanning over columns      
-      bool buttonPressed = readMatrixCol(col);
+      bool buttonPressed = READ_MATRIX_COL(col);
       bitWrite(buttons, row * 4 + col, buttonPressed);
     }
     setMatrixRow(row, HIGH);
@@ -176,37 +192,4 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
 
   hat = decodeHat(buttons & 0b1111); // only take 1st 4 bits from inbits
   buttons >>= 4; // shift out the hat bits from buttons variable
-}
-
-#ifdef __AVR__
-#define READ_MATRIX_COL_(pin, bit) (!bitRead(digitalReadFast(pin), (bit)))
-#define READ_MATRIX_COL(id) READ_MATRIX_COL_(BUTTON_MATRIX_COL##id##_PIN, BMCOL##id##_PORTBIT)
-#else
-#define READ_MATRIX_COL(id) (!digitalRead(BUTTON_MATRIX_COL##id##_PIN))
-#endif
-
-bool readMatrixCol(uint8_t col) {
-  if (col == 0) {
-    return READ_MATRIX_COL(0);
-  } else if (col == 1) {
-    return READ_MATRIX_COL(1);
-  } else if (col == 2) {
-    return READ_MATRIX_COL(2);
-  } else if (col == 3) {
-    return READ_MATRIX_COL(3);
-  } else {
-    return false;
-  }
-}
-
-void setMatrixRow(uint8_t row, uint8_t value) {
-  if (row == 0) {
-    digitalWriteFast(BUTTON_MATRIX_ROW0_PIN, value);
-  } else if (row == 1) {
-    digitalWriteFast(BUTTON_MATRIX_ROW1_PIN, value);
-  } else if (row == 2) {
-    digitalWriteFast(BUTTON_MATRIX_ROW2_PIN, value);
-  } else if (row == 3) {
-    digitalWriteFast(BUTTON_MATRIX_ROW3_PIN, value);
-  }
 }

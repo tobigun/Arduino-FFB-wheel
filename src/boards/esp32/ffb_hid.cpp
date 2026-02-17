@@ -37,7 +37,7 @@ void buildHIDDescriptor()
 }
 
 void HidAdapter::begin() {
-  TinyUSBDevice.setSerialDescriptor("HIDPH");
+  TinyUSBDevice.setSerialDescriptor(USB_SERIAL);
 
   if (!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
