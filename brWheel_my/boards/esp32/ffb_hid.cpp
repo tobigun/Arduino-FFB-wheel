@@ -6,6 +6,7 @@
 #include "ffb.h"
 #include "ffb_hid.h"
 #include "packed.h"
+#include "common.h"
 
 Adafruit_USBD_HID usb_hid(NULL, 0, HID_ITF_PROTOCOL_NONE, 2, true);
 
@@ -21,7 +22,7 @@ void set_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8
 void buildHIDDescriptor()
 {
   memcpy(hidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
-  if (useDrivingHidProfile) {
+  if (hidProfile == DRIVING_WHEEL) {
     hidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
     hidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
     hidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;

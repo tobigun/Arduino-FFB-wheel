@@ -1,6 +1,6 @@
 // milos, completely rewritten - all possible configurations of PWM and DAC settings are handeled here
 
-#include "Config.h"
+#include "config.h"
 #include "common.h"
 
 #include <avr/io.h>
@@ -12,7 +12,7 @@ inline void PWM16A(uint16_t PWMValue);
 void PWM16Begin();
 void PWM16EnableA();
 
-void InitPWM() {
+void initPWM() {
 #ifdef DIR_PIN
   pinModeFast(DIR_PIN, OUTPUT);
 #endif
@@ -26,8 +26,8 @@ void InitPWM() {
 #endif
 }
 
-//void SetPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // milos, torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
-void SetPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis FFB data
+//void setPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // milos, torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
+void setPWM (s32v *torque) { // milos, takes pointer struct as argument - 2 axis FFB data
   if (torque != NULL) { // milos, this check is always required for pointers
     activateFFBclipLED(torque->x); // milos, for promicro we can only use ffb clip led on D3 if not using all above
 

@@ -1,11 +1,13 @@
-#include "Config.h"
+#include <Arduino.h>
+
+#include "config.h"
 #include "common.h"
 #ifdef __AVR__
 #include <avr/io.h>
 #include <digitalWriteFast.h>
 #endif
 
-void InitPWM() {
+void initPWM() {
 #ifdef DIR_PIN
   pinMode(DIR_PIN, OUTPUT);
 #endif
@@ -15,8 +17,8 @@ void InitPWM() {
   analogWriteResolution(PWM_PIN_L, MAX_TORQ_BITS);
 }
 
-//void SetPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
-void SetPWM (s32v *torque) { // takes pointer struct as argument - 2 axis FFB data
+//void setPWM (int32_t torque)  { //torque between -MM_MAX_MOTOR and +MM_MAX_MOTOR // torque is xFFB, while yFFB is passed from torqueY global variable outside of this function
+void setPWM (s32v *torque) { // takes pointer struct as argument - 2 axis FFB data
   if (torque == NULL) { // this check is always required for pointers
     return;
   }

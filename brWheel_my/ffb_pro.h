@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include "ffb.h"
+#include "common.h"
 
 #define Btest(data,val) ((data&(val))==(val))
 
@@ -78,5 +79,7 @@ class cFFB {
     cAccelObs mAccel; //milos, added
     int8_t mAutoCenter;
 };
+
+extern cFFB gFFB;
 
 #endif // _FFB_PRO_

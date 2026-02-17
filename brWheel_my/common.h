@@ -1,25 +1,40 @@
 #pragma once
 
-#include "ffb_pro.h"
-#include "ffb_hid.h"
-
-#define ANALOG_MAX 1023
+#ifdef __AVR__
 #define ANALOG_BITS 10
+#define ANALOG_MAX ((1 << ANALOG_BITS) - 1) // 1023
+#else
+#define ANALOG_BITS 12
+#define ANALOG_MAX ((1 << ANALOG_BITS) - 1) // 4095
+#endif
 
-extern s16a accel, clutch, hbrake;
-extern s32a brake;
+enum HID_PROFILE_ID {
+  GENERIC_AXES,
+  DRIVING_WHEEL
+};
 
-extern volatile TEffectState gEffectStates[MAX_EFFECTS + 1];
+struct s32v { //  2 dimensional vector structure (for ffb and position)
+  int32_t x;
+};
 
-extern cFFB gFFB;
+struct s16a { //  holds individual 16bit axis properties
+  int16_t val;
+  int16_t min;
+  int16_t max;
+};
 
-extern HidAdapter hidAdapter;
+extern s16a accel;
+extern s16a clutch;
+extern s16a hbrake;
+extern s16a brake;
 
-void InitPWM();
-void SetPWM(s32v *torque);
+extern HID_PROFILE_ID hidProfile;
 
-void InitInputs();
-void InitButtons();
+void initPWM();
+void setPWM(s32v *torque);
+
+void initInputs();
+HID_PROFILE_ID readHidProfileId();
 void readInputButtons(uint16_t& buttons, uint8_t& hat);
 bool checkPedalsConnected(int16_t axisY, int16_t axisZ);
 

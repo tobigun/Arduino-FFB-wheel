@@ -25,8 +25,9 @@
 
 #include <Arduino.h>
 
-#include "Config.h"
+#include "config.h"
 #include "ffb_hid.h"
+#include "ffb_pro.h"
 #include "hidDescriptor.h"
 #include "common.h"
 #include "debug.h"
@@ -40,8 +41,10 @@
 
 //--------------------------------------- Globals --------------------------------------------------------
 
-s16a accel, clutch, hbrake; // changed from s16
-s32a brake; // we need 32bit due to 24 bits on load cell ADC, changed from s32
+s16a accel;
+s16a clutch;
+s16a hbrake;
+s16a brake;
 
 cFFB gFFB;
 
@@ -50,7 +53,7 @@ uint32_t last_refresh = 0;
 
 HidAdapter hidAdapter;
 
-bool useDrivingHidProfile = false;
+HID_PROFILE_ID hidProfile;
 bool useCombinedAxes = false;
 
 //--------------------------------------------------------------------------------------------------------
@@ -60,6 +63,8 @@ bool useCombinedAxes = false;
 void setup() {
   CONFIG_SERIAL.begin(115200);
 
+  initInputs();
+  hidProfile = readHidProfileId();
   hidAdapter.begin();
 
   accel.val = 0;
@@ -73,27 +78,27 @@ void setup() {
   SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
 
-  InitInputs();
   FfbSetDriver(0);
 
   pinMode(FFBCLIP_LED_PIN, OUTPUT);
   blinkFFBclipLED();
 
-  InitPWM(); // initialize PWM (or DAC) settings
+  initPWM(); // initialize PWM (or DAC) settings
 
   s32v ffbs; // init xFFB at zero
   ffbs.x = 0; 
-  SetPWM(&ffbs); // zero PWM at startup
+  setPWM(&ffbs); // zero PWM at startup
   
   last_refresh = micros();
 }
+
+#define FFB_AXIS_RAW_BITS 15 // raw read value resolution before scaling to range of FFB lib
+#define FFB_AXIS_RAW_MAX_VALUE ((1L << FFB_AXIS_RAW_BITS) - 1) // raw read max value before scaling to range of FFB lib
 
 //-- Averaging
 
 #define AVG_AXIS_NUM_BITS 5
 #define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
-#define AVG_AXIS_OUT_MAX_PREC_BITS (ANALOG_BITS + AVG_AXIS_NUM_BITS) // precision in bits after oversampling
-#define AVG_AXIS_OUT_MAX_PREC_VALUE ((1L << AVG_AXIS_OUT_MAX_PREC_BITS) - 1) // max. value with highest precision after oversampling
 
 enum {
   AVG_AXIS_ID_X = 0,
@@ -119,8 +124,12 @@ static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sample
   uint32_t axisXSum = 0;
   for (int i = 0; i < sampleCount; ++i) {
     axisXSum += axisSamples[axisIndex][i];
-  }  
-  return (axisXSum << (outputBits - ANALOG_BITS)) / sampleCount;
+  }
+
+  axisXSum = (outputBits >= ANALOG_BITS)
+    ? axisXSum << (outputBits - ANALOG_BITS)
+    : axisXSum >> (ANALOG_BITS - outputBits);
+  return axisXSum / sampleCount;
 }
 
 static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
@@ -142,11 +151,12 @@ void loop() {
   if ((now_micros - last_refresh) >= CONTROL_PERIOD) {
     last_refresh = now_micros;  // timer for FFB and USB reports
 
-    int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, AVG_AXIS_OUT_MAX_PREC_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+    int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, FFB_AXIS_RAW_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
     s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
-    ffbAxisValue.x = map(ffbAxisValueRaw, 0, AVG_AXIS_OUT_MAX_PREC_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
+    ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
+
     s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
-    SetPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
+    setPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
 
     int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
     int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;

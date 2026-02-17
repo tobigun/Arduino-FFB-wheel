@@ -10,7 +10,7 @@ static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
 void BuildHIDDescriptor()
 {
   memcpy_P((void*) dynamicHidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
-  if (useDrivingHidProfile) {
+  if (hidProfile == DRIVING_WHEEL) {
     dynamicHidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
     dynamicHidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
     dynamicHidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;

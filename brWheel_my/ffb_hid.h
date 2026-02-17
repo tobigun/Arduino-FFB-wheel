@@ -43,3 +43,5 @@ public:
 
   void sendInputReport(uint8_t id, const void* data, uint8_t len);
 };
+
+extern HidAdapter hidAdapter;

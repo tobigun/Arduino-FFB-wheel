@@ -27,7 +27,6 @@
 */
 
 #include "ffb_pro.h"
-#include "common.h"
 #include "debug.h"
 #ifdef __AVR__
 #include <util/delay.h>

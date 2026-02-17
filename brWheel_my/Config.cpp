@@ -1,11 +1,11 @@
-#include "Config.h"
+#include "config.h"
 #include "common.h"
 #include <EEPROM.h>
 
-uint8_t ffbBalance; // milos, load cell scaling factor (affects brake pressure, but depends on your load cell's maximum specified load)
+uint8_t ffbBalance; // load cell scaling factor (affects brake pressure, but depends on your load cell's maximum specified load)
 
-// milos, these are now loaded from EEPROM
-uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects through serial interface, bit 7 is MSB
+// these are now loaded from EEPROM
+uint8_t effstate; // = 0b00000001; // turn on/off desktop effects through serial interface, bit 7 is MSB
 
 //---------------------
 // bit0-phase correct (0 is fast pwm), bit1-dir enabled (0 is pwm+-), bits 2-5 are frequency select, bit6-enable pwm0-50-100, bit7 is unused
@@ -22,7 +22,7 @@ uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects
 // 1    1    rcm
 //----------------------
 
-// milos, if USE_MCP4725 is defined then pwmstate byte has the following interpretation
+// if USE_MCP4725 is defined then pwmstate byte has the following interpretation
 //----------------
 // bits 0-4 unused, bit5-enable dac0-50-100, bit6-enable dac+dir (0 is dac+-), bit7-enable dac (0 is zero dac output)
 
@@ -36,9 +36,9 @@ uint8_t effstate; // = 0b00000001; // milos, added - turn on/off desktop effects
 // 1    0    dac+dir       2ch dac+dir
 // 1    1    none
 //----------------
-uint8_t pwmstate; // milos, PWM settings configuration byte, bit7 is MSB
+uint8_t pwmstate; // PWM settings configuration byte, bit7 is MSB
 
-// milos, changed these from float to uint8_t (loaded from EEPROM)
+// changed these from float to uint8_t (loaded from EEPROM)
 uint8_t configGeneralGain;  // = 1.0f;  // was 1.0f
 uint8_t configDamperGain; // = 1.0f;		// was 0.5f
 uint8_t configFrictionGain; // = 1.0f;	// was 0.5f
@@ -67,11 +67,11 @@ uint16_t PWMtops [13] =
   65535  // 12
 };
 
-int16_t ROTATION_DEG; // milos
+int16_t ROTATION_DEG;
 int32_t CPR; // counts-per-rotation. Unused, as this only makes sense for optical or magnetic encoders
-uint16_t MM_MIN_MOTOR_TORQUE; // milos, loaded from EEPROM
-uint16_t MM_MAX_MOTOR_TORQUE; // milos, loaded from EEPROM
-uint16_t MAX_DAC; // milos, loaded from EEPROM
+uint16_t MM_MIN_MOTOR_TORQUE; // loaded from EEPROM
+uint16_t MM_MAX_MOTOR_TORQUE; // loaded from EEPROM
+uint16_t MAX_DAC; // loaded from EEPROM
 
 //-------------------------------------------------------------------------------------------------------
 
@@ -84,7 +84,7 @@ void getParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
 void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
   for (uint8_t i = 0; i < size; i++) {
   #ifdef __AVR__
-    EEPROM.update(offset + i, addr_to[i]); //milos, re-write only when neccessary
+    EEPROM.update(offset + i, addr_to[i]); //re-write only when neccessary
   #else
     EEPROM.write(offset + i, addr_to[i]);
   #endif
@@ -97,7 +97,7 @@ void InitEEPROMConfig() {
 #endif
 }
 
-void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EEPROM
+void SetDefaultEEPROMConfig() { // store default firmware settings in EEPROM
   uint16_t v16;
   int32_t v32;
   uint8_t v8;
@@ -106,33 +106,33 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
   v32 = 0;
   SetParam(PARAM_ADDR_ENC_OFFSET, v32);
   v16 = 1080; //default degrees of rotation. Although we only have 210°, 1080° seem to result in better force feedback behavior
-  SetParam(PARAM_ADDR_ROTATION_DEG, v16); //milos, added
-  v8 = 100; //milos, added
-  SetParam(PARAM_ADDR_GEN_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_CNT_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_PER_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_STP_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_SPR_GAIN, v8); //milos, added
-  v8 = 50; //milos, added
-  SetParam(PARAM_ADDR_DMP_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_FRC_GAIN, v8); //milos, added
-  SetParam(PARAM_ADDR_INR_GAIN, v8); //milos, added
-  v8 = 70; //milos, added
-  SetParam(PARAM_ADDR_CTS_GAIN, v8); // milos, added
-  v16 = 0; // milos, added
-  SetParam(PARAM_ADDR_MIN_TORQ, v16); //milos, added
-  v16 = MAX_TORQ_DEFAULT; // milos, for PWM signals
-  SetParam(PARAM_ADDR_MAX_TORQ, v16); //milos, added
-  v16 = 4095; // milos, for 12bit DAC
-  SetParam(PARAM_ADDR_MAX_DAC, v16); // milos, added
-  v8 = 128; // milos, ffb balance center value
-  SetParam(PARAM_ADDR_BRK_PRES, v8); // milos, added
-  v8 = 0b00000001; // milos, added, autocenter spring on
-  SetParam(PARAM_ADDR_DSK_EFFC, v8); // milos, added
-  v32 = 2400; // milos, default CPR value for optical encoder (this is for 600PPR)
-  SetParam(PARAM_ADDR_ENC_CPR, v32); // milos, added
-  v8 = 0b01000100; // milos, PWM out enabled, fast pwm, pwm+-, 7.8kHz, TOP 11bit (2047)
-  SetParam(PARAM_ADDR_PWM_SET, v8); // milos, added
+  SetParam(PARAM_ADDR_ROTATION_DEG, v16);
+  v8 = 100;
+  SetParam(PARAM_ADDR_GEN_GAIN, v8);
+  SetParam(PARAM_ADDR_CNT_GAIN, v8);
+  SetParam(PARAM_ADDR_PER_GAIN, v8);
+  SetParam(PARAM_ADDR_STP_GAIN, v8);
+  SetParam(PARAM_ADDR_SPR_GAIN, v8);
+  v8 = 50;
+  SetParam(PARAM_ADDR_DMP_GAIN, v8);
+  SetParam(PARAM_ADDR_FRC_GAIN, v8);
+  SetParam(PARAM_ADDR_INR_GAIN, v8);
+  v8 = 70;
+  SetParam(PARAM_ADDR_CTS_GAIN, v8);
+  v16 = 0;
+  SetParam(PARAM_ADDR_MIN_TORQ, v16);
+  v16 = MAX_TORQ_DEFAULT; // for PWM signals
+  SetParam(PARAM_ADDR_MAX_TORQ, v16);
+  v16 = 4095; // for 12bit DAC
+  SetParam(PARAM_ADDR_MAX_DAC, v16);
+  v8 = 128; // ffb balance center value
+  SetParam(PARAM_ADDR_BRK_PRES, v8);
+  v8 = 0b00000001; // autocenter spring on
+  SetParam(PARAM_ADDR_DSK_EFFC, v8);
+  v32 = 2400; // default CPR value for optical encoder (this is for 600PPR)
+  SetParam(PARAM_ADDR_ENC_CPR, v32);
+  v8 = 0b01000100; // PWM out enabled, fast pwm, pwm+-, 7.8kHz, TOP 11bit (2047)
+  SetParam(PARAM_ADDR_PWM_SET, v8);
   v16 = 0;
   SetParam(PARAM_ADDR_ACEL_LO, v16);
   SetParam(PARAM_ADDR_BRAK_LO, v16);
@@ -148,15 +148,15 @@ void SetDefaultEEPROMConfig() { // milos - store default firmware settings in EE
 #endif
 }
 
-void SetEEPROMConfig() { // milos, changed FIRMWARE_VERSION to 16bit from 32bit
+void SetEEPROMConfig() { // changed FIRMWARE_VERSION to 16bit from 32bit
   uint16_t v16;
   GetParam(PARAM_ADDR_FW_VERSION, v16);
-  if (v16 != FIRMWARE_VERSION) { // milos, first time run, or version change - set default values for safety
-    SetDefaultEEPROMConfig(); // milos, set default firmware settings
+  if (v16 != FIRMWARE_VERSION) { // first time run, or version change - set default values for safety
+    SetDefaultEEPROMConfig(); // set default firmware settings
   }
 }
 
-void LoadEEPROMConfig () { //milos, added - updates all v8 parameters from EEPROM
+void LoadEEPROMConfig () { //updates all v8 parameters from EEPROM
   GetParam(PARAM_ADDR_ROTATION_DEG, ROTATION_DEG);
   GetParam(PARAM_ADDR_ENC_CPR, CPR);
   GetParam(PARAM_ADDR_GEN_GAIN, configGeneralGain);
@@ -184,7 +184,7 @@ void LoadEEPROMConfig () { //milos, added - updates all v8 parameters from EEPRO
   GetParam(PARAM_ADDR_HBRK_HI, hbrake.max);
 }
 
-void SaveEEPROMConfig () { //milos, added - saves all v8 parameters in EEPROM
+void SaveEEPROMConfig () { //saves all v8 parameters in EEPROM
   SetParam(PARAM_ADDR_ROTATION_DEG, ROTATION_DEG);
   SetParam(PARAM_ADDR_ENC_CPR, CPR);
   SetParam(PARAM_ADDR_GEN_GAIN, configGeneralGain);
@@ -201,7 +201,7 @@ void SaveEEPROMConfig () { //milos, added - saves all v8 parameters in EEPROM
   SetParam(PARAM_ADDR_MIN_TORQ, MM_MIN_MOTOR_TORQUE);
   SetParam(PARAM_ADDR_MAX_TORQ, MM_MAX_MOTOR_TORQUE);
   SetParam(PARAM_ADDR_MAX_DAC, MAX_DAC);
-  //SetParam(PARAM_ADDR_PWM_SET, pwmstate); // milos, do not save it with command A (we do it with W instead)
+  //SetParam(PARAM_ADDR_PWM_SET, pwmstate); // do not save it with command A (we do it with W instead)
   SetParam(PARAM_ADDR_ACEL_LO, accel.min);
   SetParam(PARAM_ADDR_ACEL_HI, accel.max);
   SetParam(PARAM_ADDR_BRAK_LO, brake.min);
@@ -215,7 +215,7 @@ void SaveEEPROMConfig () { //milos, added - saves all v8 parameters in EEPROM
 #endif
 }
 
-void ClearEEPROMConfig() { //milos, added - clears EEPROM (1KB on ATmega32U4)
+void ClearEEPROMConfig() { //clears EEPROM (1KB on ATmega32U4)
   uint8_t zero = 0;
   for (uint16_t i = 0; i < EEPROM_SIZE; i++) {
     SetParam(i, zero);
@@ -225,20 +225,14 @@ void ClearEEPROMConfig() { //milos, added - clears EEPROM (1KB on ATmega32U4)
 #endif
 }
 
-// arduino's map function works only up to range of int16_t variable (-32k,32k)
-// I wrote mine that can handle 32bit variables or int32_t
-int32_t myMap (int32_t value, int32_t x0, int32_t x1, int32_t y0, int32_t y1) {
-  return (y0 + value * (y1 - y0) / (x1 - x0));
-}
-
-uint16_t calcTOP(byte b) { // milos, added - function which returns TOP value from pwmstate byte argument
+uint16_t calcTOP(uint8_t pwmstate) { // function which returns TOP value from pwmstate byte argument
 #ifdef __AVR__
   byte j = 0b00000000; // index of frequency and PWM resolution
   for (uint8_t i = 0; i < 4; i++) {
-    bitWrite(j, i, bitRead(b, i + 2)); // milos, decode bits2-5 from pwmstate byte into index
+    bitWrite(j, i, bitRead(b, i + 2)); // decode bits2-5 from pwmstate byte into index
   }
   if (bitRead(b, 0)) { // if phase correct PWM mode (pwmstate bit0=1)
-    return (PWMtops[j] >> 1); // milos, divide by 2
+    return (PWMtops[j] >> 1); // divide by 2
   } else { // if fast PWM mode (pwmstate bit0=0)
     return (PWMtops[j]);
   }

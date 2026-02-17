@@ -1,7 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
-#include "ffb_hid.h"
+#include <stdint.h>
 
 //------------------------------------- Firmware options -------------------------------------------------
 
@@ -16,11 +15,11 @@
 
 //#define LED_GREEN_PIN 1 // Green LED directly connected to 12V supply
 #ifdef __AVR__
-#define LED_BLUE_PIN 0
 #define LED_RED_PIN 3
+#define LED_BLUE_PIN 0
 #else
-#define LED_BLUE_PIN 41
-#define LED_RED_PIN 42
+#define LED_RED_PIN 40
+#define LED_BLUE_PIN 39
 #endif
 #define FFBCLIP_LED_PIN LED_RED_PIN
 
@@ -64,7 +63,7 @@
 #define BUTTON_MATRIX_ROW3_PIN 17 //?
 #endif
 
-#define PROFILE_SWITCH_PIN 16
+#define PROFILE_SWITCH_PIN 7
 
 #ifdef __AVR__
 #define PWM_PIN_L     9 // left PWM pin
@@ -74,11 +73,11 @@
 #define PWM_PIN_R     10 // right PWM pin
 #endif
 #else
-#define PWM_PIN_L     40 // left PWM pin
+#define PWM_PIN_L     42 // left PWM pin
 #if defined(USE_PWM_0_50_100_MODE) || defined(USE_PWM_DIR_MODE)
-#define DIR_PIN       39
+#define DIR_PIN       41
 #else
-#define PWM_PIN_R     39 // right PWM pin
+#define PWM_PIN_R     41 // right PWM pin
 #endif
 #endif
 
@@ -187,27 +186,9 @@ extern uint16_t MM_MIN_MOTOR_TORQUE; //  loaded from EEPROM
 extern uint16_t MM_MAX_MOTOR_TORQUE; //  loaded from EEPROM
 extern uint16_t MAX_DAC; //  loaded from EEPROM
 
-uint16_t calcTOP(byte b);
-
-struct s32v { //  2 dimensional vector structure (for ffb and position)
-  int32_t x;
-};
-
-uint32_t decodeHat(uint32_t inbits);
-
-struct s16a { //  holds individual 16bit axis properties
-  int16_t val;
-  int16_t min;
-  int16_t max;
-};
-
-struct s32a { //  holds individual bit axis properties
-  int32_t val; //  when using load cell we can have more than 16bit range for brake axis
-  int16_t min; //  these are used for manual/autocalib so we can keep them 16bit as analog axis are 10bit only
-  int16_t max; //  when we use load cell min/max are unused for brake axis
-};
+uint16_t calcTOP(uint8_t pwmstate);
 
 void InitEEPROMConfig();
 void SetEEPROMConfig();
 void LoadEEPROMConfig();
-void SaveEEPROMConfig ();
+void SaveEEPROMConfig();

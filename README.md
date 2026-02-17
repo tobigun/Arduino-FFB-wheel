@@ -84,12 +84,12 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><th>Name</th><th>Pin</th><th>Color</th></tr>
 
 <tr><td rowspan="6">J5 (Motor PCB Connector)</td>
-    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>GP40</td><td>D9</td>
+    <td>1</td><td style="background:green">green</td><td>Motor PWM</td><td>GP42</td><td>D9</td>
     <td rowspan="6">* Motor Enable switch must be connected to GP39/D10 via a BJT transistor to make sure that the motor is disabled when the microcontroller is powered down (i.e. not connected to USB).<br>
     This is necessary as the Motor PCB would erroneously interpret the missing PWM signal to apply maximum force. It would turn the wheel with full force in one direction and try to move it past the end stop. As this is not possible the motor gets quite hot after some minutes.
     <br>See schematic for more info.
     </td></tr>
-<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>[GP39]*</td><td>[D10]*</td></tr>
+<tr><td>2</td><td style="background:yellow">yellow</td><td>Motor Enable switch</td><td>[GP41]*</td><td>[D10]*</td></tr>
 <tr><td>3</td><td style="background:orange">orange</td><td>GND</td><td colspan="2">GND</td></tr>
 <tr><td>4</td><td style="background:red">red</td><td>GND</td><td colspan="2">GND</td></tr>
 <tr><td>5</td><td style="background:brown">brown</td><td>GND</td><td colspan="2">GND</td></tr>
@@ -125,7 +125,7 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>12</td><td style="background:white">white</td><td>Gear Shifter - Matrix row (Matrix row 2)</td><td>GP33</td><td>D7</td></tr>
 
 <tr><td rowspan="4">J13 (Front LED)</td>
-    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>[GP42]*</td><td>[D3]*</td><td rowspan="4">* Connect LED's Anode via 820 Ohms resistor to pin.<br>See schematic for more info.</td></tr>
+    <td>1</td><td style="background:#ff66cc">rose</td><td>LED Anode (+)</td><td>[GP40]*</td><td>[D3]*</td><td rowspan="4">* Connect LED's Anode via 820 Ohms resistor to pin.<br>See schematic for more info.</td></tr>
 <tr><td>2</td><td style="background:black;color:white">black</td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
 <tr><td>3</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
 <tr><td>4</td><td style="background: repeating-linear-gradient(45deg,#eee,#eee 4px,#ccc 4px,#ccc 8px);">n.c.</td><td>-</td><td colspan="2">-</td></tr>
@@ -139,7 +139,7 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>4</td><td style="background:green">green</td><td>GND</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="2">Blue Front LED<br>[Optional]</td>
-    <td>A</td><td style="background:blue"></td><td>LED Anode (+)</td><td>[GP41]*</td><td>[D0]* (RX1)</td>
+    <td>A</td><td style="background:blue"></td><td>LED Anode (+)</td><td>[GP39]*</td><td>[D0]* (RX1)</td>
     <td rowspan="2">* Connect LED's Anode via 4.7 kOhms resistor to pin.<br>See schematic for more info.</td>
     </tr>
 <tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
@@ -151,7 +151,7 @@ Here is the overview of the connectors that are located on the Main PCB that now
 <tr><td>C</td><td style="background:black;color:white"></td><td>LED Cathode (-)</td><td colspan="2">GND</td></tr>
 
 <tr><td rowspan="2">Profile Switch<br>[Optional]</td>
-    <td>1</td><td></td><td>Pin 1</td><td>GP16</td><td>D16</td>
+    <td>1</td><td></td><td>Pin 1</td><td>GP7</td><td>D16</td>
     <td rowspan="2">For three pin switches: connect middle pin to D16 and any of the other two pins to GND.<br>
     </td></tr>
 <tr><td>2</td><td style="background:black;color:white"></td><td>Pin 2</td><td colspan="2">GND</td></tr>

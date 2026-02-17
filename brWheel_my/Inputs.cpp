@@ -24,20 +24,17 @@
 
 #include <Arduino.h>
 
-#include "Config.h"
+#include "config.h"
 #include "common.h"
 #include "ffb_pro.h"
 #include "debug.h"
 #include "ffb_hid.h"
-#include <Wire.h>
 #ifdef __AVR__
 #include <digitalWriteFast.h>
 #else
 #define pinModeFast pinMode
 #define digitalWriteFast(pin, val) digitalWrite(pin, val)
 #endif
-
-//--------------------------------------- Globals --------------------------------------------------------
 
 uint8_t analog_inputs_pins[] =
 {
@@ -47,32 +44,27 @@ uint8_t analog_inputs_pins[] =
   RY_AXIS_PIN
 };
 
-//----------------------------------------- Options -------------------------------------------------------
 
 void setMatrixRow(uint8_t row, uint8_t value);
 bool readMatrixCol(uint8_t col);
+void initButtons();
 
 
-//--------------------------------------------------------------------------------------------------------
-
-void InitInputs() {
+void initInputs() {
   for (uint8_t i = 0; i < sizeof(analog_inputs_pins); i++) {
     pinMode(analog_inputs_pins[i], INPUT);
   }
 
-  InitButtons();
+  initButtons();
 
   pinMode(PROFILE_SWITCH_PIN, INPUT_PULLUP);
-  if (digitalRead(PROFILE_SWITCH_PIN) == LOW) {
-    useDrivingHidProfile = true;
-  }
 
   if (digitalRead(RX_AXIS_PIN) == HIGH) {
     useCombinedAxes = true;
   }
 }
 
-void InitButtons() { // if not using shift register, allocate some free pins for buttons
+void initButtons() { // if not using shift register, allocate some free pins for buttons
   pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
   pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
   pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
@@ -86,6 +78,10 @@ void InitButtons() { // if not using shift register, allocate some free pins for
   setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
   setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
   setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
+}
+
+HID_PROFILE_ID readHidProfileId() {
+  return digitalRead(PROFILE_SWITCH_PIN) ? GENERIC_AXES : DRIVING_WHEEL;
 }
 
 #define PEDALS_DISCONNECTED_THRESHOLD (ANALOG_MAX - 2)
@@ -120,29 +116,18 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
 }
 
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
-uint8_t decodeHat(uint16_t inbits) {
-  byte hat;
-  byte dec = 0b1111 & inbits; //only take 1st 4 bits from inbits
-  if (dec == 1) { //up
-    hat = 1;
-  } else if (dec == 2) { //right
-    hat = 3;
-  } else if (dec == 4) { //down
-    hat = 5;
-  } else if (dec == 8) { //left
-    hat = 7;
-  } else if (dec == 3) { //up_right
-    hat = 2;
-  } else if (dec == 6) { //down_right
-    hat = 4;
-  } else if (dec == 9) { //up_left
-    hat = 8;
-  } else if (dec == 12) { //down_left
-    hat = 6;
-  } else {
-    hat = 0;
+uint8_t decodeHat(uint16_t bits) {
+  switch ((uint8_t) bits & 0b1111) { // only take 1st 4 bits from inbits
+    case 0b0001: return 1; // up
+    case 0b0011: return 2; // up_right
+    case 0b0010: return 3; // right
+    case 0b0110: return 4; // down_right
+    case 0b0100: return 5; // down
+    case 0b1100: return 6; // down_left
+    case 0b1000: return 7; // left
+    case 0b1001: return 8; // up_left
+    default: return 0; // center
   }
-  return hat;
 }
 
 void readInputButtons(uint16_t& buttons, uint8_t& hat) {
