@@ -7,10 +7,12 @@
 
 static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
 
-void BuildHIDDescriptor()
+void buildHIDDescriptor()
 {
   memcpy_P((void*) dynamicHidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
-  if (hidProfile == DRIVING_WHEEL) {
+
+  HID_PROFILE_ID profileId = readHidProfileId();
+  if (profileId == DRIVING_WHEEL) {
     dynamicHidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
     dynamicHidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
     dynamicHidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
@@ -21,7 +23,7 @@ void BuildHIDDescriptor()
 }
 
 void HidAdapter::begin() {
-  BuildHIDDescriptor();
+  buildHIDDescriptor();
 
   static HIDSubDescriptor dynamicHidNode(dynamicHidReportDescriptor, sizeof(dynamicHidReportDescriptor));
   static HIDSubDescriptor staticPidNode(_staticHidReportDescriptor, sizeof(_staticHidReportDescriptor), TRANSFER_PGM);

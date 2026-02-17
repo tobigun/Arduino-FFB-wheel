@@ -22,7 +22,9 @@ void set_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8
 void buildHIDDescriptor()
 {
   memcpy(hidReportDescriptor, _dynamicHidReportDescriptor, sizeof(_dynamicHidReportDescriptor));
-  if (hidProfile == DRIVING_WHEEL) {
+
+  HID_PROFILE_ID profileId = readHidProfileId();
+  if (profileId == DRIVING_WHEEL) {
     hidReportDescriptor[MAIN_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;
     hidReportDescriptor[AXES_X_USAGE_OFFSET] = USAGE_SIM_STEERING;
     hidReportDescriptor[AXES_Y_USAGE_OFFSET] = USAGE_SIM_BRAKE;
@@ -30,6 +32,7 @@ void buildHIDDescriptor()
     hidReportDescriptor[FFB_AXES_USAGE_PAGE_OFFSET] = USAGE_PAGE_SIMULATION_CONTROLS;    
     hidReportDescriptor[FFB_AXES_USAGE_OFFSET] = USAGE_SIM_STEERING;    
   }
+
   memcpy(&hidReportDescriptor[sizeof(_dynamicHidReportDescriptor)], _staticHidReportDescriptor, sizeof(_staticHidReportDescriptor));
 }
 

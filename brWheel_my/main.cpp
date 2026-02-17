@@ -53,7 +53,6 @@ uint32_t last_refresh = 0;
 
 HidAdapter hidAdapter;
 
-HID_PROFILE_ID hidProfile;
 bool useCombinedAxes = false;
 
 //--------------------------------------------------------------------------------------------------------
@@ -64,7 +63,6 @@ void setup() {
   CONFIG_SERIAL.begin(115200);
 
   initInputs();
-  hidProfile = readHidProfileId();
   hidAdapter.begin();
 
   accel.val = 0;

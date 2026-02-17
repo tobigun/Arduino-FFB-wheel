@@ -28,8 +28,6 @@ extern s16a clutch;
 extern s16a hbrake;
 extern s16a brake;
 
-extern HID_PROFILE_ID hidProfile;
-
 void initPWM();
 void setPWM(s32v *torque);
 
