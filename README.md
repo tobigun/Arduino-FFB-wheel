@@ -229,7 +229,7 @@ Detailed documentation and more information about the firmware can be found in t
 **Note:** the digital inputs for the matrix are not correct in the image. Check the wiring table above for the correct ones.
 
 ## Firmware upload procedure
-You can use XLoader from the `XLoader` folder:
+You can use XLoader from the `misc_programs/XLoader` folder:
 - set 57600baud, ATmega32U4 microcontroller and select desired HEX
 - press the reset button on Arduino (or shortly connect the RST pin to GND)
 - select the newly appeared COM port (Arduino in bootloader mode*) and press upload, you will only have a few seconds
