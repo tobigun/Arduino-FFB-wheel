@@ -141,8 +141,8 @@ void initButtonMatrix() { // if not using shift register, allocate some free pin
 }
 
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
-uint8_t decodeHat(uint16_t bits) {
-  switch ((uint8_t) bits & 0b1111) { // only take 1st 4 bits from inbits
+uint8_t decodeHat(uint8_t hatBits) {
+  switch (hatBits) {
     case 0b0001: return 1; // up
     case 0b0011: return 2; // up_right
     case 0b0010: return 3; // right
@@ -164,16 +164,17 @@ uint8_t decodeHat(uint16_t bits) {
 // D8 |b31 b32 b33 b34|
 // D5 |b41 b42 b43 b44|
 void readInputButtons(uint16_t& buttons, uint8_t& hat) {
-  for (uint8_t i = 0; i < 4; i++) { // rows (along X), we set each row low, one at a time
-    setMatrixRow(i, LOW);
+  for (uint8_t row = 0; row < 4; row++) { // rows (along X), we set each row low, one at a time
+    setMatrixRow(row, LOW);
     delayMicroseconds(5); // required to avoid the detection of false button presses
-    for (uint8_t j = 0; j < 4; j++) { // columns (along Y), read each button from that row by scanning over columns
-      bitWrite(buttons, i * 4 + j, readMatrixCol(j));
+    for (uint8_t col = 0; col < 4; col++) { // columns (along Y), read each button from that row by scanning over columns      
+      bool buttonPressed = readMatrixCol(col);
+      bitWrite(buttons, row * 4 + col, buttonPressed);
     }
-    setMatrixRow(i, HIGH);
+    setMatrixRow(row, HIGH);
   }
 
-  hat = decodeHat(buttons);
+  hat = decodeHat(buttons & 0b1111); // only take 1st 4 bits from inbits
   buttons >>= 4; // shift out the hat bits from buttons variable
 }
 
@@ -181,7 +182,7 @@ void readInputButtons(uint16_t& buttons, uint8_t& hat) {
 #define READ_MATRIX_COL_(pin, bit) (!bitRead(digitalReadFast(pin), (bit)))
 #define READ_MATRIX_COL(id) READ_MATRIX_COL_(BUTTON_MATRIX_COL##id##_PIN, BMCOL##id##_PORTBIT)
 #else
-#define READ_MATRIX_COL(id) (digitalRead(BUTTON_MATRIX_COL##id##_PIN))
+#define READ_MATRIX_COL(id) (!digitalRead(BUTTON_MATRIX_COL##id##_PIN))
 #endif
 
 bool readMatrixCol(uint8_t col) {
