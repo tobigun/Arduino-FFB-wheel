@@ -186,7 +186,7 @@ void configCDC() { // virtual serial port firmware configuration interface
         }
         break;
       case 'A': //save all firmware settings in EEPROM
-        SaveEEPROMConfig ();
+        saveEEPROMConfig ();
         CONFIG_SERIAL.println(1);
         break;
       case 'F':

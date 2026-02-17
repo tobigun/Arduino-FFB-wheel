@@ -91,7 +91,7 @@ void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size) {
   }
 }
 
-void InitEEPROMConfig() {
+void initEEPROMConfig() {
 #ifndef __AVR__
   EEPROM.begin(EEPROM_SIZE);
 #endif
@@ -148,7 +148,7 @@ void SetDefaultEEPROMConfig() { // store default firmware settings in EEPROM
 #endif
 }
 
-void SetEEPROMConfig() { // changed FIRMWARE_VERSION to 16bit from 32bit
+void setEEPROMConfig() { // changed FIRMWARE_VERSION to 16bit from 32bit
   uint16_t v16;
   GetParam(PARAM_ADDR_FW_VERSION, v16);
   if (v16 != FIRMWARE_VERSION) { // first time run, or version change - set default values for safety
@@ -156,7 +156,7 @@ void SetEEPROMConfig() { // changed FIRMWARE_VERSION to 16bit from 32bit
   }
 }
 
-void LoadEEPROMConfig () { //updates all v8 parameters from EEPROM
+void loadEEPROMConfig () { //updates all v8 parameters from EEPROM
   GetParam(PARAM_ADDR_ROTATION_DEG, ROTATION_DEG);
   GetParam(PARAM_ADDR_ENC_CPR, CPR);
   GetParam(PARAM_ADDR_GEN_GAIN, configGeneralGain);
@@ -184,7 +184,7 @@ void LoadEEPROMConfig () { //updates all v8 parameters from EEPROM
   GetParam(PARAM_ADDR_HBRK_HI, hbrake.max);
 }
 
-void SaveEEPROMConfig () { //saves all v8 parameters in EEPROM
+void saveEEPROMConfig () { //saves all v8 parameters in EEPROM
   SetParam(PARAM_ADDR_ROTATION_DEG, ROTATION_DEG);
   SetParam(PARAM_ADDR_ENC_CPR, CPR);
   SetParam(PARAM_ADDR_GEN_GAIN, configGeneralGain);

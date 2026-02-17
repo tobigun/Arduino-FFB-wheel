@@ -6,8 +6,6 @@
 #include "ffb.h"
 #include "common.h"
 
-#define Btest(data,val) ((data&(val))==(val))
-
 const int32_t SPD_THRESHOLD	= 0; //8
 const int32_t ACL_THRESHOLD = 0; //milos, added
 const int32_t FRC_THRESHOLD = 1; //milos, added - friction treshold

@@ -84,6 +84,8 @@ const int32_t BOUNDARY_SPRING	=	 32767; //milos, modified
   -1.24126E-05,
   };*/
 
+#define Btest(data,val) ((data&(val))==(val))
+
 void cSpeedObs::Init () {
   mLastPos = 0;
   mLastSpeed = 0;

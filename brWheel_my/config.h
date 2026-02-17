@@ -188,7 +188,7 @@ extern uint16_t MAX_DAC; //  loaded from EEPROM
 
 uint16_t calcTOP(uint8_t pwmstate);
 
-void InitEEPROMConfig();
-void SetEEPROMConfig();
-void LoadEEPROMConfig();
-void SaveEEPROMConfig();
+void initEEPROMConfig();
+void setEEPROMConfig();
+void loadEEPROMConfig();
+void saveEEPROMConfig();

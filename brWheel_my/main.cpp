@@ -72,9 +72,9 @@ void setup() {
   pinMode(LED_BLUE_PIN, OUTPUT);
   digitalWrite(LED_BLUE_PIN, LOW);
 
-  InitEEPROMConfig();
-  SetEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
-  LoadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
+  initEEPROMConfig();
+  setEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
+  loadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
 
   FfbSetDriver(0);
 
