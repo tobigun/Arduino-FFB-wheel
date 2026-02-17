@@ -217,19 +217,19 @@ Firmware features:
 - all firmware settings are stored in EEPROM (and automatically loaded at each Arduino powerup)
 - original wheel control user interface **[Arduino FFB gui](https://github.com/ranenbg/Arduino-FFB-gui)** for an easy configuration and monitoring of all inputs/outputs 
 
-Detailed documentation and more information about the firmware can be found in txt files inside **[docs](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/brWheel_my/docs)** folder.
+Detailed documentation and more information about the firmware can be found in txt files inside the `docs/fw` folder.
 
 # Firmware pinouts and wiring diagrams
-![plot](./brWheel_my/wirings/Firmware-v250%20pinout.png)
+![plot](./docs/wirings/Firmware-v250%20pinout.png)
 **Note:** some pin mappings in the image are outdated. Check the wiring table above for the correct ones.
 ## Optical encoder and LED wiring
-![plot](./brWheel_my/wirings/encoder_ffb_clip_led_wiring_diagram.png)
+![plot](./docs/wirings/encoder_ffb_clip_led_wiring_diagram.png)
 ## Button matrix pinouts
-![plot](./brWheel_my/wirings/button_matrix_wiring_diagram.png)
+![plot](./docs/wirings/button_matrix_wiring_diagram.png)
 **Note:** the digital inputs for the matrix are not correct in the image. Check the wiring table above for the correct ones.
 
 ## Firmware upload procedure
-You can use **[XLoader](https://github.com/tobigun/Arduino-FFB-wheel/tree/master/XLoader)**:
+You can use XLoader from the `XLoader` folder:
 - set 57600baud, ATmega32U4 microcontroller and select desired HEX
 - press the reset button on Arduino (or shortly connect the RST pin to GND)
 - select the newly appeared COM port (Arduino in bootloader mode*) and press upload, you will only have a few seconds
