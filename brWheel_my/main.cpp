@@ -32,39 +32,6 @@
 #include "common.h"
 #include "debug.h"
 #include "packed.h"
-#ifdef __AVR__
-#include <avdweb_AnalogReadFast.h>
-#else
-#define analogReadFast analogRead
-#endif
-
-#define FFB_AXIS_RAW_BITS 15 // raw read value resolution before scaling to range of FFB lib
-#define FFB_AXIS_RAW_MAX_VALUE ((1L << FFB_AXIS_RAW_BITS) - 1) // raw read max value before scaling to range of FFB lib
-
-#define AVG_AXIS_NUM_BITS 5
-#define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
-
-#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
-
-enum {
-  AVG_AXIS_ID_X = 0,
-  AVG_AXIS_ID_Y,
-  AVG_AXIS_ID_Z,
-  AVG_AXIS_ID_RX,
-  AVG_AXIS_ID_RY,
-  AVG_AXIS_ID_COUNT
-};
-
-struct ATTR_PACKED InputReport {
-  int16_t x;
-  int16_t y;
-  int16_t z;
-  int16_t rx;
-  int16_t ry;
-  uint8_t hat;
-  uint16_t buttons : NB_BUTTONS;
-  uint8_t padding : 8 - (NB_BUTTONS % 8);
-};
 
 s16a accel;
 s16a clutch;
@@ -73,19 +40,15 @@ s16a brake;
 
 cFFB gFFB;
 
-uint32_t lastConfigSerialUpdateTimeUs = 0;
-uint32_t lastRefreshTimeUs = 0;
-
 HidAdapter hidAdapter;
 
 bool useCombinedAxes = false;
 
 
+static void updateFfb();
 static void createAndSendInputReport();
 static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
-static void readAxisSamples(size_t axisIndex, uint8_t sampleCount, uint8_t pin);
-static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES);
-void updateDataLed();
+static void updateDataLed();
 
 
 void setup() {
@@ -115,12 +78,13 @@ void setup() {
   s32v ffbs; // init xFFB at zero
   ffbs.x = 0; 
   setPWM(&ffbs); // zero PWM at startup
-  
-  lastRefreshTimeUs = micros();
 }
 
 void loop() {
-  uint32_t nowUs = micros(); // we are polling the loop (FFB and USB reports are sent periodicaly)
+  static uint32_t lastRefreshTimeUs = 0;
+  static uint32_t lastConfigSerialUpdateTimeUs = 0;
+
+  uint32_t nowUs = micros();
 
   readAxisSamples(AVG_AXIS_ID_X, 2, X_AXIS_PIN);
   readAxisSamples(AVG_AXIS_ID_Y, 1, Y_AXIS_PIN);
@@ -129,29 +93,34 @@ void loop() {
   readAxisSamples(AVG_AXIS_ID_RY, 1, RY_AXIS_PIN);
 
   if (nowUs - lastRefreshTimeUs >= CONTROL_PERIOD_US) {
-    lastRefreshTimeUs = nowUs;  // timer for FFB and USB reports
-
-    int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, FFB_AXIS_RAW_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
-    s32v ffbAxisValue; // struct containing x and y-axis position input for calculating ffb
-    ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID); // xFFB on X-axis
-
-    s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // passing pointer struct with x and y-axis, in encoder raw units -inf,0,inf
-    setPWM(&ffbs); // FFB signal is generated as digital PWM or analog DAC output (ffbs is a struct containing 2-axis FFB, here we pass it as pointer for calculating PWM or DAC signals)
-
+    updateFfb();
     createAndSendInputReport();
-
-    if (nowUs - lastConfigSerialUpdateTimeUs >= CONFIG_SERIAL_PERIOD_US) {
-      configCDC(); // configure firmware with virtual serial port
-      lastConfigSerialUpdateTimeUs = nowUs;
-    }
-
-    updateDataLed();
+    lastRefreshTimeUs = nowUs;
   }
+
+  if (nowUs - lastConfigSerialUpdateTimeUs >= CONFIG_SERIAL_PERIOD_US) {
+    configCDC(); // configure firmware with virtual serial port
+    lastConfigSerialUpdateTimeUs = nowUs;
+  }
+
+  updateDataLed();
 
   hidAdapter.recvFromUsb();
 }
 
-void createAndSendInputReport() {
+#define FFB_AXIS_RAW_BITS 15 // raw read value resolution before scaling to range of FFB lib
+#define FFB_AXIS_RAW_MAX_VALUE ((1L << FFB_AXIS_RAW_BITS) - 1) // raw read max value before scaling to range of FFB lib
+
+static void updateFfb() {
+  int16_t ffbAxisValueRaw = getAxisValue(AVG_AXIS_ID_X, FFB_AXIS_RAW_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+  s32v ffbAxisValue; // position input for calculating ffb
+  ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);
+
+  s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // raw units -inf,0,inf
+  setPWM(&ffbs);
+}
+
+static void createAndSendInputReport() {
   int16_t turnXRaw = getAxisValue(AVG_AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
   int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
   int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
@@ -181,11 +150,11 @@ void createAndSendInputReport() {
     accel.val = 0;
   }
 
-  // rescale all analog axis according to a new manual calibration
+  // rescale all analog axis according to manual calibration
   brake.val = map(brake.val, brake.min, brake.max, 0, Y_AXIS_LOG_MAX);
   brake.val = constrain(brake.val, 0, Y_AXIS_LOG_MAX);
 
-  accel.val = map(accel.val, accel.min, accel.max, 0, Z_AXIS_LOG_MAX);  // with manual calibration and dead zone
+  accel.val = map(accel.val, accel.min, accel.max, 0, Z_AXIS_LOG_MAX);
   accel.val = constrain(accel.val, 0, Z_AXIS_LOG_MAX);
 
   clutch.val = map(clutch.val, clutch.min, clutch.max, 0, RX_AXIS_LOG_MAX);
@@ -196,7 +165,7 @@ void createAndSendInputReport() {
 
   uint16_t buttons;
   uint8_t hat;
-  readInputButtons(buttons, hat); // read all buttons including matrix and hat switch
+  readInputButtons(buttons, hat);
 
   sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
 }
@@ -208,6 +177,17 @@ static uint16_t rearrangeButtons(uint16_t buttons) {
   uint16_t frontButtons = SWAP_BITS((buttons >> 10) & 0b11);
   return dpadBtns | (frontButtons << 4) | (sideBtns << 6) | (gearBtns << 8);
 }
+
+struct ATTR_PACKED InputReport {
+  int16_t x;
+  int16_t y;
+  int16_t z;
+  int16_t rx;
+  int16_t ry;
+  uint8_t hat;
+  uint16_t buttons : NB_BUTTONS;
+  uint8_t padding : 8 - (NB_BUTTONS % 8);
+};
 
 static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons) {
   InputReport report = {
@@ -222,7 +202,7 @@ static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t
   hidAdapter.sendInputReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
 }
 
-void blinkFFBclipLED() { // milos, added - blink FFB clip LED a few times at startup to indicate succesful boot
+void blinkFFBclipLED() { // blink FFB clip LED a few times at startup to indicate succesful boot
   for (uint8_t i = 0; i < 3; i++) {
     digitalWrite(FFBCLIP_LED_PIN, HIGH);
     delay(20);
@@ -231,7 +211,7 @@ void blinkFFBclipLED() { // milos, added - blink FFB clip LED a few times at sta
   }
 }
 
-void activateFFBclipLED(int32_t t) {  // milos, added - turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
+void activateFFBclipLED(int32_t t) {  // turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
   float level = 0.01 * configGeneralGain;
   if (abs(t) >= 0.9 * MM_MAX_MOTOR_TORQUE * level && abs(t) < level * MM_MAX_MOTOR_TORQUE - 1) {
     //analogWrite(FFBCLIP_LED_PIN, map(abs(t), 0.9 * MM_MAX_MOTOR_TORQUE * level, level * MM_MAX_MOTOR_TORQUE, 1, 63)); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
@@ -243,32 +223,9 @@ void activateFFBclipLED(int32_t t) {  // milos, added - turn on FFB clip LED if 
   }
 }
 
-void updateDataLed() {
+static void updateDataLed() {
   if (dataLedActiveTimeMs > 0 && millis() - dataLedActiveTimeMs > 1) {
     digitalWrite(LED_BLUE_PIN, LOW);
     dataLedActiveTimeMs = 0;
   }
-}
-
-// first index contains the newest sample per axis
-static uint16_t axisSamples[AVG_AXIS_ID_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
-
-static void readAxisSamples(size_t axisIndex, uint8_t sampleCount, uint8_t pin) {
-  uint16_t* samples = axisSamples[axisIndex];
-  memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
-  for (int8_t i = sampleCount - 1; i >= 0; --i) {
-    samples[i] = analogReadFast(pin);
-  }
-}
-
-static int16_t getAxisValue(size_t axisIndex, uint8_t outputBits, uint8_t sampleCount) {
-  uint32_t axisXSum = 0;
-  for (int i = 0; i < sampleCount; ++i) {
-    axisXSum += axisSamples[axisIndex][i];
-  }
-
-  axisXSum = (outputBits >= ANALOG_BITS)
-    ? axisXSum << (outputBits - ANALOG_BITS)
-    : axisXSum >> (ANALOG_BITS - outputBits);
-  return axisXSum / sampleCount;
 }

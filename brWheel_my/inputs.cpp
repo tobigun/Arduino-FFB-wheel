@@ -31,9 +31,11 @@
 #include "ffb_hid.h"
 #ifdef __AVR__
 #include <digitalWriteFast.h>
+#include <avdweb_AnalogReadFast.h>
 #else
 #define pinModeFast pinMode
 #define digitalWriteFast(pin, val) digitalWrite(pin, val)
+#define analogReadFast analogRead
 #endif
 
 uint8_t analog_inputs_pins[] =
@@ -44,10 +46,13 @@ uint8_t analog_inputs_pins[] =
   RY_AXIS_PIN
 };
 
+// first index contains the newest sample per axis
+static uint16_t axisSamples[AVG_AXIS_ID_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
 
+
+void initButtonMatrix();
 void setMatrixRow(uint8_t row, uint8_t value);
 bool readMatrixCol(uint8_t col);
-void initButtons();
 
 
 void initInputs() {
@@ -55,7 +60,7 @@ void initInputs() {
     pinMode(analog_inputs_pins[i], INPUT);
   }
 
-  initButtons();
+  initButtonMatrix();
 
   pinMode(PROFILE_SWITCH_PIN, INPUT_PULLUP);
 
@@ -64,20 +69,24 @@ void initInputs() {
   }
 }
 
-void initButtons() { // if not using shift register, allocate some free pins for buttons
-  pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
-  pinMode(BUTTON_MATRIX_COL3_PIN, INPUT_PULLUP);
+void readAxisSamples(uint8_t axisIndex, uint8_t sampleCount, uint8_t pin) {
+  uint16_t* samples = axisSamples[axisIndex];
+  memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
+  for (int8_t i = sampleCount - 1; i >= 0; --i) {
+    samples[i] = analogReadFast(pin);
+  }
+}
 
-  pinModeFast(BUTTON_MATRIX_ROW0_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW1_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW2_PIN, OUTPUT);
-  pinModeFast(BUTTON_MATRIX_ROW3_PIN, OUTPUT);
-  setMatrixRow(BUTTON_MATRIX_ROW0_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
-  setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
+int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount) {
+  uint32_t axisXSum = 0;
+  for (int i = 0; i < sampleCount; ++i) {
+    axisXSum += axisSamples[axisIndex][i];
+  }
+
+  axisXSum = (outputBits >= ANALOG_BITS)
+    ? axisXSum << (outputBits - ANALOG_BITS)
+    : axisXSum >> (ANALOG_BITS - outputBits);
+  return axisXSum / sampleCount;
 }
 
 HID_PROFILE_ID readHidProfileId() {
@@ -115,6 +124,22 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
   return pedalsConnected;
 }
 
+void initButtonMatrix() { // if not using shift register, allocate some free pins for buttons
+  pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL3_PIN, INPUT_PULLUP);
+
+  pinModeFast(BUTTON_MATRIX_ROW0_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW1_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW2_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW3_PIN, OUTPUT);
+  setMatrixRow(BUTTON_MATRIX_ROW0_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
+}
+
 // decodes hat switch values into only 1st 4 buttons (button0-up, button1-right, button2-down, button3-left)
 uint8_t decodeHat(uint16_t bits) {
   switch ((uint8_t) bits & 0b1111) { // only take 1st 4 bits from inbits
@@ -130,15 +155,15 @@ uint8_t decodeHat(uint16_t bits) {
   }
 }
 
+// buttons 0-3 of are columns j
+// buttons 4-7 of are rows i
+// Matrix element is Bij
+//     D4  A4  A5  D12
+// D6 |b11 b12 b13 b14|
+// D7 |b21 b22 b23 b24|
+// D8 |b31 b32 b33 b34|
+// D5 |b41 b42 b43 b44|
 void readInputButtons(uint16_t& buttons, uint8_t& hat) {
-  // buttons 0-3 of are columns j
-  // buttons 4-7 of are rows i
-  // Matrix element is Bij
-  //     D4  A4  A5  D12
-  // D6 |b11 b12 b13 b14|
-  // D7 |b21 b22 b23 b24|
-  // D8 |b31 b32 b33 b34|
-  // D5 |b41 b42 b43 b44|
   for (uint8_t i = 0; i < 4; i++) { // rows (along X), we set each row low, one at a time
     setMatrixRow(i, LOW);
     delayMicroseconds(5); // required to avoid the detection of false button presses
