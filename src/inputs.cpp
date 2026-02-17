@@ -93,8 +93,8 @@ HID_PROFILE_ID readHidProfileId() {
   return digitalRead(PROFILE_SWITCH_PIN) ? GENERIC_AXES : DRIVING_WHEEL;
 }
 
-#define PEDALS_DISCONNECTED_THRESHOLD (ANALOG_MAX - 2)
-#define PEDALS_CONNECTED_THRESHOLD (ANALOG_MAX * 3 / 4)
+#define PEDALS_DISCONNECTED_THRESHOLD (AXIS_LOG_MAX - 2)
+#define PEDALS_CONNECTED_THRESHOLD (AXIS_LOG_MAX * 3 / 4)
 
 bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
   static uint32_t yzHighTimeMs = 0;
