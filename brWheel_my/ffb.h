@@ -50,6 +50,8 @@ extern uint32_t t0;
 extern uint32_t effectTime[MAX_EFFECTS];
 extern bool t0_updated;
 
+extern uint32_t dataLedActiveTimeMs;
+
 extern volatile uint8_t nextEID;
 
 extern bool useDrivingHidProfile;
@@ -268,7 +270,7 @@ void FfbEnableTriangles(uint8_t inEnable);
 void FfbEnableSines(uint8_t inEnable);
 void FfbEnableEffectId(uint8_t inId, uint8_t inEnable);
 
-void UpdateDataLed(void);
+void updateDataLed(void);
 
 // Bit-masks for effect states
 #define MEffectState_Free			0x00

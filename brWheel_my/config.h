@@ -128,8 +128,8 @@ void setParam (uint16_t offset, uint8_t *addr_to, uint8_t size);
 
 //------------------------------------- Main Config -----------------------------------------------------
 
-#define CONTROL_PERIOD	2000 //  original 2000 (us), be careful since this defines ffb calculation rate (min is 1000us for max 1000Hz ffb calc rate, but 16MHz clock is not fast enough)
-#define CONFIG_SERIAL_PERIOD 10000 //  original 50000 (us)
+#define CONTROL_PERIOD_US	2000 //  original 2000 (us), be careful since this defines ffb calculation rate (min is 1000us for max 1000Hz ffb calc rate, but 16MHz clock is not fast enough)
+#define CONFIG_SERIAL_PERIOD_US 10000 //  original 50000 (us)
 
 //------------------------------------- FFB/Firmware config -----------------------------------------------------
 

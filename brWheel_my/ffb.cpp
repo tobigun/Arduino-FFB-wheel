@@ -90,7 +90,7 @@ void StopAllEffects(void);
 void FreeEffect(uint8_t id);
 void FreeAllEffects(void);
 
-static uint32_t dataLedActiveTimeMs = 0;
+uint32_t dataLedActiveTimeMs = 0;
 
 //-------------------------------------------------------------------------------------------------------------
 
@@ -557,13 +557,5 @@ void FfbEnableEffectId(uint8_t inId, uint8_t inEnable)
     LogTextP(PSTR("Stop manual:"));
     LogBinaryLf(&inId, 1);
     StopEffect(inId);
-  }
-}
-
-void UpdateDataLed(void)
-{
-  if (dataLedActiveTimeMs > 0 && millis() - dataLedActiveTimeMs > 1) {
-    digitalWrite(LED_BLUE_PIN, LOW);
-    dataLedActiveTimeMs = 0;
   }
 }
