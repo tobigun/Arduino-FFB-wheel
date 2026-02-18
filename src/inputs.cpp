@@ -167,7 +167,7 @@ void initButtonMatrix() { // if not using shift register, allocate some free pin
 
   for (uint8_t row = 0; row < 4; ++row) {
     pinModeFast(matrixRowPins[row], OUTPUT);
-    setMatrixRow(matrixRowPins[row], HIGH);
+    setMatrixRow(row, HIGH);
   }
 }
 
