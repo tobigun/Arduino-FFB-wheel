@@ -90,8 +90,6 @@ void readAxesSamples() {
 }
 
 #else
-#define CONV_PER_PIN 4
-
 static volatile bool adcConversionDone = false;
 
 static void ARDUINO_ISR_ATTR adcCallback() {
@@ -103,7 +101,10 @@ static void initAdc() {
     pinMode(adcAxisPins[i], INPUT);
   }
 
-  analogContinuous(adcAxisPins, sizeof(adcAxisPins), CONV_PER_PIN, 5000, &adcCallback); //611 - 83333Hz
+  // this configuration will result in 2 samples/ms (each an average of 8 samples)
+  // Note that the sampling_freq_hz denotes the total amount of samples per second, not of a single pin/channel.
+  // Number of resulting (i.e. averaged) samples per second is: sampling_freq_hz / (conversions_per_pin * pins)
+  analogContinuous(adcAxisPins, sizeof(adcAxisPins), 8, 80000, &adcCallback); // max. 83.333kHz
   analogContinuousStart();
 }
 
@@ -129,7 +130,7 @@ void readAxesSamples() {
 
 int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount) {
   uint32_t axisXSum = 0;
-  for (int i = 0; i < sampleCount; ++i) {
+  for (uint8_t i = 0; i < sampleCount; ++i) {
     axisXSum += axisSamples[axisIndex][i];
   }
 
@@ -147,10 +148,10 @@ HID_PROFILE_ID readHidProfileId() {
   return digitalRead(PROFILE_SWITCH_PIN) ? GENERIC_AXES : DRIVING_WHEEL;
 }
 
-#define PEDALS_DISCONNECTED_THRESHOLD (AXIS_LOG_MAX - 2)
-#define PEDALS_CONNECTED_THRESHOLD (AXIS_LOG_MAX * 3 / 4)
+#define PEDALS_DISCONNECTED_THRESHOLD 240
+#define PEDALS_CONNECTED_THRESHOLD 180
 
-bool checkPedalsConnected(int16_t axisY, int16_t axisZ) {
+bool checkPedalsConnected(uint8_t axisY, uint8_t axisZ) { // both range 0..255
   static uint32_t yzHighTimeMs = 0;
   static bool pedalsConnected = true;
   static bool startUp = true;

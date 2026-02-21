@@ -109,7 +109,7 @@ void loop() {
 #define FFB_AXIS_RAW_MAX_VALUE ((1L << FFB_AXIS_RAW_BITS) - 1) // raw read max value before scaling to range of FFB lib
 
 static void updateFfb() {
-  int16_t ffbAxisValueRaw = getAxisValue(AXIS_ID_X, FFB_AXIS_RAW_BITS, 4); // only use the newest samples for averaging of FFB axis to reduce latency
+  int16_t ffbAxisValueRaw = getAxisValue(AXIS_ID_X, FFB_AXIS_RAW_BITS, AVG_FFB_AXIS_X_NUM_MAX_SAMPLES); // only use the newest samples for averaging of FFB axis to reduce latency
   s32v ffbAxisValue; // position input for calculating ffb
   ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);
 
@@ -119,22 +119,23 @@ static void updateFfb() {
 }
 
 static void createAndSendInputReport() {
-  int16_t turnXRaw = getAxisValue(AXIS_ID_X, X_AXIS_NB_BITS); // get averaged X axis for all samples for smoother USB report
+  int16_t turnXRaw = getAxisValue(AXIS_ID_X, X_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES); // get averaged X axis for all samples for smoother USB report
   int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
   int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
   turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
 
-  int16_t yAxisValue = getAxisValue(AXIS_ID_Y, Y_AXIS_NB_BITS);
-  int16_t zAxisValue = getAxisValue(AXIS_ID_Z, Z_AXIS_NB_BITS);
-  bool pedalsConnected = checkPedalsConnected(yAxisValue, zAxisValue);
+  bool pedalsConnected = checkPedalsConnected(
+    getAxisValue(AXIS_ID_Y, 8, 1),
+    getAxisValue(AXIS_ID_Z, 8, 1));
+
   if (pedalsConnected) { // pedals attached, use levers as additional axes
-    accel.val = zAxisValue;
-    brake.val = yAxisValue;
-    clutch.val = getAxisValue(AXIS_ID_RX, RX_AXIS_NB_BITS);
-    hbrake.val = getAxisValue(AXIS_ID_RY, RY_AXIS_NB_BITS);
+    accel.val = getAxisValue(AXIS_ID_Z, Z_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
+    brake.val = getAxisValue(AXIS_ID_Y, Y_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
+    clutch.val = getAxisValue(AXIS_ID_RX, RX_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
+    hbrake.val = getAxisValue(AXIS_ID_RY, RY_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
   } else { // no pedals attached, use levers as accel and brake
-    accel.val = getAxisValue(AXIS_ID_RY, Z_AXIS_NB_BITS);
-    brake.val = getAxisValue(AXIS_ID_RX, Y_AXIS_NB_BITS);
+    accel.val = getAxisValue(AXIS_ID_RY, Z_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
+    brake.val = getAxisValue(AXIS_ID_RX, Y_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES);
     clutch.val = 0; // RX axis
     hbrake.val = 0; // RY axis
   }

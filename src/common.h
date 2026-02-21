@@ -11,11 +11,12 @@
 #endif
 
 #ifdef __AVR__
-#define AVG_AXIS_NUM_BITS 5
+#define AVG_AXIS_NUM_MAX_SAMPLES 32
+#define AVG_FFB_AXIS_X_NUM_MAX_SAMPLES 4
 #else
-#define AVG_AXIS_NUM_BITS 3
+#define AVG_AXIS_NUM_MAX_SAMPLES 32 // evaluate 32 samples (which are already averaged by the adc by 8 samples), i.e. the samples of the last 16 ms
+#define AVG_FFB_AXIS_X_NUM_MAX_SAMPLES 2 // only check the samples of the last ms (with 2 samples queued per ms)
 #endif
-#define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
 
 enum HID_PROFILE_ID {
   GENERIC_AXES,
@@ -51,11 +52,11 @@ void setPWM(int32_t torqueX);
 
 void initInputs();
 void readAxesSamples();
-int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES);
+int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount);
 HID_PROFILE_ID readHidProfileId();
 uint8_t decodeHatSwitch(uint8_t hatBits);
 uint16_t readInputButtonsRaw();
-bool checkPedalsConnected(int16_t axisY, int16_t axisZ);
+bool checkPedalsConnected(uint8_t axisY, uint8_t axisZ);
 
 void configCDC();
 
