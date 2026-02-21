@@ -45,7 +45,7 @@ void HidAdapter::begin() {
 
   buildHIDDescriptor();
   
-  //usb_hid.setPollInterval(2);
+  usb_hid.setPollInterval(1);
   usb_hid.setReportDescriptor(hidReportDescriptor, sizeof(hidReportDescriptor));
   usb_hid.setReportCallback(get_report_callback, set_report_callback);
   usb_hid.begin();
@@ -67,8 +67,12 @@ void HidAdapter::recvFromUsb()
 	}
 }
 
-void HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
-  usb_hid.sendReport(INPUT_REPORT_ID, data, len);
+bool HidAdapter::isReady() {
+  return usb_hid.ready();
+}
+
+bool HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
+  return usb_hid.sendReport(INPUT_REPORT_ID, data, len);
 }
 
 // Invoked when received GET_REPORT control request
@@ -87,7 +91,7 @@ uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, u
       Serial0.println(reqlen);
     }
 
-    delayMicroseconds(500); // TODO
+    //delayMicroseconds(500); // does not seem to be needed
     memcpy(buffer, &gNewEffectBlockLoad, sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
 #ifdef FFBREPORT_WITH_REPORTID
     gNewEffectBlockLoad.reportId = 0;

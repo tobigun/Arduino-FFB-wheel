@@ -12,7 +12,7 @@
 
 #define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
 
-#define AVG_AXIS_NUM_BITS 5
+#define AVG_AXIS_NUM_BITS 3
 #define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
 
 enum HID_PROFILE_ID {
@@ -21,12 +21,12 @@ enum HID_PROFILE_ID {
 };
 
 enum {
-  AVG_AXIS_ID_X = 0,
-  AVG_AXIS_ID_Y,
-  AVG_AXIS_ID_Z,
-  AVG_AXIS_ID_RX,
-  AVG_AXIS_ID_RY,
-  AVG_AXIS_ID_COUNT
+  AXIS_ID_X = 0,
+  AXIS_ID_Y,
+  AXIS_ID_Z,
+  AXIS_ID_RX,
+  AXIS_ID_RY,
+  AXIS_COUNT
 };
 
 struct s32v { //  2 dimensional vector structure (for ffb and position)
@@ -48,10 +48,11 @@ void initPWM();
 void setPWM(s32v *torque);
 
 void initInputs();
-void readAxisSamples(uint8_t axisIndex, uint8_t sampleCount, uint8_t pin);
+void readAxisSamples();
 int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES);
 HID_PROFILE_ID readHidProfileId();
-void readInputButtons(uint16_t& buttons, uint8_t& hat);
+uint8_t decodeHatSwitch(uint8_t hatBits);
+uint16_t readInputButtonsRaw();
 bool checkPedalsConnected(int16_t axisY, int16_t axisZ);
 
 void configCDC();

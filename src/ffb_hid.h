@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 
-#define NB_AXIS			5
 #define NB_FF_AXIS		2 // must be 2, otherwise Forza Horizon 4 will crash when starting
 #define NB_BUTTONS		10
 #define X_AXIS_NB_BITS	15
@@ -41,7 +40,9 @@ public:
 
   void recvFromUsb();
 
-  void sendInputReport(uint8_t id, const void* data, uint8_t len);
+  bool isReady();
+
+  bool sendInputReport(uint8_t id, const void* data, uint8_t len);
 };
 
 extern HidAdapter hidAdapter;
