@@ -26,8 +26,6 @@
 
 #include "config.h"
 #include "common.h"
-#include "ffb_pro.h"
-#include "debug.h"
 #include "ffb_hid.h"
 #ifdef __AVR__
 #include <digitalWriteFast.h>
@@ -49,7 +47,7 @@ void initInputs() {
   pinMode(PROFILE_SWITCH_PIN, INPUT_PULLUP);
 
   if (digitalRead(RX_AXIS_PIN) == HIGH) {
-    useCombinedAxes = true;
+    //useCombinedAxes = true;
   }
 }
 

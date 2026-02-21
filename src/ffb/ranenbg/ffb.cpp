@@ -36,27 +36,24 @@ uint8_t valueglobal = 55;
 
 //--------------------------------------- Globals --------------------------------------------------------
 
-const FFB_Driver ffb_drivers[1] =
-{
-  {
-    FfbproEnableInterrupts,
-    FfbproGetSysExHeader,
-    FfbproSetAutoCenter,
-    FfbproStartEffect,
-    FfbproStopEffect,
-    FfbproFreeEffect,
-    FfbproModifyDuration,
-    FfbproCreateNewEffect,
-    FfbproSetEnvelope,
-    FfbproSetCondition,
-    FfbproSetPeriodic,
-    FfbproSetConstantForce,
-    FfbproSetRampForce,
-    FfbproSetEffect
-  }
+const FFB_Driver ffb_driver = {
+  FfbproEnableInterrupts,
+  FfbproGetSysExHeader,
+  FfbproSetAutoCenter,
+  FfbproStartEffect,
+  FfbproStopEffect,
+  FfbproFreeEffect,
+  FfbproModifyDuration,
+  FfbproCreateNewEffect,
+  FfbproSetEnvelope,
+  FfbproSetCondition,
+  FfbproSetPeriodic,
+  FfbproSetConstantForce,
+  FfbproSetRampForce,
+  FfbproSetEffect
 };
 
-static const FFB_Driver* ffb;
+static const FFB_Driver* ffb = &ffb_driver;
 
 void setFFB(int32_t command);
 
@@ -93,11 +90,6 @@ void FreeAllEffects(void);
 uint32_t dataLedActiveTimeMs = 0;
 
 //-------------------------------------------------------------------------------------------------------------
-
-void FfbSetDriver(uint8_t id)
-{
-  ffb = &ffb_drivers[id];
-}
 
 uint8_t GetNextFreeEffect(void)
 {

@@ -3,8 +3,8 @@
 #include <tusb.h>
 #include <USB.h>
 #include "hidDescriptor.h"
-#include "ffb.h"
 #include "ffb_hid.h"
+#include "FfbReportHandler.h"
 #include "packed.h"
 #include "common.h"
 
@@ -62,7 +62,7 @@ void HidAdapter::recvFromUsb()
 	if (ffbReportLength > 0) {
 		uint8_t out_ffbdata[64];
 		memcpy(out_ffbdata, (void*) ffbReport, ffbReportLength);
-    FfbOnUsbData(out_ffbdata, ffbReportLength);
+    ffbReportHandler.FfbOnUsbData(out_ffbdata, ffbReportLength);
 		ffbReportLength = 0;
 	}
 }
@@ -92,7 +92,7 @@ uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, u
       return 0;
     }
 
-    memcpy(buffer, &gNewEffectBlockLoad, sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
+    //memcpy(buffer, &gNewEffectBlockLoad, sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
     return sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t);
   }
   else if (report_id == 7)
@@ -130,7 +130,7 @@ void set_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8
         Serial0.println(bufsize);
       }
       USB_FFBReport_CreateNewEffect_Feature_Data_t* ans = (USB_FFBReport_CreateNewEffect_Feature_Data_t*) buffer;
-      FfbOnCreateNewEffect(ans, &gNewEffectBlockLoad);
+      //ffbReportHandler.FfbOnCreateNewEffect(ans, &gNewEffectBlockLoad);
 		}
   }
 }

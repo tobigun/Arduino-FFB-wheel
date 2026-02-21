@@ -27,10 +27,9 @@
 
 #include "config.h"
 #include "ffb_hid.h"
-#include "ffb_pro.h"
+#include "FfbReportHandler.h"
 #include "hidDescriptor.h"
 #include "common.h"
-#include "debug.h"
 #include "packed.h"
 
 s16a accel;
@@ -38,9 +37,10 @@ s16a clutch;
 s16a hbrake;
 s16a brake;
 
-cFFB gFFB;
+//cFFB gFFB;
 
 HidAdapter hidAdapter;
+FfbReportHandler ffbReportHandler;
 
 bool useCombinedAxes = false;
 
@@ -73,8 +73,6 @@ void setup() {
   initEEPROMConfig();
   setEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   loadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
-
-  FfbSetDriver(0);
 
   initPWM(); // initialize PWM (or DAC) settings
   setPWM(0); // zero PWM at startup
@@ -111,16 +109,16 @@ void loop() {
 static void updateFfb() {
   int16_t ffbAxisValueRaw = getAxisValue(AXIS_ID_X, FFB_AXIS_RAW_BITS, AVG_FFB_AXIS_X_NUM_MAX_SAMPLES); // only use the newest samples for averaging of FFB axis to reduce latency
   s32v ffbAxisValue; // position input for calculating ffb
-  ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);
+  //ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);
 
-  s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // raw units -inf,0,inf
-  setPWM(ffbs.x);
-  updateFfbClipLED(ffbs.x);
+  //s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // raw units -inf,0,inf
+  //setPWM(ffbs.x);
+  //updateFfbClipLED(ffbs.x);
 }
 
 static void createAndSendInputReport() {
   int16_t turnXRaw = getAxisValue(AXIS_ID_X, X_AXIS_NB_BITS, AVG_AXIS_NUM_MAX_SAMPLES); // get averaged X axis for all samples for smoother USB report
-  int16_t deadZoneX = (X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
+  int16_t deadZoneX = 0; //(X_AXIS_LOG_MAX - (X_AXIS_LOG_MAX * ROTATION_DEG / FFB_ROTATION_DEG)) / 2;
   int32_t turnX = map(turnXRaw, 0, X_AXIS_LOG_MAX, deadZoneX, X_AXIS_LOG_MAX - deadZoneX);
   turnX = constrain(turnX, 0, X_AXIS_LOG_MAX);
 

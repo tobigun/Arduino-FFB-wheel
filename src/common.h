@@ -1,6 +1,17 @@
 #pragma once
 
 #include <stdint.h>
+#ifdef __AVR__
+#include "USBDesc.h"
+#endif
+
+#ifdef CDC_ENABLED
+#define DEBUG_SERIAL		Serial
+#else
+#include "SerialDummy.h"
+#define DEBUG_SERIAL		SerialDummy_
+#endif
+#define CONFIG_SERIAL		Serial
 
 #ifdef __AVR__
 #define ANALOG_BITS 10

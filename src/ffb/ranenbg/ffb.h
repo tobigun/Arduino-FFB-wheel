@@ -46,7 +46,7 @@
 #define FIRST_EID	1
 
 // Maximum number of parallel effects in memory
-#define MAX_EFFECTS 11 //milos, changed from 20
+#define MAX_EFFECTS     14
 #define SIZE_EFFECT     sizeof(TEffectState)
 #define MEMORY_SIZE     (uint16_t)(MAX_EFFECTS*SIZE_EFFECT)
 

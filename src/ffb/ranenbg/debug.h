@@ -31,9 +31,6 @@
 #define _DEBUG_H_
 
 #include <stdint.h>
-#ifdef __AVR__
-#include "USBDesc.h"
-#endif
 
 /*// Method of debugging
   extern const uint8_t DEBUG_TO_NONE;
@@ -79,15 +76,6 @@ void LogReport(const char *text, const uint16_t *reportSizeArray, uint8_t *data,
 
 // Debugging utils for USB-serial debugging
 void FlushDebugBuffer(void);
-
-#ifdef CDC_ENABLED
-#define DEBUG_SERIAL		Serial
-#else
-#include "SerialDummy.h"
-#define DEBUG_SERIAL		SerialDummy_
-#endif
-
-#define CONFIG_SERIAL		Serial
 
 //#define DEBUG_FFB // milos, uncomment this to enable FFB debugging via UART
 
