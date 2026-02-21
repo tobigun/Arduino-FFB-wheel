@@ -305,7 +305,7 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
   };
 }
 
-void FfbOnCreateNewEffect (USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, USB_FFBReport_PIDBlockLoad_Feature_Data_t *outData)
+void FfbOnCreateNewEffect(USB_FFBReport_CreateNewEffect_Feature_Data_t* inData, USB_FFBReport_PIDBlockLoad_Feature_Data_t* outData)
 {
 #ifdef FFBREPORT_WITH_REPORTID
   outData->reportId = 6;

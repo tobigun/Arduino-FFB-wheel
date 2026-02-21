@@ -84,18 +84,15 @@ uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, u
     return 0;
   }
 
-  if ((report_id == 6))// && (gNewEffectBlockLoad.reportId==6))
+  if (report_id == 6)
   {
     if (reqlen != sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t)) {
       Serial0.println("Wrong reqlen for reportId=6: ");
       Serial0.println(reqlen);
+      return 0;
     }
 
-    //delayMicroseconds(500); // does not seem to be needed
     memcpy(buffer, &gNewEffectBlockLoad, sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t));
-#ifdef FFBREPORT_WITH_REPORTID
-    gNewEffectBlockLoad.reportId = 0;
-#endif
     return sizeof(USB_FFBReport_PIDBlockLoad_Feature_Data_t);
   }
   else if (report_id == 7)
@@ -103,16 +100,13 @@ uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, u
     if (reqlen != sizeof(USB_FFBReport_PIDPool_Feature_Data_t)) {
       Serial0.println("Wrong reqlen for reportId=6: ");
       Serial0.println(reqlen);
+      return 0;
     }
 
-    USB_FFBReport_PIDPool_Feature_Data_t ans;
-#ifdef FFBREPORT_WITH_REPORTID
-    ans.reportId = report_id;
-#endif
-    ans.ramPoolSize = 0xffff;
-    ans.maxSimultaneousEffects = MAX_EFFECTS;
-    ans.memoryManagement = 3;
-    memcpy(buffer, &ans, sizeof(USB_FFBReport_PIDPool_Feature_Data_t));
+    USB_FFBReport_PIDPool_Feature_Data_t* ans = (USB_FFBReport_PIDPool_Feature_Data_t*) buffer;
+    ans->ramPoolSize = 0xffff;
+    ans->maxSimultaneousEffects = MAX_EFFECTS;
+    ans->memoryManagement = 3;
     return sizeof(USB_FFBReport_PIDPool_Feature_Data_t);
   }
 
@@ -124,8 +118,8 @@ uint16_t get_report_callback(uint8_t report_id, hid_report_type_t report_type, u
 void set_report_callback(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
 {
   if (report_id == 0 && report_type == HID_REPORT_TYPE_OUTPUT) {
-    ffbReportLength = bufsize;
     memcpy((void*) ffbReport, buffer, bufsize);
+    ffbReportLength = bufsize;
   }
   else if (report_type == HID_REPORT_TYPE_FEATURE)
   {
