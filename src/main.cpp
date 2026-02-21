@@ -84,7 +84,7 @@ void loop() {
   static uint32_t lastRefreshTimeUs = 0;
   static uint32_t lastConfigSerialUpdateTimeUs = 0;
 
-  readAxisSamples();
+  readAxesSamples();
 
   uint32_t nowUs = micros();
   if ((nowUs - lastRefreshTimeUs >= CONTROL_PERIOD_US) && hidAdapter.isReady()) {
@@ -165,6 +165,8 @@ static void createAndSendInputReport() {
 
   sendInputReport(turnX, brake.val, accel.val, clutch.val, hbrake.val, hat, buttons);
 }
+
+#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
 
 static uint16_t rearrangeButtons(uint16_t buttons) {
   uint8_t gearBtns = buttons & 0b11;

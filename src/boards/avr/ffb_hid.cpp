@@ -3,6 +3,7 @@
 #include "WHID.h"
 #include "common.h"
 #include "hidDescriptor.h"
+#include "ffb.h"
 #include "ffb_hid.h"
 
 static uint8_t dynamicHidReportDescriptor[sizeof(_dynamicHidReportDescriptor)];
@@ -32,12 +33,16 @@ void HidAdapter::begin() {
   HID().begin();
 }
 
+bool HidAdapter::isReady() {
+  return true; // WHID does not offer a ready check
+}
+
 void HidAdapter::recvFromUsb() {
   // no polling. RecvFfbReport is triggered by IRQ instead
 }
 
-void HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
-  HID().SendReport(INPUT_REPORT_ID, data, len);
+bool HidAdapter::sendInputReport(uint8_t id, const void* data, uint8_t len) {
+  return HID().SendReport(INPUT_REPORT_ID, data, len) >= 0;
 }
 
 void HID_::RecvFfbReport() {

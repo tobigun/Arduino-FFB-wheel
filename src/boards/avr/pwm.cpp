@@ -1,5 +1,4 @@
-// milos, completely rewritten - all possible configurations of PWM and DAC settings are handeled here
-
+#include <Arduino.h>
 #include "config.h"
 #include "common.h"
 

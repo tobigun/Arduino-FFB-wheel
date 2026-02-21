@@ -1,6 +1,7 @@
+#include <Arduino.h>
+#include <EEPROM.h>
 #include "config.h"
 #include "common.h"
-#include <EEPROM.h>
 
 uint8_t ffbBalance; // load cell scaling factor (affects brake pressure, but depends on your load cell's maximum specified load)
 
@@ -227,11 +228,11 @@ void ClearEEPROMConfig() { //clears EEPROM (1KB on ATmega32U4)
 
 uint16_t calcTOP(uint8_t pwmstate) { // function which returns TOP value from pwmstate byte argument
 #ifdef __AVR__
-  byte j = 0b00000000; // index of frequency and PWM resolution
+  uint8_t j = 0b00000000; // index of frequency and PWM resolution
   for (uint8_t i = 0; i < 4; i++) {
-    bitWrite(j, i, bitRead(b, i + 2)); // decode bits2-5 from pwmstate byte into index
+    bitWrite(j, i, bitRead(pwmstate, i + 2)); // decode bits2-5 from pwmstate byte into index
   }
-  if (bitRead(b, 0)) { // if phase correct PWM mode (pwmstate bit0=1)
+  if (bitRead(pwmstate, 0)) { // if phase correct PWM mode (pwmstate bit0=1)
     return (PWMtops[j] >> 1); // divide by 2
   } else { // if fast PWM mode (pwmstate bit0=0)
     return (PWMtops[j]);

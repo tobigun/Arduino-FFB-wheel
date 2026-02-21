@@ -10,9 +10,11 @@
 #define ANALOG_MAX ((1 << ANALOG_BITS) - 1) // 4095
 #endif
 
-#define SWAP_BITS(bits) ((((bits) << 1) & 0x2) | (((bits) >> 1) & 0x1))
-
+#ifdef __AVR__
+#define AVG_AXIS_NUM_BITS 5
+#else
 #define AVG_AXIS_NUM_BITS 3
+#endif
 #define AVG_AXIS_NUM_MAX_SAMPLES (1 << AVG_AXIS_NUM_BITS)
 
 enum HID_PROFILE_ID {
@@ -48,7 +50,7 @@ void initPWM();
 void setPWM(s32v *torque);
 
 void initInputs();
-void readAxisSamples();
+void readAxesSamples();
 int16_t getAxisValue(uint8_t axisIndex, uint8_t outputBits, uint8_t sampleCount = AVG_AXIS_NUM_MAX_SAMPLES);
 HID_PROFILE_ID readHidProfileId();
 uint8_t decodeHatSwitch(uint8_t hatBits);

@@ -28,16 +28,20 @@
   this software.
 */
 
-#ifndef _FFB_
-#define _FFB_
+#pragma once
 
-#include <arduino.h>
+#include <Arduino.h>
 #include "config.h"
+#include "packed.h"
 
 /* Type Defines: */
 /** Type define for the joystick HID report structure, for creating and sending HID reports to the host PC.
     This mirrors the layout described to the host in the HID report descriptor, in Descriptors.c.
 */
+
+#ifdef __AVR__
+#define FFBREPORT_WITH_REPORTID
+#endif
 
 #define FIRST_EID	1
 
@@ -325,5 +329,3 @@ struct FFB_Driver
   void (*SetRampForce)(USB_FFBReport_SetRampForce_Output_Data_t* data, volatile TEffectState* effect);
   uint8_t (*SetEffect)(USB_FFBReport_SetEffect_Output_Data_t* data, volatile TEffectState* effect);  //milos, changed from int to uint8_t
 };
-
-#endif // _FFB_PRO_

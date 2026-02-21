@@ -57,22 +57,6 @@ void initInputs() {
 // Analog Axis
 ///////////////////////////////////////////////////
 
-// first index contains the newest sample per axis
-static uint16_t axisSamples[AXIS_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
-
-#ifdef __AVR__
-void readAxisSamples(uint8_t axisIndex, uint8_t sampleCount, uint8_t pin) {
-  uint16_t* samples = axisSamples[axisIndex];
-  memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
-  for (int8_t i = sampleCount - 1; i >= 0; --i) {
-    samples[i] = analogReadFast(pin);
-  }
-}
-#else
-#define CONV_PER_PIN 4
-
-static volatile bool adcConversionDone = false;
-
 static const uint8_t adcAxisPins[AXIS_COUNT] = {
   X_AXIS_PIN,
   Y_AXIS_PIN,
@@ -80,6 +64,35 @@ static const uint8_t adcAxisPins[AXIS_COUNT] = {
   RX_AXIS_PIN,
   RY_AXIS_PIN
 };
+
+// first index contains the newest sample per axis
+static uint16_t axisSamples[AXIS_COUNT][AVG_AXIS_NUM_MAX_SAMPLES];
+
+static void shiftAxisSamples(uint8_t axisIndex, uint8_t sampleCount) {
+  uint16_t* samples = axisSamples[axisIndex];
+  memmove(&samples[sampleCount], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - sampleCount) * sizeof(int16_t));
+}
+
+#ifdef __AVR__
+static void initAdc() {}
+
+static void readAxisSamples(uint8_t axisIndex, uint8_t sampleCount, uint8_t pin) {
+  shiftAxisSamples(axisIndex, sampleCount);
+  for (int8_t i = sampleCount - 1; i >= 0; --i) {
+    axisSamples[axisIndex][i] = analogReadFast(pin);
+  }
+}
+
+void readAxesSamples() {
+  for (int axisIndex = 0; axisIndex < AXIS_COUNT; ++axisIndex) {
+    readAxisSamples(axisIndex, axisIndex == 0 ? 2 : 1, adcAxisPins[axisIndex]);
+  }
+}
+
+#else
+#define CONV_PER_PIN 4
+
+static volatile bool adcConversionDone = false;
 
 static void ARDUINO_ISR_ATTR adcCallback() {
   adcConversionDone = true;
@@ -94,7 +107,7 @@ static void initAdc() {
   analogContinuousStart();
 }
 
-void readAxisSamples() {
+void readAxesSamples() {
   if (!adcConversionDone) {
     return;
   }
@@ -108,9 +121,8 @@ void readAxisSamples() {
   }
 
   for (int axisIndex = 0; axisIndex < AXIS_COUNT; ++axisIndex) {
-    uint16_t* samples = axisSamples[axisIndex];
-    memmove(&samples[1], &samples[0], (AVG_AXIS_NUM_MAX_SAMPLES - 1) * sizeof(int16_t));
-    samples[0] = results[axisIndex].avg_read_raw;
+    shiftAxisSamples(axisIndex, 1);
+    axisSamples[axisIndex][0] = results[axisIndex].avg_read_raw;
   }
 }
 #endif
@@ -185,28 +197,29 @@ uint8_t decodeHatSwitch(uint8_t hatBits) {
   }
 }
 
-static const uint8_t matrixColPins[] = {
-  BUTTON_MATRIX_COL0_PIN,
-  BUTTON_MATRIX_COL1_PIN,
-  BUTTON_MATRIX_COL2_PIN,
-  BUTTON_MATRIX_COL3_PIN,
-};
-
-static const uint8_t matrixRowPins[] = {
-  BUTTON_MATRIX_ROW0_PIN,
-  BUTTON_MATRIX_ROW1_PIN,
-  BUTTON_MATRIX_ROW2_PIN,
-  BUTTON_MATRIX_ROW3_PIN,
-};
-
 #ifdef __AVR__
-#define READ_MATRIX_COL_(col) (!bitRead(digitalReadFast(matrixColPins[col]), BMCOL##col##_PORTBIT))
+#define READ_MATRIX_COL(col) (!bitRead(digitalReadFast(BUTTON_MATRIX_COL##col##_PIN), BMCOL##col##_PORTBIT))
 #else
-#define READ_MATRIX_COL(col) (!digitalRead(matrixColPins[col]))
+#define READ_MATRIX_COL(col) (!digitalRead(BUTTON_MATRIX_COL##col##_PIN))
 #endif
 
 static void setMatrixRow(uint8_t row, uint8_t value) {
-  digitalWriteFast(matrixRowPins[row], value);
+  switch (row) { // Note: constant expression required for digitalWriteFast
+  case 0: digitalWriteFast(BUTTON_MATRIX_ROW0_PIN, value); break;
+  case 1: digitalWriteFast(BUTTON_MATRIX_ROW1_PIN, value); break;
+  case 2: digitalWriteFast(BUTTON_MATRIX_ROW2_PIN, value); break;
+  case 3: digitalWriteFast(BUTTON_MATRIX_ROW3_PIN, value); break;
+  }
+}
+
+static bool readMatrixCol(uint8_t col) {
+  switch (col) { // constant expression is required for digitalReadFast
+  case 0: return READ_MATRIX_COL(0);
+  case 1: return READ_MATRIX_COL(1);
+  case 2: return READ_MATRIX_COL(2);
+  case 3: return READ_MATRIX_COL(3);
+  default: return false;
+  }
 }
 
 // buttons 0-3 of are columns j
@@ -223,7 +236,7 @@ static uint16_t readInputButtonsRawInternal() {
     setMatrixRow(row, LOW);
     delayMicroseconds(5); // required to avoid the detection of false button presses
     for (uint8_t col = 0; col < 4; col++) { // columns (along Y), read each button from that row by scanning over columns      
-      bool buttonPressed = READ_MATRIX_COL(col);
+      bool buttonPressed = readMatrixCol(col);
       bitWrite(buttonsRaw, row * 4 + col, buttonPressed);
     }
     setMatrixRow(row, HIGH);
@@ -253,14 +266,19 @@ static void readInputButtonsTask(void* pvParameters) {
 #endif
 
 static void initButtonMatrix() { // if not using shift register, allocate some free pins for buttons
-  for (uint8_t col = 0; col < 4; ++col) {
-    pinMode(matrixColPins[col], INPUT_PULLUP);
-  }
+  pinMode(BUTTON_MATRIX_COL0_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL2_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_MATRIX_COL3_PIN, INPUT_PULLUP);
  
-  for (uint8_t row = 0; row < 4; ++row) {
-    pinModeFast(matrixRowPins[row], OUTPUT);
-    setMatrixRow(row, HIGH);
-  }
+  pinModeFast(BUTTON_MATRIX_ROW0_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW1_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW2_PIN, OUTPUT);
+  pinModeFast(BUTTON_MATRIX_ROW3_PIN, OUTPUT);
+  setMatrixRow(BUTTON_MATRIX_ROW0_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW1_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW2_PIN, HIGH);
+  setMatrixRow(BUTTON_MATRIX_ROW3_PIN, HIGH);
 
 #ifndef __AVR__
   // put input read on second core as otherwise the sleep delay to stabilize the readings would increase the latency 

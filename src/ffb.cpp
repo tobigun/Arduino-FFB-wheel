@@ -104,14 +104,15 @@ uint8_t GetNextFreeEffect(void)
   if (nextEID == MAX_EFFECTS)
     return 0;
 
-  uint8_t id = nextEID++;
+  uint8_t id = nextEID;
+  nextEID += 1;
 
   // Find the next free effect ID for next time
   while (gEffectStates[nextEID].state != 0)
   {
     if (nextEID >= MAX_EFFECTS)
       break;	// the last spot was taken
-    nextEID++;
+    nextEID += 1;
   }
   gEffectStates[id].state = MEffectState_Allocated;
   return id;
