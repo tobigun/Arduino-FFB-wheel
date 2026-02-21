@@ -127,7 +127,7 @@ void StopAllEffects(void)
 
 void StartEffect(uint8_t id)
 {
-  if ((id > MAX_EFFECTS) || (gEffectStates[id].state == 0))
+  if ((id > MAX_EFFECTS) || (gEffectStates[id].state == MEffectState_Free))
     return;
   gEffectStates[id].state |= MEffectState_Playing;
   //milos, added - update zero time only when first effect starts
@@ -139,7 +139,7 @@ void StartEffect(uint8_t id)
 
 void StopEffect(uint8_t id)
 {
-  if ((id > MAX_EFFECTS) || (gEffectStates[id].state == 0))
+  if ((id > MAX_EFFECTS) || (gEffectStates[id].state == MEffectState_Free))
     return;
   gEffectStates[id].state &= ~MEffectState_Playing;
   //gNewEffectBlockLoad.ramPoolAvailable += SIZE_EFFECT;
@@ -193,7 +193,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
   {
     case 1:
       FfbHandle_SetEffect((USB_FFBReport_SetEffect_Output_Data_t *) data);
-      //milos, added
       LogText("SetEff - index:");
       LogBinary(&((USB_FFBReport_SetEffect_Output_Data_t*)data)->effectBlockIndex, 1);
       LogText(", type:");
@@ -211,7 +210,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 2:
       ffb->SetEnvelope((USB_FFBReport_SetEnvelope_Output_Data_t*) data, &gEffectStates[effectId]);
-      //milos, added
       LogText("SetEnv - aL:");
       LogBinary(&((USB_FFBReport_SetEnvelope_Output_Data_t*)data)->attackLevel, 1);
       LogText(", aT:");
@@ -223,7 +221,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 3:
       ffb->SetCondition((USB_FFBReport_SetCondition_Output_Data_t*) data, &gEffectStates[effectId]);
-      //milos, added
       LogText("SetCond - pbOff:");
       LogBinary(&((USB_FFBReport_SetCondition_Output_Data_t*)data)->parameterBlockOffset, 1);
       LogText(", cpOff:");
@@ -237,7 +234,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 4:
       ffb->SetPeriodic((USB_FFBReport_SetPeriodic_Output_Data_t*) data, &gEffectStates[effectId]);
-      //milos, added
       LogText("SetPer - mag:");
       LogBinary(&((USB_FFBReport_SetPeriodic_Output_Data_t*)data)->magnitude, 2);
       LogText(", off:");
@@ -249,13 +245,11 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 5:
       ffb->SetConstantForce((USB_FFBReport_SetConstantForce_Output_Data_t*) data, &gEffectStates[effectId]);
-      //milos, added
       LogText("SetCF - mag:");
       LogBinaryLf(&((USB_FFBReport_SetConstantForce_Output_Data_t*)data)->magnitude, 2);
       break;
     case 6:
       ffb->SetRampForce((USB_FFBReport_SetRampForce_Output_Data_t*)data, &gEffectStates[effectId]);
-      //milos, added
       LogText("SetRF - start:");
       LogBinary(&((USB_FFBReport_SetRampForce_Output_Data_t*)data)->rampStart, 1);
       LogText(", end:");
@@ -273,7 +267,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 10:
       FfbHandle_EffectOperation((USB_FFBReport_EffectOperation_Output_Data_t*) data);
-      //milos, added
       LogText("SetEffOper - op:");
       LogBinary(&((USB_FFBReport_EffectOperation_Output_Data_t*)data)->operation, 1);
       LogText(", loop:");
@@ -281,7 +274,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 11:
       FfbHandle_BlockFree((USB_FFBReport_BlockFree_Output_Data_t *) data);
-      //milos, added
       LogText("SetBlockFree - id:");
       LogBinaryLf(&((USB_FFBReport_BlockFree_Output_Data_t *)data)->effectBlockIndex, 1);
       break;
@@ -292,7 +284,6 @@ void FfbOnUsbData(uint8_t *data, uint16_t len)
       break;
     case 13:
       FfbHandle_DeviceGain((USB_FFBReport_DeviceGain_Output_Data_t*) data);
-      //milos, added
       LogText("SetDeviceGain:");
       LogBinaryLf(&((USB_FFBReport_DeviceGain_Output_Data_t*)data)->deviceGain, 1);
       break;
