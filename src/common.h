@@ -15,7 +15,7 @@
 #define AVG_FFB_AXIS_X_NUM_MAX_SAMPLES 4
 #else
 #define AVG_AXIS_NUM_MAX_SAMPLES 32 // evaluate 32 samples (which are already averaged by the adc by 8 samples), i.e. the samples of the last 16 ms
-#define AVG_FFB_AXIS_X_NUM_MAX_SAMPLES 2 // only check the samples of the last ms (with 2 samples queued per ms)
+#define AVG_FFB_AXIS_X_NUM_MAX_SAMPLES 8 // only check the samples of the last ms (with 2 samples queued per ms)
 #endif
 
 enum HID_PROFILE_ID {
