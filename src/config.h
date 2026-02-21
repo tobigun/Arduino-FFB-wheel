@@ -8,20 +8,24 @@
 //#define USE_PWM_DIR_MODE
 //#define USE_PWM_PLUS_MINUS_MODE
 
-#define MAX_TORQ_BITS 11L
-#define MAX_TORQ_DEFAULT ((1 << MAX_TORQ_BITS) - 1) // 2047
+#define MOTOR_PWM_BITS 11
+#define MOTOR_PWM_MAX_VALUE ((1L << MOTOR_PWM_BITS) - 1) // 2047
+#define MAX_TORQUE_DEFAULT MOTOR_PWM_MAX_VALUE
 
 //------------------------------------- Pins -------------------------------------------------------------
 
-//#define LED_GREEN_PIN 1 // Green LED directly connected to 12V supply
+// Note: Green LED directly connected to +12V supply, not controllable
 #ifdef __AVR__
-#define LED_RED_PIN 3
 #define LED_BLUE_PIN 0
-#else
-#define LED_RED_PIN 40
-#define LED_BLUE_PIN 39
-#endif
+#define LED_RED_PIN 3 // connected to TIMER0B (8-bit) for PWM
 #define FFBCLIP_LED_PIN LED_RED_PIN
+#define FFBCLIP_LED_MAX_VALUE 255 // LED has timer separate from motor PWM
+#else
+#define LED_BLUE_PIN 39
+#define LED_RED_PIN 40
+#define FFBCLIP_LED_PIN LED_RED_PIN
+#define FFBCLIP_LED_MAX_VALUE MOTOR_PWM_MAX_VALUE // LED shares precision with motor PWM (limitation in Arduino implementation)
+#endif
 
 #ifdef __AVR__
 #define X_AXIS_PIN		A0

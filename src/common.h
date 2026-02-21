@@ -47,7 +47,7 @@ extern s16a hbrake;
 extern s16a brake;
 
 void initPWM();
-void setPWM(s32v *torque);
+void setPWM(int32_t torqueX);
 
 void initInputs();
 void readAxesSamples();
@@ -59,5 +59,5 @@ bool checkPedalsConnected(int16_t axisY, int16_t axisZ);
 
 void configCDC();
 
-void blinkFFBclipLED();
-void activateFFBclipLED(int32_t t);
+void blinkFfbClipLED();
+void updateFfbClipLED(int32_t t);

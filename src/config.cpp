@@ -40,15 +40,15 @@ uint8_t effstate; // = 0b00000001; // turn on/off desktop effects through serial
 uint8_t pwmstate; // PWM settings configuration byte, bit7 is MSB
 
 // changed these from float to uint8_t (loaded from EEPROM)
-uint8_t configGeneralGain;  // = 1.0f;  // was 1.0f
+uint8_t configGeneralGain;  // = 100;
 uint8_t configDamperGain; // = 1.0f;		// was 0.5f
 uint8_t configFrictionGain; // = 1.0f;	// was 0.5f
-uint8_t configConstantGain; // = 1.0f;	// was 1.0f
-uint8_t configPeriodicGain; // = 1.0f;	// was 1.0f
-uint8_t configSpringGain; // = 1.0f;	// was 1.0f
-uint8_t configInertiaGain; // = 1.0f; // was 1.0f
-uint8_t configCenterGain; // = 0.7f;	// was 0.7f
-uint8_t configStopGain; // = 1.0f;	// was 1.0f
+uint8_t configConstantGain; // = 1.0f;
+uint8_t configPeriodicGain; // = 1.0f;
+uint8_t configSpringGain; // = 1.0f
+uint8_t configInertiaGain; // = 1.0f
+uint8_t configCenterGain; // = 0.7f
+uint8_t configStopGain; // = 1.0f
 
 
 uint16_t PWMtops [13] =
@@ -122,7 +122,7 @@ void SetDefaultEEPROMConfig() { // store default firmware settings in EEPROM
   SetParam(PARAM_ADDR_CTS_GAIN, v8);
   v16 = 0;
   SetParam(PARAM_ADDR_MIN_TORQ, v16);
-  v16 = MAX_TORQ_DEFAULT; // for PWM signals
+  v16 = MAX_TORQUE_DEFAULT; // for PWM signals
   SetParam(PARAM_ADDR_MAX_TORQ, v16);
   v16 = 4095; // for 12bit DAC
   SetParam(PARAM_ADDR_MAX_DAC, v16);

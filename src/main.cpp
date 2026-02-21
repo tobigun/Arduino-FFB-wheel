@@ -50,8 +50,17 @@ static void createAndSendInputReport();
 static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t ry, uint8_t hat, uint16_t buttons);
 static void updateDataLed();
 
+void initLeds() {
+  pinMode(LED_BLUE_PIN, OUTPUT);
+  digitalWrite(LED_BLUE_PIN, LOW);
+
+  pinMode(FFBCLIP_LED_PIN, OUTPUT);
+  digitalWrite(FFBCLIP_LED_PIN, LOW);
+}
 
 void setup() {
+  initLeds();
+
   CONFIG_SERIAL.begin(115200);
 
   initInputs();
@@ -61,23 +70,16 @@ void setup() {
   brake.val = 0;
   clutch.val = 0;
 
-  pinMode(LED_BLUE_PIN, OUTPUT);
-  digitalWrite(LED_BLUE_PIN, LOW);
-
   initEEPROMConfig();
   setEEPROMConfig(); // check firmware version from EEPROM (if any) and load defaults if required
   loadEEPROMConfig(); // read firmware setings from EEPROM and update current firmware settings
 
   FfbSetDriver(0);
 
-  pinMode(FFBCLIP_LED_PIN, OUTPUT);
-  blinkFFBclipLED();
-
   initPWM(); // initialize PWM (or DAC) settings
+  setPWM(0); // zero PWM at startup
 
-  s32v ffbs; // init xFFB at zero
-  ffbs.x = 0; 
-  setPWM(&ffbs); // zero PWM at startup
+  blinkFfbClipLED(); // this blocks for some ms. Do it last
 }
 
 void loop() {
@@ -112,7 +114,8 @@ static void updateFfb() {
   ffbAxisValue.x = map(ffbAxisValueRaw, 0, FFB_AXIS_RAW_MAX_VALUE, -FFB_ROTATION_MID - 1, FFB_ROTATION_MID);
 
   s32v ffbs = gFFB.CalcTorqueCommands(&ffbAxisValue); // raw units -inf,0,inf
-  setPWM(&ffbs);
+  setPWM(ffbs.x);
+  updateFfbClipLED(ffbs.x);
 }
 
 static void createAndSendInputReport() {
@@ -200,24 +203,47 @@ static void sendInputReport(int16_t x, int16_t y, int16_t z, int16_t rx, int16_t
   hidAdapter.sendInputReport(INPUT_REPORT_ID, (uint8_t*)&report, sizeof(report));
 }
 
-void blinkFFBclipLED() { // blink FFB clip LED a few times at startup to indicate succesful boot
-  for (uint8_t i = 0; i < 3; i++) {
+/**
+ * Blinks the FFB clip LED a few times at startup to indicate succesful boot.
+ * Note: this blocks for some ms. Only use at start-up.
+ */ 
+void blinkFfbClipLED() {
+  const uint8_t blinkCount = 3;
+  for (uint8_t i = 0; i < blinkCount; i++) {
+    if (i > 0) {
+      delay(200);
+    }
     digitalWrite(FFBCLIP_LED_PIN, HIGH);
-    delay(20);
+    delay(200);
     digitalWrite(FFBCLIP_LED_PIN, LOW);
-    delay(20);
   }
 }
 
-void activateFFBclipLED(int32_t t) {  // turn on FFB clip LED if max FFB signal reached (shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness)
-  float level = 0.01 * configGeneralGain;
-  if (abs(t) >= 0.9 * MM_MAX_MOTOR_TORQUE * level && abs(t) < level * MM_MAX_MOTOR_TORQUE - 1) {
-    //analogWrite(FFBCLIP_LED_PIN, map(abs(t), 0.9 * MM_MAX_MOTOR_TORQUE * level, level * MM_MAX_MOTOR_TORQUE, 1, 63)); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
-    digitalWrite(FFBCLIP_LED_PIN, HIGH);
-  } else if (abs(t) >= level * MM_MAX_MOTOR_TORQUE - 1) {
-    digitalWrite(FFBCLIP_LED_PIN, HIGH); // for 100% FFB set full brightness
+constexpr uint16_t HIGH_TORQUE_PWM_MAX = FFBCLIP_LED_MAX_VALUE * 63 / 255;
+
+/**
+ * Turns the FFB clip LED on if max FFB signal reached.
+ * Shows 90-99% of FFB signal as linear increase from 0 to 1/4 of full brightness.
+ */
+void updateFfbClipLED(int32_t torque) {
+  static int16_t oldPwmValue = -1;
+
+  const float gainPercent = configGeneralGain / 100.f;
+  const int32_t maxTorque = gainPercent * MM_MAX_MOTOR_TORQUE;
+  const int32_t highTorque = 0.9f * maxTorque;
+
+  int16_t pwmValue;
+  if (abs(torque) >= highTorque && abs(torque) < maxTorque - 1) {
+    pwmValue = map(abs(torque), highTorque, maxTorque, 1, HIGH_TORQUE_PWM_MAX); // for 90%-99% ffb map brightness linearly from 1-63 (out of 255)
+  } else if (abs(torque) >= maxTorque - 1) {
+    pwmValue = FFBCLIP_LED_MAX_VALUE; // for 100% FFB set full brightness
   } else {
-    digitalWrite(FFBCLIP_LED_PIN, LOW); // if under 90% FFB turn off LED
+    pwmValue = 0; // if under 90% FFB turn off LED
+  }
+
+  if (oldPwmValue != pwmValue) {
+    analogWrite(FFBCLIP_LED_PIN, pwmValue);
+    oldPwmValue = pwmValue;
   }
 }
 
